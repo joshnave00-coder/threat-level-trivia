@@ -1,0 +1,787 @@
+{
+  "title": "The Office (US) Trivia - Volume 2",
+  "description": "100 additional trivia questions sourced from verified Office fan databases. All questions are unique from Volume 1.",
+  "total_questions": 100,
+  "categories": ["Characters", "Episodes & Events", "Quotes", "Behind the Scenes", "Relationships & Romance", "Cold Opens & Running Gags", "Locations & Miscellaneous"],
+  "difficulties": ["Easy", "Medium", "Hard"],
+  "questions": [
+
+    {
+      "id": 111,
+      "category": "Characters",
+      "difficulty": "Easy",
+      "question": "What actress played Meredith Palmer?",
+      "answer": "Kate Flannery"
+    },
+    {
+      "id": 112,
+      "category": "Characters",
+      "difficulty": "Easy",
+      "question": "Who is the receptionist at Dunder Mifflin at the start of the series?",
+      "answer": "Pam Beesly"
+    },
+    {
+      "id": 113,
+      "category": "Characters",
+      "difficulty": "Easy",
+      "question": "What is Pam's job title when she first joins Dunder Mifflin?",
+      "answer": "Receptionist"
+    },
+    {
+      "id": 114,
+      "category": "Characters",
+      "difficulty": "Easy",
+      "question": "Who played Charles Miner, the VP who clashes with Michael in season 5?",
+      "answer": "Idris Elba"
+    },
+    {
+      "id": 115,
+      "category": "Characters",
+      "difficulty": "Easy",
+      "question": "What company takes over Dunder Mifflin in season 6?",
+      "answer": "Sabre"
+    },
+    {
+      "id": 116,
+      "category": "Characters",
+      "difficulty": "Easy",
+      "question": "What is the group of third-grade students that Michael promised to pay tuition for called?",
+      "answer": "Scott's Tots"
+    },
+    {
+      "id": 117,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "What is Stanley's wife's name?",
+      "answer": "Teri"
+    },
+    {
+      "id": 118,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "What is the name of Stanley's mistress?",
+      "answer": "Cynthia"
+    },
+    {
+      "id": 119,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "What is the name of Jan Levinson's assistant (who she later dates)?",
+      "answer": "Hunter"
+    },
+    {
+      "id": 120,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "What is the name of Holly's ex-boyfriend who works at Dunder Mifflin Nashua?",
+      "answer": "A.J."
+    },
+    {
+      "id": 121,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "What are 'New Jim' and 'New Dwight's' real names when they are hired in season 9?",
+      "answer": "Pete Miller and Clark Green"
+    },
+    {
+      "id": 122,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "What is the name of the pediatrician Kelly Kapoor gets engaged to in the finale?",
+      "answer": "Ravi"
+    },
+    {
+      "id": 123,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "Which Hollywood actress appeared as the 'Hot Girl' selling handbags in season 1?",
+      "answer": "Amy Adams"
+    },
+    {
+      "id": 124,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "Who is the tallest character in The Office?",
+      "answer": "Gabe Lewis"
+    },
+    {
+      "id": 125,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "What is the name of the security guard at the front desk of the Scranton Business Park?",
+      "answer": "Hank Doyle"
+    },
+    {
+      "id": 126,
+      "category": "Characters",
+      "difficulty": "Medium",
+      "question": "Who did Robert California choose to be branch manager after taking the CEO role?",
+      "answer": "Andy Bernard"
+    },
+    {
+      "id": 127,
+      "category": "Characters",
+      "difficulty": "Hard",
+      "question": "What is the name of the hypoallergenic cat Angela buys for $7,000?",
+      "answer": "Princess Lady"
+    },
+    {
+      "id": 128,
+      "category": "Characters",
+      "difficulty": "Hard",
+      "question": "What is Dwight's karate belt color?",
+      "answer": "Purple"
+    },
+    {
+      "id": 129,
+      "category": "Characters",
+      "difficulty": "Hard",
+      "question": "What is the name of Dwight's karate sensei?",
+      "answer": "Ira"
+    },
+    {
+      "id": 130,
+      "category": "Characters",
+      "difficulty": "Hard",
+      "question": "How many of the main cast members share the same first name as their character?",
+      "answer": "Four — Angela Kinsey, Oscar Nunez, Phyllis Smith, and Creed Bratton"
+    },
+    {
+      "id": 131,
+      "category": "Characters",
+      "difficulty": "Hard",
+      "question": "Why did Kelly Kapoor go to juvenile detention when she was 14?",
+      "answer": "Her boyfriend dumped her, so she stole his dad's boat"
+    },
+    {
+      "id": 132,
+      "category": "Characters",
+      "difficulty": "Hard",
+      "question": "What is the pet name that Dwight and Angela use to call each other?",
+      "answer": "Monkey"
+    },
+    {
+      "id": 133,
+      "category": "Characters",
+      "difficulty": "Hard",
+      "question": "What is Kevin's magic number he uses to balance his accounts when they don't add up?",
+      "answer": "Keleven"
+    },
+
+    {
+      "id": 134,
+      "category": "Episodes & Events",
+      "difficulty": "Easy",
+      "question": "What was Ryan heating up in the microwave when he started the fire at the office?",
+      "answer": "A cheese pita"
+    },
+    {
+      "id": 135,
+      "category": "Episodes & Events",
+      "difficulty": "Easy",
+      "question": "Which three characters did parkour all over the office in the season 6 cold open?",
+      "answer": "Michael, Dwight, and Andy"
+    },
+    {
+      "id": 136,
+      "category": "Episodes & Events",
+      "difficulty": "Easy",
+      "question": "What caused Michael to drive his car into a lake?",
+      "answer": "He followed the GPS directions without question"
+    },
+    {
+      "id": 137,
+      "category": "Episodes & Events",
+      "difficulty": "Easy",
+      "question": "Who is the last character to say a line in the entire series?",
+      "answer": "Pam Beesly"
+    },
+    {
+      "id": 138,
+      "category": "Episodes & Events",
+      "difficulty": "Easy",
+      "question": "What does Dwight do to the CPR dummy after it is pronounced dead?",
+      "answer": "He stabs it to harvest its organs"
+    },
+    {
+      "id": 139,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "What was the prize the office was playing for in their basketball game against the warehouse in season 1?",
+      "answer": "Who has to work on Saturday"
+    },
+    {
+      "id": 140,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "Who trips and falls into the lake in a sumo suit during Beach Day?",
+      "answer": "Andy Bernard"
+    },
+    {
+      "id": 141,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "What song does Kevin sing on the bus on the way to Beach Day?",
+      "answer": "'The Gambler' by Kenny Rogers"
+    },
+    {
+      "id": 142,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "Who catches a fish with their bare hands during Beach Day?",
+      "answer": "Creed Bratton"
+    },
+    {
+      "id": 143,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "What holiday do Erin and Andy go on their first date?",
+      "answer": "St. Patrick's Day"
+    },
+    {
+      "id": 144,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "Who does Meredith flash at the Christmas Party in season 2?",
+      "answer": "Michael Scott"
+    },
+    {
+      "id": 145,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "Why was Erin first hired at Dunder Mifflin?",
+      "answer": "Pam left to work at the Michael Scott Paper Company"
+    },
+    {
+      "id": 146,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "What is the name of the skit that Michael and Holly perform at the company picnic?",
+      "answer": "Slumdunder Mifflinaire"
+    },
+    {
+      "id": 147,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "How many times did Andy punch a hole in the wall at the office?",
+      "answer": "Twice"
+    },
+    {
+      "id": 148,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "Who does Oscar have an affair with in the later seasons?",
+      "answer": "Angela's husband, Senator Robert Lipton"
+    },
+    {
+      "id": 149,
+      "category": "Episodes & Events",
+      "difficulty": "Medium",
+      "question": "What Dundie award does Ryan Howard win at Michael's last Dundies?",
+      "answer": "Doobie Doobie Pothead Stoner of the Year"
+    },
+    {
+      "id": 150,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "What does Toby break when zip-lining in Costa Rica?",
+      "answer": "His neck (vertebrae)"
+    },
+    {
+      "id": 151,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "What does the fax from 'Future Dwight' warn Dwight not to do?",
+      "answer": "Drink the coffee"
+    },
+    {
+      "id": 152,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "What is the acronym Creed writes on the board during a staff meeting when he briefly becomes manager?",
+      "answer": "BOBODY"
+    },
+    {
+      "id": 153,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "After Angela dumps Dwight, what elaborate prank do Jim and Pam play on a severely depressed Dwight?",
+      "answer": "They pretend the Dunder Mifflin website has become self-aware and wants to outsell him"
+    },
+    {
+      "id": 154,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "What does Michael win a gold medal for at the Office Olympics?",
+      "answer": "Closing on his condo"
+    },
+    {
+      "id": 155,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "What percentage of Dunder Mifflin's revenue was at risk because of Michael's golden ticket idea?",
+      "answer": "50%"
+    },
+    {
+      "id": 156,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "What rumor does Michael make up about Angela to cover for Stanley's affair?",
+      "answer": "That she is dating an 81-year-old billionaire who owns a Quizno's franchise"
+    },
+    {
+      "id": 157,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "In the 'Stress Relief' episode, what specific thing does Dwight put in the trash can to start the fire?",
+      "answer": "A lit cigarette"
+    },
+    {
+      "id": 158,
+      "category": "Episodes & Events",
+      "difficulty": "Hard",
+      "question": "What is the date that Ryan and Kelly officially hooked up for the first time?",
+      "answer": "February 13th"
+    },
+
+    {
+      "id": 159,
+      "category": "Quotes",
+      "difficulty": "Easy",
+      "question": "What does Michael say when Pam asks how he describes his management style?",
+      "answer": "'I'm like a boss, but also a friend. I am a... boss-friend.'" 
+    },
+    {
+      "id": 160,
+      "category": "Quotes",
+      "difficulty": "Easy",
+      "question": "According to Kevin, what is the trick to making his famous chili?",
+      "answer": "Undercooking the onions"
+    },
+    {
+      "id": 161,
+      "category": "Quotes",
+      "difficulty": "Medium",
+      "question": "What does Michael call his comedy hero whose stand-up he imitates during Diversity Day?",
+      "answer": "Chris Rock"
+    },
+    {
+      "id": 162,
+      "category": "Quotes",
+      "difficulty": "Medium",
+      "question": "What does Dwight say a beet farmer must have knowledge of?",
+      "answer": "Bears, beets, and Battlestar Galactica"
+    },
+    {
+      "id": 163,
+      "category": "Quotes",
+      "difficulty": "Medium",
+      "question": "What phrase does Michael mangle when he means to say 'the tables have turned'?",
+      "answer": "'How the turntables...'"
+    },
+    {
+      "id": 164,
+      "category": "Quotes",
+      "difficulty": "Hard",
+      "question": "What is one of the fake interracial phrases Darryl teaches Michael, along with 'Fleece it out'?",
+      "answer": "'Pippity poppity gimme da zoppidy'"
+    },
+    {
+      "id": 165,
+      "category": "Quotes",
+      "difficulty": "Hard",
+      "question": "What does Michael say when he and Jan stay at a Jamaican resort?",
+      "answer": "They stay at Sandals resort in Jamaica"
+    },
+    {
+      "id": 166,
+      "category": "Quotes",
+      "difficulty": "Hard",
+      "question": "What does Nelly say to Gabe that becomes a memorable put-down?",
+      "answer": "'Oh, get out, Skeleton Man!'"
+    },
+    {
+      "id": 167,
+      "category": "Quotes",
+      "difficulty": "Hard",
+      "question": "Who refers to himself as 'The Lizard King'?",
+      "answer": "Robert California"
+    },
+    {
+      "id": 168,
+      "category": "Quotes",
+      "difficulty": "Hard",
+      "question": "What does Stanley say when Dwight releases a bat into the office?",
+      "answer": "'Goodbye.'"
+    },
+
+    {
+      "id": 169,
+      "category": "Behind the Scenes",
+      "difficulty": "Easy",
+      "question": "Was the kiss between Oscar and Michael in 'Gay Witch Hunt' scripted?",
+      "answer": "No — Steve Carell improvised it, kissing Oscar on the mouth when Oscar leaned in for a cheek kiss"
+    },
+    {
+      "id": 170,
+      "category": "Behind the Scenes",
+      "difficulty": "Medium",
+      "question": "What song was playing as Jim watched Pam drive away in 'The Dundies' episode?",
+      "answer": "'Tiny Dancer' by Elton John"
+    },
+    {
+      "id": 171,
+      "category": "Behind the Scenes",
+      "difficulty": "Medium",
+      "question": "Which celebrity walked past the camera while Michael was filming himself walking around New York City?",
+      "answer": "Conan O'Brien"
+    },
+    {
+      "id": 172,
+      "category": "Behind the Scenes",
+      "difficulty": "Medium",
+      "question": "What book does Dwight read to Jim and Pam during their first stay at Schrute Farms?",
+      "answer": "Harry Potter and the Deathly Hallows"
+    },
+    {
+      "id": 173,
+      "category": "Behind the Scenes",
+      "difficulty": "Medium",
+      "question": "What real-life show did John Krasinski, Mindy Kaling, and Angela Kinsey all intern at before The Office?",
+      "answer": "Late Night with Conan O'Brien"
+    },
+    {
+      "id": 174,
+      "category": "Behind the Scenes",
+      "difficulty": "Medium",
+      "question": "What prop did Dwight make for a birthday party that Krasinski and Wilson found so funny that production had to shut down?",
+      "answer": "A banner that read 'It is your birthday.'"
+    },
+    {
+      "id": 175,
+      "category": "Behind the Scenes",
+      "difficulty": "Hard",
+      "question": "What was The Office's original working title before it launched in the US?",
+      "answer": "The American Workplace"
+    },
+    {
+      "id": 176,
+      "category": "Behind the Scenes",
+      "difficulty": "Hard",
+      "question": "How much did Jim spend on his costume when he dressed up as Dwight?",
+      "answer": "$11"
+    },
+    {
+      "id": 177,
+      "category": "Behind the Scenes",
+      "difficulty": "Hard",
+      "question": "What happened to Rainn Wilson on the set of 'Beach Games' that sent a co-star to the hospital?",
+      "answer": "He accidentally got sand in Leslie David Baker's (Stanley's) eye, resulting in a scratched cornea"
+    },
+    {
+      "id": 178,
+      "category": "Behind the Scenes",
+      "difficulty": "Hard",
+      "question": "How many cold opens are there across The Office's nine seasons?",
+      "answer": "188"
+    },
+    {
+      "id": 179,
+      "category": "Behind the Scenes",
+      "difficulty": "Hard",
+      "question": "What were the five items Jim put in the teapot he gave Pam (not counting the note card)?",
+      "answer": "A cassette, Jim's high school yearbook photo, a Boggle timer, hot sauce, and a mini golf pencil"
+    },
+
+    {
+      "id": 180,
+      "category": "Relationships & Romance",
+      "difficulty": "Easy",
+      "question": "Whose mother does Michael briefly date?",
+      "answer": "Pam's mother, Helene"
+    },
+    {
+      "id": 181,
+      "category": "Relationships & Romance",
+      "difficulty": "Easy",
+      "question": "Who does Erin initially think might be her biological mother?",
+      "answer": "Phyllis"
+    },
+    {
+      "id": 182,
+      "category": "Relationships & Romance",
+      "difficulty": "Medium",
+      "question": "How many women does Michael Scott propose marriage to over the course of the show?",
+      "answer": "Two — Carol and Holly"
+    },
+    {
+      "id": 183,
+      "category": "Relationships & Romance",
+      "difficulty": "Medium",
+      "question": "If Pam had married Roy, what would her full married name have been?",
+      "answer": "Pamela Anderson"
+    },
+    {
+      "id": 184,
+      "category": "Relationships & Romance",
+      "difficulty": "Medium",
+      "question": "Why does Pam slap Michael Scott?",
+      "answer": "He tells everyone that Pam's mom came onto him"
+    },
+    {
+      "id": 185,
+      "category": "Relationships & Romance",
+      "difficulty": "Medium",
+      "question": "What branch of Dunder Mifflin does Karen Filippelli end up managing after leaving Scranton?",
+      "answer": "Dunder Mifflin Utica"
+    },
+    {
+      "id": 186,
+      "category": "Relationships & Romance",
+      "difficulty": "Medium",
+      "question": "Who gets publicly dumped at the Dundies in season 7?",
+      "answer": "Gabe Lewis (dumped by Erin)"
+    },
+    {
+      "id": 187,
+      "category": "Relationships & Romance",
+      "difficulty": "Medium",
+      "question": "How did Andy first ask Angela out?",
+      "answer": "He gave her a cat he trapped outside Vance Refrigeration, saying the cat was destined to find her"
+    },
+    {
+      "id": 188,
+      "category": "Relationships & Romance",
+      "difficulty": "Hard",
+      "question": "What do Roy and Dwight have in common in the series finale?",
+      "answer": "Both are seen to have found happiness — Roy with his wife and Dwight with Angela after they finally marry"
+    },
+    {
+      "id": 189,
+      "category": "Relationships & Romance",
+      "difficulty": "Hard",
+      "question": "What heartwarming gift does Stanley give Phyllis in the series finale?",
+      "answer": "A wooden carving of her with flamingo legs"
+    },
+    {
+      "id": 190,
+      "category": "Relationships & Romance",
+      "difficulty": "Hard",
+      "question": "What song is playing when Jim watches Pam drive away after the Dundies, hinting at his feelings for her?",
+      "answer": "'Tiny Dancer' by Elton John"
+    },
+
+    {
+      "id": 191,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Easy",
+      "question": "What animal does Dwight release into the office by trapping it on someone's head in a garbage bag?",
+      "answer": "A bat"
+    },
+    {
+      "id": 192,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Easy",
+      "question": "Which character does the bat bite after Dwight traps it?",
+      "answer": "Meredith"
+    },
+    {
+      "id": 193,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Easy",
+      "question": "What does Dwight grow in his beet farm?",
+      "answer": "Beets"
+    },
+    {
+      "id": 194,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Medium",
+      "question": "What is the name of the cat Angela throws to Oscar through the ceiling during Dwight's fire drill cold open?",
+      "answer": "Bandit"
+    },
+    {
+      "id": 195,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Medium",
+      "question": "Who kicks in the vending machine glass during the fire drill cold open?",
+      "answer": "Kevin Malone"
+    },
+    {
+      "id": 196,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Medium",
+      "question": "What is Dwight's favorite TV show?",
+      "answer": "Battlestar Galactica"
+    },
+    {
+      "id": 197,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Medium",
+      "question": "Besides Jell-O, what other food does Jim put Dwight's stapler in at one point?",
+      "answer": "A giant meatball"
+    },
+    {
+      "id": 198,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Medium",
+      "question": "What are the three main events of the Office Olympics?",
+      "answer": "Flonkerton (box of paper snowshoe racing), Hate Ball, and Who Can Fit the Most M&Ms in Their Mouth"
+    },
+    {
+      "id": 199,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Hard",
+      "question": "What does Jim do to make Dwight think he can move a coat rack with his mind?",
+      "answer": "Pam pulls it back and forth using an umbrella hidden under her desk"
+    },
+    {
+      "id": 200,
+      "category": "Cold Opens & Running Gags",
+      "difficulty": "Hard",
+      "question": "After finding half a joint in the parking lot during 'Drug Testing,' who fake-cries during Dwight's investigation?",
+      "answer": "Jim Halpert"
+    },
+
+    {
+      "id": 201,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Easy",
+      "question": "What is the name of the Dunder Mifflin Scranton office building?",
+      "answer": "Scranton Business Park"
+    },
+    {
+      "id": 202,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Easy",
+      "question": "Which branch of Dunder Mifflin does Jim transfer to after season 2?",
+      "answer": "Dunder Mifflin Stamford"
+    },
+    {
+      "id": 203,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Easy",
+      "question": "What brand of clothing is Michael Scott accidentally wearing when he buys a woman's suit?",
+      "answer": "MISSterious"
+    },
+    {
+      "id": 204,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Easy",
+      "question": "What is the name of Pam's friend from art school?",
+      "answer": "Alex"
+    },
+    {
+      "id": 205,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Easy",
+      "question": "What actress played Dakota, the accountant who replaced Kevin in the series finale?",
+      "answer": "Dakota Johnson"
+    },
+    {
+      "id": 206,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "What does Michael say to Pam about where to put the fax from corporate in the very first episode?",
+      "answer": "He tells her to put it in a special filing cabinet — which is the garbage can"
+    },
+    {
+      "id": 207,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "Where does Roy work after leaving Dunder Mifflin?",
+      "answer": "A vitamin store"
+    },
+    {
+      "id": 208,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "What celebrity does Darryl say Michael looks like while wearing the women's suit?",
+      "answer": "Hillary Clinton"
+    },
+    {
+      "id": 209,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "Which three coworkers does Jim practice ping pong with before his rematch against Darryl?",
+      "answer": "Kevin, Meredith, and Dwight"
+    },
+    {
+      "id": 210,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "What is the name of the person Michael and Jan meet at Chili's in 'The Client' episode?",
+      "answer": "Christian"
+    },
+    {
+      "id": 211,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "What costume is Carol wearing when she shows up to Kelly's Diwali party?",
+      "answer": "A cheerleader costume"
+    },
+    {
+      "id": 212,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "What does Oscar get for Creed in the Secret Santa exchange and why?",
+      "answer": "A shamrock keychain, because he thinks Creed is Irish"
+    },
+    {
+      "id": 213,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "What does Michael give Ryan as a Christmas gift, with the price tag still on?",
+      "answer": "A $400 iPod"
+    },
+    {
+      "id": 214,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Medium",
+      "question": "What song do Michael and Jim sing together after Michael crashes Jim's backyard barbecue?",
+      "answer": "'Islands in the Stream' by Kenny Rogers and Dolly Parton"
+    },
+    {
+      "id": 215,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Hard",
+      "question": "What is Toby's daughter's name?",
+      "answer": "Sasha"
+    },
+    {
+      "id": 216,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Hard",
+      "question": "What is the name of Pam's middle name?",
+      "answer": "Morgan"
+    },
+    {
+      "id": 217,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Hard",
+      "question": "What fruit does Dwight use to simulate childbirth to help Michael prepare for Jan's baby being born?",
+      "answer": "A watermelon"
+    },
+    {
+      "id": 218,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Hard",
+      "question": "What does Stanley do to Michael's car after Michael tells Stanley's wife about his affair?",
+      "answer": "He smashes it with a tire iron"
+    },
+    {
+      "id": 219,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Hard",
+      "question": "What was the name of the Asian actor who played 'Asian Jim' in the prank on Dwight?",
+      "answer": "Randall Park (his character's name was Steve)"
+    },
+    {
+      "id": 220,
+      "category": "Locations & Miscellaneous",
+      "difficulty": "Hard",
+      "question": "Which character is arrested and later revealed to have faked their own death in the series finale?",
+      "answer": "Creed Bratton"
+    }
+
+  ]
+}

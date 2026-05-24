@@ -1,0 +1,15 @@
+# Runtime data — generated at play time, do not commit
+data/
+
+# Claude Code IDE files — local machine config only
+.claude/
+memory/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db

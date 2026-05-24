@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threat Level Trivia — Dunder Mifflin</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     QUOTE CALLOUT OVERLAY (appears after every answer)
+════════════════════════════════════════════════ -->
+<div id="quote-callout" class="quote-callout hidden" role="status" aria-live="polite">
+  <p class="quote-text"></p>
+  <p class="quote-attribution"></p>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: HOME
+════════════════════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <header class="dm-header">
+    <!-- Image placeholder: swap src with actual logo file when ready -->
+    <div class="dm-logo-img" title="Dunder Mifflin Logo — replace with actual image">
+      LOGO<br>HERE
+    </div>
+    <div class="dm-logo-placeholder">
+      <span class="dm-logo-text">Dunder Mifflin</span>
+      <span class="dm-logo-sub">Paper Company, Inc. — Scranton Branch</span>
+    </div>
+  </header>
+
+  <main class="home-main">
+    <div class="threat-level-badge">Threat Level</div>
+    <h1 class="home-title">Trivia</h1>
+    <p class="home-tagline">Scranton's Finest Test of Office Knowledge</p>
+
+    <div class="home-buttons">
+      <button class="btn btn-primary btn-lg" id="btn-solo">Begin the Deposition</button>
+      <button class="btn btn-secondary btn-lg" id="btn-party">Call a Meeting</button>
+    </div>
+
+    <div class="home-links">
+      <button class="btn-link" id="btn-leaderboard">Employee Records</button>
+      <button class="btn-link" id="btn-settings">File a Complaint</button>
+      <button class="btn-link" id="btn-feedback">Suggestion Box</button>
+    </div>
+  </main>
+
+  <footer class="dm-footer">Dunder Mifflin, Inc. &copy; Scranton, PA &mdash; &ldquo;Limitless paper in a paperless world.&rdquo;</footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: SOLO — NAME ENTRY
+════════════════════════════════════════════════ -->
+<div id="screen-solo-name" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-home">← Back</button>
+    <h2>State Your Name for the Record</h2>
+  </div>
+  <div class="screen-body centered">
+    <div class="form-group">
+      <label for="solo-name-input">Your Name</label>
+      <input type="text" id="solo-name-input" class="input-field" placeholder="e.g. Michael Scott" maxlength="30" autocomplete="off">
+    </div>
+    <button class="btn btn-primary" id="btn-solo-name-continue" style="max-width:380px;width:100%">Proceed to Briefing →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: SOLO — PRE-GAME LOBBY
+════════════════════════════════════════════════ -->
+<div id="screen-solo-lobby" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-solo-name">← Back</button>
+    <h2>Pre-Game Briefing</h2>
+  </div>
+  <div class="screen-body">
+    <div class="lobby-grid">
+
+      <div class="lobby-section">
+        <span class="lobby-label">Category</span>
+        <select id="solo-category" class="select-field">
+          <option value="all">All Categories</option>
+          <option value="Characters">Characters</option>
+          <option value="Episodes &amp; Events">Episodes &amp; Events</option>
+          <option value="Quotes">Quotes</option>
+          <option value="Behind the Scenes">Behind the Scenes</option>
+          <option value="Relationships &amp; Romance">Relationships &amp; Romance</option>
+          <option value="Music &amp; Performances">Music &amp; Performances</option>
+          <option value="Locations &amp; Miscellaneous">Locations &amp; Miscellaneous</option>
+          <option value="Cold Opens &amp; Running Gags">Cold Opens &amp; Running Gags</option>
+        </select>
+      </div>
+
+      <div class="lobby-section">
+        <span class="lobby-label">Difficulty</span>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="solo-diff" value="Mixed" checked> Mixed</label>
+          <label class="radio-label"><input type="radio" name="solo-diff" value="Easy"> Easy</label>
+          <label class="radio-label"><input type="radio" name="solo-diff" value="Medium"> Medium</label>
+          <label class="radio-label"><input type="radio" name="solo-diff" value="Hard"> Hard</label>
+        </div>
+      </div>
+
+      <div class="lobby-section">
+        <span class="lobby-label">Number of Questions</span>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="solo-count" value="5"> 5</label>
+          <label class="radio-label"><input type="radio" name="solo-count" value="10" checked> 10</label>
+          <label class="radio-label"><input type="radio" name="solo-count" value="15"> 15</label>
+          <label class="radio-label"><input type="radio" name="solo-count" value="20"> 20</label>
+          <label class="radio-label"><input type="radio" name="solo-count" value="25"> 25</label>
+        </div>
+      </div>
+
+      <div class="lobby-section">
+        <span class="lobby-label">Hardcore Mode</span>
+        <div class="toggle-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="solo-hardcore">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-desc">Hide multiple choice — recall the answer yourself</span>
+        </div>
+      </div>
+
+    </div>
+    <button class="btn btn-primary btn-lg" id="btn-solo-start">Begin the Deposition</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: QUESTION (shared — solo & party)
+════════════════════════════════════════════════ -->
+<div id="screen-question" class="screen">
+
+  <div class="question-header">
+    <div class="question-meta">
+      <span id="q-player-label" class="q-player-label"></span>
+      <span id="q-progress" class="q-progress"></span>
+      <button id="btn-exit-game" class="btn-exit-game" title="Leave game">← Leave</button>
+    </div>
+    <div class="question-badges">
+      <span id="q-category" class="badge badge-category"></span>
+      <span id="q-difficulty" class="badge"></span>
+    </div>
+    <div id="q-tags" class="q-tags"></div>
+  </div>
+
+  <!-- Speed Round Timer -->
+  <div id="speed-timer" class="speed-timer hidden">
+    <div class="speed-timer-bar">
+      <div id="speed-timer-fill" class="speed-timer-fill"></div>
+    </div>
+    <span id="speed-timer-value" class="speed-timer-value">15</span>
+  </div>
+
+  <!-- Party in-game scoreboard -->
+  <div id="party-scoreboard"></div>
+
+  <div class="question-body">
+
+    <div class="question-card">
+      <p id="q-text" class="question-text"></p>
+    </div>
+
+    <!-- Standard multiple-choice options -->
+    <div id="q-options" class="question-options"></div>
+
+    <!-- Hardcore mode: reveal then self-score -->
+    <div id="q-hardcore-panel" class="hardcore-panel hidden">
+      <p class="hardcore-instructions">Think of your answer, then reveal it below.</p>
+      <button id="btn-reveal-answer" class="btn btn-secondary btn-lg">Reveal the Answer</button>
+    </div>
+
+    <!-- Answer reveal panel -->
+    <div id="q-reveal" class="answer-reveal hidden">
+      <div id="q-reveal-result" class="reveal-result"></div>
+      <div class="reveal-answer-box">
+        <span class="reveal-label">Correct Answer:</span>
+        <span id="q-reveal-answer" class="reveal-answer-text"></span>
+      </div>
+
+      <!-- Hardcore self-scoring -->
+      <div id="q-hc-score" class="hc-score-panel hidden">
+        <p>Did you get it right?</p>
+        <div class="hc-buttons">
+          <button id="btn-hc-correct" class="btn btn-correct">I Got It ✓</button>
+          <button id="btn-hc-wrong" class="btn btn-wrong">I Didn't Get It ✗</button>
+        </div>
+      </div>
+
+      <!-- Solo-only: rate + dispute -->
+      <div id="q-solo-actions" class="solo-actions hidden">
+        <div class="rate-section">
+          <div class="rate-top-row">
+            <span class="rate-label">Rate this question's difficulty (optional):</span>
+            <span id="q-rate-value" class="rate-value rate-null-val">–</span>
+          </div>
+          <div class="rate-control">
+            <input type="range" id="q-rate-slider" min="1" max="10" step="1" value="5" class="rate-slider rate-untouched">
+            <div class="rate-ticks" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-link dispute-link" id="btn-dispute-open">Flag this question</button>
+        <div id="q-dispute-form" class="dispute-form hidden">
+          <h4>File a Dispute</h4>
+          <textarea id="dispute-text" class="dispute-textarea input-field" placeholder="What's wrong with this question or answer?" maxlength="300"></textarea>
+          <div class="dispute-actions">
+            <button class="btn btn-secondary btn-sm" id="btn-dispute-submit">Submit</button>
+            <button class="btn-link" id="btn-dispute-cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-next-question" class="btn btn-primary btn-lg next-btn">Next Question →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: SOLO RESULTS
+════════════════════════════════════════════════ -->
+<div id="screen-solo-results" class="screen">
+  <div class="screen-header">
+    <h2>Deposition Complete</h2>
+  </div>
+  <div class="screen-body centered">
+    <div class="results-card">
+      <div class="results-player-name" id="results-player-name"></div>
+      <div class="results-score-big" id="results-score-big"></div>
+      <div class="results-accuracy"  id="results-accuracy"></div>
+      <div class="results-grade"     id="results-grade"></div>
+    </div>
+    <div class="results-breakdown" id="results-breakdown"></div>
+    <div class="results-actions">
+      <button class="btn btn-primary"    id="btn-view-leaderboard">Employee Records</button>
+      <button class="btn btn-secondary"  id="btn-play-again">Play Again</button>
+      <button class="btn-link"           id="btn-home-from-results">Return to the Office</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: LEADERBOARD
+════════════════════════════════════════════════ -->
+<div id="screen-leaderboard" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-home">← Back</button>
+    <h2>Employee Records — Top Performers</h2>
+  </div>
+  <div class="screen-body">
+    <div id="leaderboard-list" class="leaderboard-list"></div>
+    <button class="btn-link" id="btn-clear-leaderboard" style="margin-top:0.5rem">Clear Records</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: PARTY — NAME ENTRY
+════════════════════════════════════════════════ -->
+<div id="screen-party-names" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-home">← Back</button>
+    <h2>Conference Room — Sign In</h2>
+  </div>
+  <div class="screen-body centered">
+    <p class="screen-sub">Minimum 2 players. Maximum 8.</p>
+    <div id="party-name-inputs" class="party-name-inputs"></div>
+    <button class="btn btn-secondary btn-sm" id="btn-add-player" style="max-width:380px;width:100%">+ Add Player</button>
+    <button class="btn btn-primary btn-lg" id="btn-party-names-continue" style="max-width:380px">Proceed to Briefing →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: PARTY — LOBBY
+════════════════════════════════════════════════ -->
+<div id="screen-party-lobby" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-party-names">← Back</button>
+    <h2>Meeting Agenda</h2>
+  </div>
+  <div class="screen-body">
+    <div class="lobby-grid">
+
+      <div class="lobby-section">
+        <span class="lobby-label">Category</span>
+        <select id="party-category" class="select-field">
+          <option value="all">All Categories</option>
+          <option value="Characters">Characters</option>
+          <option value="Episodes &amp; Events">Episodes &amp; Events</option>
+          <option value="Quotes">Quotes</option>
+          <option value="Behind the Scenes">Behind the Scenes</option>
+          <option value="Relationships &amp; Romance">Relationships &amp; Romance</option>
+          <option value="Music &amp; Performances">Music &amp; Performances</option>
+          <option value="Locations &amp; Miscellaneous">Locations &amp; Miscellaneous</option>
+          <option value="Cold Opens &amp; Running Gags">Cold Opens &amp; Running Gags</option>
+        </select>
+      </div>
+
+      <div class="lobby-section">
+        <span class="lobby-label">Difficulty</span>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="party-diff" value="Mixed" checked> Mixed</label>
+          <label class="radio-label"><input type="radio" name="party-diff" value="Easy"> Easy</label>
+          <label class="radio-label"><input type="radio" name="party-diff" value="Medium"> Medium</label>
+          <label class="radio-label"><input type="radio" name="party-diff" value="Hard"> Hard</label>
+        </div>
+      </div>
+
+      <div class="lobby-section">
+        <span class="lobby-label">Number of Questions</span>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="party-count" value="5"> 5</label>
+          <label class="radio-label"><input type="radio" name="party-count" value="10" checked> 10</label>
+          <label class="radio-label"><input type="radio" name="party-count" value="15"> 15</label>
+          <label class="radio-label"><input type="radio" name="party-count" value="20"> 20</label>
+          <label class="radio-label"><input type="radio" name="party-count" value="25"> 25</label>
+        </div>
+      </div>
+
+      <div class="lobby-section">
+        <span class="lobby-label">Speed Round</span>
+        <div class="toggle-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="party-speed">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-desc">Faster answers earn more points (15-second timer)</span>
+        </div>
+      </div>
+
+    </div>
+    <button class="btn btn-primary btn-lg" id="btn-party-start">Call the Meeting to Order</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: WAGER ROUND
+════════════════════════════════════════════════ -->
+<div id="screen-wager" class="screen">
+  <div class="screen-header">
+    <h2>It Is a Tie — Wager Round</h2>
+  </div>
+  <div class="screen-body centered">
+    <p class="screen-sub">Tied players: place your wager before the tiebreaker question is revealed. Win it, gain your wager. Miss it, lose it.</p>
+    <div id="wager-inputs" class="wager-inputs"></div>
+    <button class="btn btn-primary btn-lg" id="btn-wager-reveal" style="max-width:380px">Reveal the Tiebreaker</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: PARTY RESULTS
+════════════════════════════════════════════════ -->
+<div id="screen-party-results" class="screen">
+  <div class="screen-header">
+    <h2>Meeting Adjourned — Final Standings</h2>
+  </div>
+  <div class="screen-body centered">
+    <div id="podium" class="podium"></div>
+    <div id="full-standings" class="full-standings"></div>
+    <div class="results-actions">
+      <button class="btn btn-primary"  id="btn-party-again">Same Group, New Game</button>
+      <button class="btn-link"         id="btn-home-from-party">Return to the Office</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: SETTINGS
+════════════════════════════════════════════════ -->
+<div id="screen-settings" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-home">← Back</button>
+    <h2>HR Department — Settings</h2>
+  </div>
+  <div class="screen-body">
+
+    <div class="settings-section">
+      <h3>Admin Access</h3>
+      <p class="settings-desc">Enter the admin password to manage flagged questions and question tags.</p>
+      <div id="admin-login-panel" class="admin-login-panel">
+        <div class="form-row">
+          <input type="password" id="admin-password-input" class="input-field" placeholder="Password" autocomplete="off">
+          <button class="btn btn-secondary" id="btn-admin-login">Enter</button>
+        </div>
+        <p id="admin-login-error" class="error-msg hidden">Incorrect password. (Even Toby knows this one.)</p>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Answer History</h3>
+      <p class="settings-desc">Every answered question is logged locally.</p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" id="btn-export-history">Export as CSV</button>
+        <button class="btn btn-secondary btn-sm" id="btn-clear-history">Clear History</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: ADMIN MODE
+════════════════════════════════════════════════ -->
+<div id="screen-admin" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-settings">← Back to Settings</button>
+    <h2>Admin Mode — You Didn't Hear This From Me</h2>
+  </div>
+  <div class="screen-body">
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="disputes">Flagged Questions</button>
+      <button class="admin-tab"        data-tab="tags">Question Tags</button>
+      <button class="admin-tab"        data-tab="feedback">Submitted Feedback</button>
+    </div>
+
+    <!-- DISPUTES TAB -->
+    <div id="admin-tab-disputes" class="admin-tab-panel">
+      <div class="admin-disputes-toolbar">
+        <button class="btn btn-secondary btn-sm" onclick="syncDisputesToFile()">⬇ Sync Disputes</button>
+        <button class="btn btn-secondary btn-sm" onclick="syncRatingsToFile()">⬇ Sync Ratings</button>
+        <button class="btn btn-secondary btn-sm" onclick="syncTagsToFile()">⬇ Sync Tags</button>
+        <button class="btn btn-secondary btn-sm" onclick="syncLeaderboardToFile()">⬇ Sync Leaderboard</button>
+      </div>
+      <div id="admin-disputes-list" class="admin-disputes-list"></div>
+      <p id="admin-no-disputes" class="admin-empty hidden">No flagged questions. The office is at peace.</p>
+    </div>
+
+    <!-- TAGS TAB -->
+    <div id="admin-tab-tags" class="admin-tab-panel hidden">
+      <div class="admin-tags-controls">
+        <input type="text" id="admin-tag-search" class="input-field" placeholder="Search questions by text, category, or answer…">
+      </div>
+      <div id="admin-tags-list" class="admin-tags-list"></div>
+    </div>
+
+    <!-- FEEDBACK TAB -->
+    <div id="admin-tab-feedback" class="admin-tab-panel hidden">
+      <div class="admin-disputes-toolbar">
+        <button class="btn btn-secondary btn-sm" onclick="loadAndRenderAdminFeedback()">&#8635; Refresh</button>
+      </div>
+      <div id="admin-feedback-list" class="admin-feedback-list"></div>
+      <p id="admin-no-feedback" class="admin-empty hidden">No feedback submitted yet. The suggestion box is empty.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Tag suggestions datalist (populated by app.js) -->
+<datalist id="tag-suggestions-list"></datalist>
+
+<!-- ═══════════════════════════════════════════════
+     FEEDBACK MODAL — Corporate Suggestion Box
+════════════════════════════════════════════════ -->
+<div id="feedback-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="feedback-modal-title">Corporate Suggestion Box</h2>
+      <button class="btn-icon modal-close" id="btn-feedback-close" aria-label="Close">&times;</button>
+    </div>
+    <p class="modal-desc">Got something to say? Drop it in the box. Ryan Howard reads every message. Probably.</p>
+    <form id="feedback-form" class="feedback-form" novalidate>
+
+      <!-- Honeypot: hidden from real users, bots fill it in -->
+      <input type="text" id="fb-honeypot" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="fb-honeypot">
+
+      <div class="form-group">
+        <label for="fb-name">Your Name <span class="field-optional">(optional)</span></label>
+        <input type="text" id="fb-name" class="input-field" placeholder="e.g. Michael Scott" maxlength="60" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label for="fb-email">Email <span class="field-optional">(optional &mdash; if you&rsquo;d like a reply)</span></label>
+        <input type="email" id="fb-email" class="input-field" placeholder="you@example.com" maxlength="100" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label for="fb-type">Type of Feedback</label>
+        <select id="fb-type" class="select-field">
+          <option value="general">General Feedback</option>
+          <option value="suggestion">Feature Suggestion</option>
+          <option value="bug">Something Seems Off</option>
+          <option value="question">New Question Idea</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group form-group-full">
+        <label for="fb-message">Your Message <span class="field-required">*</span></label>
+        <textarea id="fb-message" class="input-field feedback-textarea" placeholder="What&apos;s on your mind? Suggestions, bugs, compliments&hellip; Michael Scott wouldn&apos;t hesitate." maxlength="1000" required></textarea>
+        <div class="char-counter" id="fb-char-counter"><span id="fb-char-count">0</span> / 1,000</div>
+      </div>
+
+      <p id="fb-error" class="error-msg hidden"></p>
+      <p id="fb-success" class="feedback-success hidden">Message received! We read every one &mdash; thanks for being part of this.</p>
+
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary" id="btn-feedback-submit">Send to Corporate</button>
+        <button type="button" class="btn btn-secondary" id="btn-feedback-cancel">Maybe Later</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPTS — load order matters
+════════════════════════════════════════════════ -->
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/questions.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/solo.js"></script>
+<script src="js/party.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/feedback.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

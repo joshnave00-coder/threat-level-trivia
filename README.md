@@ -59,8 +59,6 @@ Questions live in `js/data.js` — a plain JavaScript array of ~110+ questions a
 - Locations & Miscellaneous
 - Cold Opens & Running Gags
 
-`office_trivia.json` and `office_trivia_2.json` in the root are alternative data snapshots kept for reference.
-
 ---
 
 ## Hosting

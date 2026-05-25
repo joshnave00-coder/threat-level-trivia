@@ -20,6 +20,12 @@ function closeFeedbackModal() {
   _resetFeedbackForm();
 }
 
+function _maybeCloseFeedbackModal() {
+  const draft = document.getElementById('fb-message').value.trim();
+  if (draft && !confirm('Close without sending? Your message will be lost.')) return;
+  closeFeedbackModal();
+}
+
 function _resetFeedbackForm() {
   document.getElementById('feedback-form').reset();
   document.getElementById('fb-char-count').textContent = '0';
@@ -132,20 +138,20 @@ async function _submitFeedback(e) {
 
 function initFeedback() {
   document.getElementById('btn-feedback').addEventListener('click', openFeedbackModal);
-  document.getElementById('btn-feedback-close').addEventListener('click', closeFeedbackModal);
-  document.getElementById('btn-feedback-cancel').addEventListener('click', closeFeedbackModal);
+  document.getElementById('btn-feedback-close').addEventListener('click', _maybeCloseFeedbackModal);
+  document.getElementById('btn-feedback-cancel').addEventListener('click', _maybeCloseFeedbackModal);
   document.getElementById('feedback-form').addEventListener('submit', _submitFeedback);
   document.getElementById('fb-message').addEventListener('input', _onMessageInput);
 
   // Close on backdrop click
   document.getElementById('feedback-modal').addEventListener('click', e => {
-    if (e.target === document.getElementById('feedback-modal')) closeFeedbackModal();
+    if (e.target === document.getElementById('feedback-modal')) _maybeCloseFeedbackModal();
   });
 
   // Close on Escape
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !document.getElementById('feedback-modal').classList.contains('hidden')) {
-      closeFeedbackModal();
+      _maybeCloseFeedbackModal();
     }
   });
 }

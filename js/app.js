@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRatingsFromFile();
   loadTagsFromFile();
   loadLeaderboardFromFile();
+  loadQuestionEditsFromFile();
+  loadCustomQuestionsFromFile();
+  loadDisabledQuestionsFromFile();
 
   // ── FEEDBACK ──────────────────────────────────────────────────────
   initFeedback();
@@ -153,6 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('admin-password-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') adminLogin();
   });
+  document.getElementById('btn-pw-toggle').addEventListener('click', () => {
+    const input = document.getElementById('admin-password-input');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
   document.getElementById('btn-export-history').addEventListener('click', exportHistory);
   document.getElementById('btn-clear-history').addEventListener('click', () => {
     if (confirm('Clear all answer history? This cannot be undone.')) {
@@ -166,10 +173,20 @@ document.addEventListener('DOMContentLoaded', () => {
     tab.addEventListener('click', () => switchAdminTab(tab.dataset.tab));
   });
 
-  // Admin tag search
-  document.getElementById('admin-tag-search').addEventListener('input', e => {
-    renderAdminTags(e.target.value);
-  });
+  // Question management controls (guarded so missing elements don't break login)
+  populateCategoryDropdowns();
+
+  const _bind = (id, evt, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(evt, fn); };
+  _bind('aq-search', 'input', e => { adminQFilter.search = e.target.value; renderAdminQuestions(); });
+  _bind('aq-filter-category', 'change', e => { adminQFilter.category = e.target.value; renderAdminQuestions(); });
+  _bind('aq-filter-difficulty', 'change', e => { adminQFilter.difficulty = e.target.value; renderAdminQuestions(); });
+  _bind('btn-add-question', 'click', () => openQuestionEditor(null));
+  _bind('question-form', 'submit', saveQuestion);
+  _bind('btn-question-modal-close', 'click', closeQuestionEditor);
+  _bind('btn-qe-cancel', 'click', closeQuestionEditor);
+  _bind('btn-qe-add-tag', 'click', addModalTag);
+  _bind('qe-tag-input', 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addModalTag(); } });
+  _bind('question-modal', 'click', e => { if (e.target.id === 'question-modal') closeQuestionEditor(); });
 
   // Tag suggestions datalist
   const dl = document.getElementById('tag-suggestions-list');

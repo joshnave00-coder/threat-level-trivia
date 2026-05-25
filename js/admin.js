@@ -1,20 +1,30 @@
 'use strict';
 /* ================================================================
    THREAT LEVEL TRIVIA — Admin & Settings
-   Password gate, dispute management, tag editing
+   Password gate, question management, dispute/feedback review
    ================================================================ */
 
 const ADMIN_PASSWORD = 'dundermifflin';
-let activeAdminTab = 'disputes';
-let adminTagFilter = '';
+let activeAdminTab = 'questions';
+let adminQFilter = { search: '', category: 'all', difficulty: 'all' };
+let editingTagsFor = [];
 
 function adminLogin() {
   const input = document.getElementById('admin-password-input');
   if (input.value === ADMIN_PASSWORD) {
     input.value = '';
     document.getElementById('admin-login-error').classList.add('hidden');
-    renderAdminDisputes();
-    renderAdminTags();
+    try {
+      renderAdminQuestions();
+    } catch (err) {
+      console.error('renderAdminQuestions failed:', err);
+    }
+    try {
+      renderAdminDisputes();
+    } catch (err) {
+      console.error('renderAdminDisputes failed:', err);
+    }
+    loadAndRenderAdminFeedback();
     showScreen('screen-admin');
   } else {
     document.getElementById('admin-login-error').classList.remove('hidden');
@@ -27,10 +37,198 @@ function adminLogin() {
 function switchAdminTab(tab) {
   activeAdminTab = tab;
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  document.getElementById('admin-tab-disputes').classList.toggle('hidden', tab !== 'disputes');
-  document.getElementById('admin-tab-tags').classList.toggle('hidden', tab !== 'tags');
-  document.getElementById('admin-tab-feedback').classList.toggle('hidden', tab !== 'feedback');
-  if (tab === 'feedback') loadAndRenderAdminFeedback();
+  const qPanel = document.getElementById('admin-tab-questions');
+  const rPanel = document.getElementById('admin-tab-review');
+  if (qPanel) qPanel.classList.toggle('hidden', tab !== 'questions');
+  if (rPanel) rPanel.classList.toggle('hidden', tab !== 'review');
+  if (tab === 'review') loadAndRenderAdminFeedback();
+  if (tab === 'questions') renderAdminQuestions();
+}
+
+// ── QUESTION MANAGEMENT ──────────────────────────────────────────
+
+function renderAdminQuestions() {
+  const allQs = getAllManagedQuestions();
+  const disabled = getDisabledQuestions();
+
+  let filtered = allQs;
+  if (adminQFilter.category !== 'all') {
+    filtered = filtered.filter(q => q.category === adminQFilter.category);
+  }
+  if (adminQFilter.difficulty !== 'all') {
+    filtered = filtered.filter(q => q.difficulty === adminQFilter.difficulty);
+  }
+  if (adminQFilter.search) {
+    const s = adminQFilter.search.toLowerCase();
+    filtered = filtered.filter(q =>
+      q.question.toLowerCase().includes(s) ||
+      q.answer.toLowerCase().includes(s));
+  }
+
+  const countEl = document.getElementById('admin-questions-count');
+  const container = document.getElementById('admin-questions-list');
+  if (!countEl || !container) return;
+
+  countEl.textContent = `${filtered.length} of ${allQs.length} question${allQs.length !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    container.innerHTML = '<p class="admin-empty">No questions match your filters.</p>';
+    return;
+  }
+
+  const baseIds = new Set(QUESTIONS.map(q => q.id));
+  const edits = getQuestionEdits();
+
+  container.innerHTML = filtered.map(q => {
+    const isDisabled = disabled.includes(q.id);
+    const isCustom = !baseIds.has(q.id);
+    const isEdited = !isCustom && !!edits[q.id];
+    return `
+      <div class="aq-card ${isDisabled ? 'aq-disabled' : ''}" data-qid="${q.id}">
+        <div class="aq-main">
+          <div class="aq-text">${escHtml(q.question)}</div>
+          <div class="aq-answer"><strong>A:</strong> ${escHtml(q.answer)}</div>
+          <div class="aq-badges">
+            <span class="badge badge-category">${escHtml(q.category)}</span>
+            <span class="badge ${difficultyClass(q.difficulty)}">${escHtml(q.difficulty)}</span>
+            ${isDisabled ? '<span class="badge aq-badge-disabled">DISABLED</span>' : ''}
+            ${isCustom ? '<span class="badge aq-badge-custom">CUSTOM</span>' : ''}
+            ${isEdited ? '<span class="badge aq-badge-edited">EDITED</span>' : ''}
+          </div>
+        </div>
+        <div class="aq-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openQuestionEditor(${q.id})">Edit</button>
+          <button class="btn btn-sm ${isDisabled ? 'btn-correct' : 'aq-btn-disable'}"
+                  onclick="toggleQuestionDisabledAdmin(${q.id})">
+            ${isDisabled ? 'Enable' : 'Disable'}
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleQuestionDisabledAdmin(id) {
+  const wasDisabled = isQuestionDisabled(id);
+  setQuestionDisabled(id, !wasDisabled);
+  renderAdminQuestions();
+  showToast(wasDisabled ? 'Question enabled.' : 'Question disabled - hidden from gameplay.');
+}
+
+function populateCategoryDropdowns() {
+  const filterSelect = document.getElementById('aq-filter-category');
+  const modalSelect  = document.getElementById('qe-category');
+  if (!filterSelect || !modalSelect) return;
+  CATEGORIES.forEach(cat => {
+    filterSelect.appendChild(new Option(cat, cat));
+    modalSelect.appendChild(new Option(cat, cat));
+  });
+}
+
+// ── QUESTION EDITOR MODAL ────────────────────────────────────────
+
+function openQuestionEditor(id) {
+  const modal = document.getElementById('question-modal');
+  const title = document.getElementById('question-modal-title');
+  const form = document.getElementById('question-form');
+  const errorEl = document.getElementById('qe-error');
+  errorEl.classList.add('hidden');
+  form.reset();
+
+  if (id != null) {
+    const allQs = getAllManagedQuestions();
+    const q = allQs.find(x => x.id === id);
+    if (!q) return;
+    title.textContent = 'Edit Question';
+    document.getElementById('qe-id').value = q.id;
+    document.getElementById('qe-question').value = q.question;
+    document.getElementById('qe-answer').value = q.answer;
+    document.getElementById('qe-d1').value = q.distractors[0] || '';
+    document.getElementById('qe-d2').value = q.distractors[1] || '';
+    document.getElementById('qe-d3').value = q.distractors[2] || '';
+    document.getElementById('qe-category').value = q.category;
+    document.getElementById('qe-difficulty').value = q.difficulty;
+    editingTagsFor = [...getEffectiveTags(q)];
+  } else {
+    title.textContent = 'Add New Question';
+    document.getElementById('qe-id').value = '';
+    document.getElementById('qe-category').value = CATEGORIES[0];
+    document.getElementById('qe-difficulty').value = 'Medium';
+    editingTagsFor = [];
+  }
+
+  renderModalTags();
+  modal.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+}
+
+function closeQuestionEditor() {
+  document.getElementById('question-modal').classList.add('hidden');
+  document.body.classList.remove('modal-open');
+}
+
+function renderModalTags() {
+  const chips = document.getElementById('qe-tag-chips');
+  chips.innerHTML = editingTagsFor.map((t, i) =>
+    `<span class="tag-chip">${escHtml(t)}<button type="button" class="tag-remove" onclick="removeModalTag(${i})">×</button></span>`
+  ).join('');
+}
+
+function addModalTag() {
+  const input = document.getElementById('qe-tag-input');
+  const tag = input.value.trim();
+  if (!tag) return;
+  if (editingTagsFor.includes(tag)) { showToast('Tag already exists.'); input.value = ''; return; }
+  editingTagsFor.push(tag);
+  input.value = '';
+  renderModalTags();
+}
+
+function removeModalTag(idx) {
+  editingTagsFor.splice(idx, 1);
+  renderModalTags();
+}
+
+function saveQuestion(e) {
+  e.preventDefault();
+  const errorEl = document.getElementById('qe-error');
+  const question = document.getElementById('qe-question').value.trim();
+  const answer = document.getElementById('qe-answer').value.trim();
+  const d1 = document.getElementById('qe-d1').value.trim();
+  const d2 = document.getElementById('qe-d2').value.trim();
+  const d3 = document.getElementById('qe-d3').value.trim();
+  const category = document.getElementById('qe-category').value;
+  const difficulty = document.getElementById('qe-difficulty').value;
+  const idVal = document.getElementById('qe-id').value;
+
+  if (!question || !answer || !d1 || !d2 || !d3) {
+    errorEl.textContent = 'All fields are required. No empty questions or answers.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  errorEl.classList.add('hidden');
+
+  const data = { question, answer, distractors: [d1, d2, d3], category, difficulty };
+  const baseIds = new Set(QUESTIONS.map(q => q.id));
+
+  if (idVal) {
+    const id = parseInt(idVal, 10);
+    if (baseIds.has(id)) {
+      saveQuestionEdit(id, data);
+    } else {
+      updateCustomQuestion(id, data);
+    }
+    saveTagsForQuestion(id, editingTagsFor);
+    showToast('Question updated.');
+  } else {
+    const newId = getNextQuestionId();
+    const newQ = { id: newId, ...data, tags: editingTagsFor };
+    addCustomQuestion(newQ);
+    if (editingTagsFor.length) saveTagsForQuestion(newId, editingTagsFor);
+    showToast('New question added!');
+  }
+
+  closeQuestionEditor();
+  renderAdminQuestions();
 }
 
 // ── DISPUTES ──────────────────────────────────────────────────────
@@ -83,8 +281,8 @@ function syncDisputesToFile() {
     body: JSON.stringify(disputes),
   })
     .then(r => r.json())
-    .then(() => showToast(`${disputes.length} dispute(s) synced to disputes.json ✓`))
-    .catch(() => showToast('Sync failed — make sure the server is running via python server.py'));
+    .then(() => showToast(`${disputes.length} dispute(s) synced.`))
+    .catch(() => showToast('Sync failed - is the server running?'));
 }
 
 function syncRatingsToFile() {
@@ -95,8 +293,8 @@ function syncRatingsToFile() {
     body: JSON.stringify(ratings),
   })
     .then(r => r.json())
-    .then(() => showToast(`${ratings.length} rating(s) synced to ratings.json ✓`))
-    .catch(() => showToast('Sync failed — make sure the server is running via python server.py'));
+    .then(() => showToast(`${ratings.length} rating(s) synced.`))
+    .catch(() => showToast('Sync failed - is the server running?'));
 }
 
 function syncTagsToFile() {
@@ -107,8 +305,8 @@ function syncTagsToFile() {
     body: JSON.stringify(tags),
   })
     .then(r => r.json())
-    .then(() => showToast(`Tags synced to tags.json ✓`))
-    .catch(() => showToast('Sync failed — make sure the server is running via python server.py'));
+    .then(() => showToast('Tags synced.'))
+    .catch(() => showToast('Sync failed - is the server running?'));
 }
 
 function syncLeaderboardToFile() {
@@ -119,79 +317,8 @@ function syncLeaderboardToFile() {
     body: JSON.stringify(entries),
   })
     .then(r => r.json())
-    .then(() => showToast(`${entries.length} leaderboard entry/entries synced to leaderboard.json ✓`))
-    .catch(() => showToast('Sync failed — make sure the server is running via python server.py'));
-}
-
-// ── TAGS ──────────────────────────────────────────────────────────
-function renderAdminTags(filter) {
-  if (filter !== undefined) adminTagFilter = filter.toLowerCase();
-  const container = document.getElementById('admin-tags-list');
-  const qs = adminTagFilter
-    ? QUESTIONS.filter(q =>
-        q.question.toLowerCase().includes(adminTagFilter) ||
-        q.answer.toLowerCase().includes(adminTagFilter) ||
-        q.category.toLowerCase().includes(adminTagFilter))
-    : QUESTIONS;
-
-  container.innerHTML = qs.map(q => {
-    const tags = getEffectiveTags(q);
-    return `
-      <div class="tag-row" data-qid="${q.id}">
-        <div class="tag-question-text">${escHtml(q.question)}</div>
-        <div class="tag-question-meta">${escHtml(q.category)} · ${escHtml(q.difficulty)}</div>
-        <div class="tag-chips" id="tag-chips-${q.id}">
-          ${tags.map(t => `<span class="tag-chip">${escHtml(t)}<button class="tag-remove" onclick="removeTag(${q.id}, '${escHtml(t)}')">×</button></span>`).join('')}
-        </div>
-        <div class="tag-input-row">
-          <input type="text" class="input-field tag-add-input" id="tag-input-${q.id}"
-            placeholder="Add tag..." list="tag-suggestions-list" maxlength="30">
-          <button class="btn btn-secondary btn-sm" onclick="addTagToQuestion(${q.id})">Add</button>
-        </div>
-      </div>`;
-  }).join('');
-
-  // Bind enter key on each tag input
-  container.querySelectorAll('.tag-add-input').forEach(inp => {
-    inp.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const qid = parseInt(inp.id.replace('tag-input-', ''), 10);
-        addTagToQuestion(qid, inp.value);
-      }
-    });
-  });
-}
-
-function addTagToQuestion(questionId, value) {
-  const input = document.getElementById(`tag-input-${questionId}`);
-  const tag   = (value !== undefined ? value : input.value).trim();
-  if (!tag) return;
-
-  const current = getTagsForQuestion(questionId);
-  if (current.includes(tag)) { showToast('Tag already exists.'); input.value = ''; return; }
-  current.push(tag);
-  saveTagsForQuestion(questionId, current);
-  input.value = '';
-
-  // Re-render just this question's chips
-  const chips = document.getElementById(`tag-chips-${questionId}`);
-  if (chips) {
-    chips.innerHTML = current.map(t =>
-      `<span class="tag-chip">${escHtml(t)}<button class="tag-remove" onclick="removeTag(${questionId}, '${escHtml(t)}')">×</button></span>`
-    ).join('');
-  }
-}
-
-function removeTag(questionId, tag) {
-  const current = getTagsForQuestion(questionId);
-  const updated = current.filter(t => t !== tag);
-  saveTagsForQuestion(questionId, updated);
-  const chips = document.getElementById(`tag-chips-${questionId}`);
-  if (chips) {
-    chips.innerHTML = updated.map(t =>
-      `<span class="tag-chip">${escHtml(t)}<button class="tag-remove" onclick="removeTag(${questionId}, '${escHtml(t)}')">×</button></span>`
-    ).join('');
-  }
+    .then(() => showToast(`${entries.length} leaderboard entry/entries synced.`))
+    .catch(() => showToast('Sync failed - is the server running?'));
 }
 
 // ── SUBMITTED FEEDBACK (admin view) ──────────────────────────────
@@ -204,7 +331,7 @@ function loadAndRenderAdminFeedback() {
   fetch('/api/feedback')
     .then(r => r.json())
     .then(entries => renderAdminFeedback(entries))
-    .catch(() => showToast('Could not load feedback — is the server running?'));
+    .catch(() => showToast('Could not load feedback - is the server running?'));
 }
 
 function renderAdminFeedback(entries) {
@@ -216,7 +343,7 @@ function renderAdminFeedback(entries) {
     return;
   }
   empty.classList.add('hidden');
-  const sorted = [...entries].reverse(); // newest first
+  const sorted = [...entries].reverse();
   list.innerHTML = sorted.map(fb => `
     <div class="feedback-card">
       <div class="feedback-card-meta">

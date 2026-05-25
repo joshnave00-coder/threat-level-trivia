@@ -385,7 +385,10 @@
       <p class="settings-desc">Enter the admin password to manage flagged questions and question tags.</p>
       <div id="admin-login-panel" class="admin-login-panel">
         <div class="form-row">
-          <input type="password" id="admin-password-input" class="input-field" placeholder="Password" autocomplete="off">
+          <div class="pw-input-wrap">
+            <input type="password" id="admin-password-input" class="input-field" placeholder="Password" autocomplete="off">
+            <button type="button" class="btn-pw-toggle" id="btn-pw-toggle" aria-label="Show password" title="Show password">&#128065;</button>
+          </div>
           <button class="btn btn-secondary" id="btn-admin-login">Enter</button>
         </div>
         <p id="admin-login-error" class="error-msg hidden">Incorrect password. (Even Toby knows this one.)</p>
@@ -415,36 +418,45 @@
   <div class="screen-body">
 
     <div class="admin-tabs">
-      <button class="admin-tab active" data-tab="disputes">Flagged Questions</button>
-      <button class="admin-tab"        data-tab="tags">Question Tags</button>
-      <button class="admin-tab"        data-tab="feedback">Submitted Feedback</button>
+      <button class="admin-tab active" data-tab="questions">Questions</button>
+      <button class="admin-tab"        data-tab="review">Review</button>
     </div>
 
-    <!-- DISPUTES TAB -->
-    <div id="admin-tab-disputes" class="admin-tab-panel">
-      <div class="admin-disputes-toolbar">
-        <button class="btn btn-secondary btn-sm" onclick="syncDisputesToFile()">⬇ Sync Disputes</button>
-        <button class="btn btn-secondary btn-sm" onclick="syncRatingsToFile()">⬇ Sync Ratings</button>
-        <button class="btn btn-secondary btn-sm" onclick="syncTagsToFile()">⬇ Sync Tags</button>
-        <button class="btn btn-secondary btn-sm" onclick="syncLeaderboardToFile()">⬇ Sync Leaderboard</button>
+    <!-- QUESTIONS TAB -->
+    <div id="admin-tab-questions" class="admin-tab-panel">
+      <div class="aq-toolbar">
+        <input type="text" id="aq-search" class="input-field" placeholder="Search questions or answers...">
+        <select id="aq-filter-category" class="select-field aq-filter-select">
+          <option value="all">All Categories</option>
+        </select>
+        <select id="aq-filter-difficulty" class="select-field aq-filter-select">
+          <option value="all">All Difficulties</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+        <button class="btn btn-primary btn-sm" id="btn-add-question">+ Add New Question</button>
       </div>
+      <div class="aq-count-row">
+        <span id="admin-questions-count" class="aq-count"></span>
+      </div>
+      <div id="admin-questions-list" class="aq-list"></div>
+    </div>
+
+    <!-- REVIEW TAB (Disputes + Feedback) -->
+    <div id="admin-tab-review" class="admin-tab-panel hidden">
+      <div class="admin-disputes-toolbar">
+        <button class="btn btn-secondary btn-sm" onclick="syncDisputesToFile()">Sync Disputes</button>
+        <button class="btn btn-secondary btn-sm" onclick="syncRatingsToFile()">Sync Ratings</button>
+        <button class="btn btn-secondary btn-sm" onclick="syncTagsToFile()">Sync Tags</button>
+        <button class="btn btn-secondary btn-sm" onclick="syncLeaderboardToFile()">Sync Leaderboard</button>
+      </div>
+
+      <h3 class="review-section-title">Flagged Questions</h3>
       <div id="admin-disputes-list" class="admin-disputes-list"></div>
       <p id="admin-no-disputes" class="admin-empty hidden">No flagged questions. The office is at peace.</p>
-    </div>
 
-    <!-- TAGS TAB -->
-    <div id="admin-tab-tags" class="admin-tab-panel hidden">
-      <div class="admin-tags-controls">
-        <input type="text" id="admin-tag-search" class="input-field" placeholder="Search questions by text, category, or answer…">
-      </div>
-      <div id="admin-tags-list" class="admin-tags-list"></div>
-    </div>
-
-    <!-- FEEDBACK TAB -->
-    <div id="admin-tab-feedback" class="admin-tab-panel hidden">
-      <div class="admin-disputes-toolbar">
-        <button class="btn btn-secondary btn-sm" onclick="loadAndRenderAdminFeedback()">&#8635; Refresh</button>
-      </div>
+      <h3 class="review-section-title" style="margin-top:1.5rem">Submitted Feedback</h3>
       <div id="admin-feedback-list" class="admin-feedback-list"></div>
       <p id="admin-no-feedback" class="admin-empty hidden">No feedback submitted yet. The suggestion box is empty.</p>
     </div>
@@ -454,6 +466,79 @@
 
 <!-- Tag suggestions datalist (populated by app.js) -->
 <datalist id="tag-suggestions-list"></datalist>
+
+<!-- ═══════════════════════════════════════════════
+     QUESTION EDIT MODAL
+════════════════════════════════════════════════ -->
+<div id="question-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="question-modal-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="question-modal-title">Edit Question</h2>
+      <button class="btn-icon modal-close" id="btn-question-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <form id="question-form" class="feedback-form" novalidate>
+
+      <div class="form-group form-group-full">
+        <label for="qe-question">Question Text <span class="field-required">*</span></label>
+        <textarea id="qe-question" class="input-field qe-textarea" placeholder="Enter the trivia question..." maxlength="500" required></textarea>
+      </div>
+
+      <div class="form-group form-group-full">
+        <label for="qe-answer">Correct Answer <span class="field-required">*</span></label>
+        <input type="text" id="qe-answer" class="input-field" placeholder="The correct answer" maxlength="200" required>
+      </div>
+
+      <div class="form-group form-group-full">
+        <label for="qe-d1">Distractor 1 <span class="field-required">*</span></label>
+        <input type="text" id="qe-d1" class="input-field" placeholder="Wrong answer option 1" maxlength="200" required>
+      </div>
+      <div class="form-group form-group-full">
+        <label for="qe-d2">Distractor 2 <span class="field-required">*</span></label>
+        <input type="text" id="qe-d2" class="input-field" placeholder="Wrong answer option 2" maxlength="200" required>
+      </div>
+      <div class="form-group form-group-full">
+        <label for="qe-d3">Distractor 3 <span class="field-required">*</span></label>
+        <input type="text" id="qe-d3" class="input-field" placeholder="Wrong answer option 3" maxlength="200" required>
+      </div>
+
+      <div class="qe-row-pair">
+        <div class="form-group form-group-full">
+          <label for="qe-category">Category <span class="field-required">*</span></label>
+          <select id="qe-category" class="select-field" required></select>
+        </div>
+        <div class="form-group form-group-full">
+          <label for="qe-difficulty">Difficulty <span class="field-required">*</span></label>
+          <select id="qe-difficulty" class="select-field" required>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group form-group-full">
+        <label>Tags</label>
+        <div class="qe-tags-area">
+          <div id="qe-tag-chips" class="tag-chips"></div>
+          <div class="tag-input-row">
+            <input type="text" id="qe-tag-input" class="input-field tag-add-input" placeholder="Add tag..." list="tag-suggestions-list" maxlength="30">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-qe-add-tag">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="qe-error" class="error-msg hidden"></p>
+
+      <input type="hidden" id="qe-id" value="">
+
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary" id="btn-qe-save">Save Question</button>
+        <button type="button" class="btn btn-secondary" id="btn-qe-cancel">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════
      FEEDBACK MODAL — Corporate Suggestion Box

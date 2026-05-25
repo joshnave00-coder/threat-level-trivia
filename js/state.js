@@ -5,10 +5,13 @@
    ================================================================ */
 
 const STORAGE_KEYS = {
-  leaderboard: 'tlt_leaderboard',
-  history:     'tlt_history',
-  disputes:    'tlt_disputes',
-  tags:        'tlt_tags',
+  leaderboard:       'tlt_leaderboard',
+  history:           'tlt_history',
+  disputes:          'tlt_disputes',
+  tags:              'tlt_tags',
+  questionEdits:     'tlt_question_edits',
+  customQuestions:   'tlt_custom_questions',
+  disabledQuestions: 'tlt_disabled_questions',
 };
 
 // Current game state — reset at the start of each game
@@ -136,6 +139,11 @@ function logAnswer(playerName, question, wasCorrect, difficultyRating) {
 
 function clearHistory() {
   localStorage.removeItem(STORAGE_KEYS.history);
+}
+
+function getRecentlySeenIds(limit = 100) {
+  const history = getHistory();
+  return new Set(history.slice(-limit).map(h => h.questionId));
 }
 
 function exportHistory() {
@@ -291,4 +299,100 @@ function loadTagsFromFile() {
       localStorage.setItem(STORAGE_KEYS.tags, JSON.stringify(merged));
     })
     .catch(() => {});
+}
+
+// ── QUESTION MANAGEMENT ──────────────────────────────────────────
+
+function getQuestionEdits() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.questionEdits)) || {}; }
+  catch { return {}; }
+}
+
+function saveQuestionEdit(id, data) {
+  const edits = getQuestionEdits();
+  edits[id] = data;
+  localStorage.setItem(STORAGE_KEYS.questionEdits, JSON.stringify(edits));
+  _persistToFile('/api/question-edits', edits);
+}
+
+function getCustomQuestions() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.customQuestions)) || []; }
+  catch { return []; }
+}
+
+function saveCustomQuestions(questions) {
+  localStorage.setItem(STORAGE_KEYS.customQuestions, JSON.stringify(questions));
+  _persistToFile('/api/custom-questions', questions);
+}
+
+function addCustomQuestion(q) {
+  const custom = getCustomQuestions();
+  custom.push(q);
+  saveCustomQuestions(custom);
+}
+
+function updateCustomQuestion(id, data) {
+  const custom = getCustomQuestions();
+  const idx = custom.findIndex(q => q.id === id);
+  if (idx >= 0) { Object.assign(custom[idx], data); saveCustomQuestions(custom); }
+}
+
+function getNextQuestionId() {
+  const baseMax = Math.max(...QUESTIONS.map(q => q.id), 0);
+  const customMax = Math.max(...getCustomQuestions().map(q => q.id), 0);
+  return Math.max(baseMax, customMax) + 1;
+}
+
+function getDisabledQuestions() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.disabledQuestions)) || []; }
+  catch { return []; }
+}
+
+function setQuestionDisabled(id, disabled) {
+  const list = getDisabledQuestions();
+  const idx = list.indexOf(id);
+  if (disabled && idx < 0) list.push(id);
+  else if (!disabled && idx >= 0) list.splice(idx, 1);
+  localStorage.setItem(STORAGE_KEYS.disabledQuestions, JSON.stringify(list));
+  _persistToFile('/api/disabled-questions', list);
+}
+
+function isQuestionDisabled(id) {
+  return getDisabledQuestions().includes(id);
+}
+
+function _persistToFile(endpoint, data) {
+  fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  }).catch(() => {});
+}
+
+function loadQuestionEditsFromFile() {
+  fetch('/api/question-edits').then(r => r.json()).then(data => {
+    if (!data || typeof data !== 'object' || !Object.keys(data).length) return;
+    const local = getQuestionEdits();
+    const merged = Object.assign({}, data, local);
+    localStorage.setItem(STORAGE_KEYS.questionEdits, JSON.stringify(merged));
+  }).catch(() => {});
+}
+
+function loadCustomQuestionsFromFile() {
+  fetch('/api/custom-questions').then(r => r.json()).then(data => {
+    if (!Array.isArray(data) || !data.length) return;
+    const local = getCustomQuestions();
+    const localIds = new Set(local.map(q => q.id));
+    const merged = [...local, ...data.filter(q => !localIds.has(q.id))];
+    localStorage.setItem(STORAGE_KEYS.customQuestions, JSON.stringify(merged));
+  }).catch(() => {});
+}
+
+function loadDisabledQuestionsFromFile() {
+  fetch('/api/disabled-questions').then(r => r.json()).then(data => {
+    if (!Array.isArray(data) || !data.length) return;
+    const local = getDisabledQuestions();
+    const merged = [...new Set([...data, ...local])];
+    localStorage.setItem(STORAGE_KEYS.disabledQuestions, JSON.stringify(merged));
+  }).catch(() => {});
 }

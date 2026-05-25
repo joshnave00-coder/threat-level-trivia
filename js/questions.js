@@ -13,8 +13,19 @@ function shuffle(arr) {
   return a;
 }
 
+function getEffectiveQuestion(q) {
+  const edits = getQuestionEdits();
+  return edits[q.id] ? { ...q, ...edits[q.id] } : q;
+}
+
+function getAllManagedQuestions() {
+  const base = QUESTIONS.map(q => getEffectiveQuestion(q));
+  return [...base, ...getCustomQuestions()];
+}
+
 function filterQuestions(category, difficulty) {
-  let pool = QUESTIONS;
+  const disabled = getDisabledQuestions();
+  let pool = getAllManagedQuestions().filter(q => !disabled.includes(q.id));
   if (category && category !== 'all') pool = pool.filter(q => q.category === category);
   if (difficulty && difficulty !== 'Mixed') pool = pool.filter(q => q.difficulty === difficulty);
   return pool;
@@ -23,7 +34,11 @@ function filterQuestions(category, difficulty) {
 function selectQuestions(category, difficulty, count) {
   const pool = filterQuestions(category, difficulty);
   if (!pool.length) return [];
-  return shuffle(pool).slice(0, Math.min(count, pool.length));
+
+  const recentIds = getRecentlySeenIds(100);
+  const fresh = shuffle(pool.filter(q => !recentIds.has(q.id)));
+  const stale = shuffle(pool.filter(q =>  recentIds.has(q.id)));
+  return [...fresh, ...stale].slice(0, Math.min(count, pool.length));
 }
 
 // Returns merged tags (data default + localStorage overrides)

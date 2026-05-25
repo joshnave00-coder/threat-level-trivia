@@ -12,11 +12,14 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 BASE_DIR         = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR         = os.path.join(BASE_DIR, 'data')
-DISPUTES_FILE    = os.path.join(DATA_DIR, 'disputes.json')
-RATINGS_FILE     = os.path.join(DATA_DIR, 'ratings.json')
-TAGS_FILE        = os.path.join(DATA_DIR, 'tags.json')
-LEADERBOARD_FILE = os.path.join(DATA_DIR, 'leaderboard.json')
-FEEDBACK_FILE    = os.path.join(DATA_DIR, 'feedback.json')
+DISPUTES_FILE           = os.path.join(DATA_DIR, 'disputes.json')
+RATINGS_FILE            = os.path.join(DATA_DIR, 'ratings.json')
+TAGS_FILE               = os.path.join(DATA_DIR, 'tags.json')
+LEADERBOARD_FILE        = os.path.join(DATA_DIR, 'leaderboard.json')
+FEEDBACK_FILE           = os.path.join(DATA_DIR, 'feedback.json')
+QUESTION_EDITS_FILE     = os.path.join(DATA_DIR, 'question-edits.json')
+CUSTOM_QUESTIONS_FILE   = os.path.join(DATA_DIR, 'custom-questions.json')
+DISABLED_QUESTIONS_FILE = os.path.join(DATA_DIR, 'disabled-questions.json')
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -35,8 +38,19 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._serve_file(LEADERBOARD_FILE)
         elif p == '/api/feedback':
             self._serve_file(FEEDBACK_FILE)
+        elif p == '/api/question-edits':
+            self._serve_file(QUESTION_EDITS_FILE)
+        elif p == '/api/custom-questions':
+            self._serve_file(CUSTOM_QUESTIONS_FILE)
+        elif p == '/api/disabled-questions':
+            self._serve_file(DISABLED_QUESTIONS_FILE)
         else:
             super().do_GET()
+
+    def end_headers(self):
+        # Attach no-cache headers to every response before flushing headers
+        self._set_no_cache()
+        super().end_headers()
 
     def do_POST(self):
         if self.path == '/api/disputes':
@@ -49,6 +63,12 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._save_file(LEADERBOARD_FILE)
         elif self.path == '/api/feedback':
             self._save_feedback()
+        elif self.path == '/api/question-edits':
+            self._save_file(QUESTION_EDITS_FILE)
+        elif self.path == '/api/custom-questions':
+            self._save_file(CUSTOM_QUESTIONS_FILE)
+        elif self.path == '/api/disabled-questions':
+            self._save_file(DISABLED_QUESTIONS_FILE)
         else:
             self.send_error(404, 'Not found')
 
@@ -64,14 +84,19 @@ class TLTHandler(SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
 
+    def _set_no_cache(self):
+        self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        self.send_header('Pragma', 'no-cache')
+        self.send_header('Expires', '0')
+
     def _serve_file(self, path):
         try:
             if os.path.exists(path):
                 with open(path, 'r', encoding='utf-8') as f:
                     body = f.read().encode('utf-8')
             else:
-                # Tags are stored as an object {}, everything else as []
-                body = b'{}' if path == TAGS_FILE else b'[]'
+                # Tags and edits are stored as objects {}, everything else as []
+                body = b'{}' if path in (TAGS_FILE, QUESTION_EDITS_FILE) else b'[]'
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(body)))

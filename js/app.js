@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── SOLO FLOW ───────────────────────────────────────────────────
   document.getElementById('btn-solo-name-continue').addEventListener('click', () => {
-    const name = document.getElementById('solo-name-input').value.trim();
+    const name = sanitizeName(document.getElementById('solo-name-input').value);
     if (!name) { showToast('Please enter your name first.'); return; }
     showScreen('screen-solo-lobby');
   });
@@ -90,6 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
     activateRatingSlider();
     rateValueEl.textContent = e.target.value;
   });
+
+  // Pause / Resume (party mode)
+  document.getElementById('btn-pause-game').addEventListener('click', toggleGamePause);
+  document.getElementById('btn-resume-game').addEventListener('click', toggleGamePause);
 
   // Exit game
   document.getElementById('btn-exit-game').addEventListener('click', () => {
@@ -160,7 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('admin-password-input');
     input.type = input.type === 'password' ? 'text' : 'password';
   });
-  document.getElementById('btn-export-history').addEventListener('click', exportHistory);
+  document.getElementById('btn-export-questions').addEventListener('click', exportQuestions);
+  document.getElementById('btn-export-select-all').addEventListener('click', () => {
+    document.querySelectorAll('input[name="export-col"]').forEach(c => c.checked = true);
+  });
+  document.getElementById('btn-export-deselect-all').addEventListener('click', () => {
+    document.querySelectorAll('input[name="export-col"]').forEach(c => c.checked = false);
+  });
   document.getElementById('btn-clear-history').addEventListener('click', () => {
     if (confirm('Clear all answer history? This cannot be undone.')) {
       clearHistory();
@@ -175,8 +185,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Question management controls (guarded so missing elements don't break login)
   populateCategoryDropdowns();
+  populateCharacterDropdowns();
 
   const _bind = (id, evt, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(evt, fn); };
+  // Pool count live updates for both lobbies
+  ['solo', 'party'].forEach(mode => {
+    [`${mode}-category`, `${mode}-character`].forEach(id => {
+      _bind(id, 'change', () => updateLobbyPoolCount(mode));
+    });
+    document.querySelectorAll(`input[name="${mode}-diff"]`).forEach(radio => {
+      radio.addEventListener('change', () => updateLobbyPoolCount(mode));
+    });
+  });
+
   _bind('aq-search', 'input', e => { adminQFilter.search = e.target.value; renderAdminQuestions(); });
   _bind('aq-filter-category', 'change', e => { adminQFilter.category = e.target.value; renderAdminQuestions(); });
   _bind('aq-filter-difficulty', 'change', e => { adminQFilter.difficulty = e.target.value; renderAdminQuestions(); });
@@ -187,6 +208,24 @@ document.addEventListener('DOMContentLoaded', () => {
   _bind('btn-qe-add-tag', 'click', addModalTag);
   _bind('qe-tag-input', 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addModalTag(); } });
   _bind('question-modal', 'click', e => { if (e.target.id === 'question-modal') closeQuestionEditor(); });
+
+  // Community ratings tab controls
+  _bind('cr-search',        'input',  e => { adminRatingsFilter.search = e.target.value; renderAdminRatings(); });
+  _bind('cr-filter-status', 'change', e => { adminRatingsFilter.status = e.target.value; renderAdminRatings(); });
+
+  // Privacy / storage notice banner
+  (function () {
+    const banner = document.getElementById('privacy-banner');
+    const btn    = document.getElementById('btn-privacy-ok');
+    if (!banner || !btn) return;
+    if (!localStorage.getItem('tlt_privacy_ok')) {
+      banner.classList.remove('hidden');
+    }
+    btn.addEventListener('click', () => {
+      localStorage.setItem('tlt_privacy_ok', '1');
+      banner.classList.add('hidden');
+    });
+  })();
 
   // Tag suggestions datalist
   const dl = document.getElementById('tag-suggestions-list');

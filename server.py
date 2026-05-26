@@ -23,6 +23,66 @@ DISABLED_QUESTIONS_FILE = os.path.join(DATA_DIR, 'disabled-questions.json')
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
+_NOT_FOUND_PAGE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found | Threat Level Trivia</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #f2ede4;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 29px, #ccc5b8 29px, #ccc5b8 30px),
+        repeating-linear-gradient(90deg, transparent, transparent 29px, #ccc5b8 29px, #ccc5b8 30px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: Georgia, 'Times New Roman', serif; color: #2a2a2a; padding: 2rem;
+    }
+    .card {
+      background: #fff; border: 1px solid #c5bdb0; border-radius: 8px;
+      padding: 2.5rem 2rem; max-width: 440px; width: 100%; text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.09);
+    }
+    .card-header {
+      background: #1c3a5e; color: #fff;
+      margin: -2.5rem -2rem 1.75rem; padding: 1rem 2rem;
+      border-radius: 8px 8px 0 0;
+      font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .error-num { font-size: 5rem; font-weight: 700; color: #1c3a5e; line-height: 1; }
+    .error-label { font-size: 1.05rem; color: #3a3a3a; margin: 0.5rem 0 1.25rem; }
+    .quote {
+      font-style: italic; color: #6b6b6b; font-size: 0.88rem; line-height: 1.6;
+      border-left: 3px solid #c5bdb0; text-align: left; padding: 0.6rem 0.9rem;
+      margin-bottom: 1.75rem; background: #f9f6f1; border-radius: 0 4px 4px 0;
+    }
+    .quote cite { display: block; margin-top: 0.4rem; font-style: normal; font-size: 0.8rem; color: #a8a094; }
+    .btn {
+      display: inline-block; padding: 0.65rem 1.6rem;
+      background: #1c3a5e; color: #fff; text-decoration: none;
+      border-radius: 4px; font-size: 0.9rem; font-family: inherit; letter-spacing: 0.02em;
+    }
+    .btn:hover { background: #254d7c; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">Dunder Mifflin Paper Company: Threat Level Trivia</div>
+    <div class="error-num">404</div>
+    <p class="error-label">This page does not exist.</p>
+    <blockquote class="quote">
+      "I want you to know that this is not your fault. This page not existing is nobody's fault,
+      except possibly the fault of whoever typed that URL."
+      <cite>- Michael Scott (probably)</cite>
+    </blockquote>
+    <a href="/" class="btn">Return to the Office</a>
+  </div>
+</body>
+</html>
+"""
+
 
 class TLTHandler(SimpleHTTPRequestHandler):
 
@@ -179,6 +239,21 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self.wfile.write(resp)
         except Exception as e:
             self.send_error(500, str(e))
+
+    def send_error(self, code, message=None, explain=None):
+        if code == 404:
+            self._serve_404()
+        else:
+            super().send_error(code, message, explain)
+
+    def _serve_404(self):
+        body = _NOT_FOUND_PAGE.encode('utf-8')
+        self.send_response(404)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self._set_cors()
+        self.end_headers()
+        self.wfile.write(body)
 
     def log_message(self, fmt, *args):
         # Show API calls; suppress chatty static-file logs

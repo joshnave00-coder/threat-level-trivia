@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Threat Level Trivia — Dunder Mifflin</title>
+  <title>Threat Level Trivia: Dunder Mifflin</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -22,12 +22,12 @@
 <div id="screen-home" class="screen active">
   <header class="dm-header">
     <!-- Image placeholder: swap src with actual logo file when ready -->
-    <div class="dm-logo-img" title="Dunder Mifflin Logo — replace with actual image">
+    <div class="dm-logo-img" title="Dunder Mifflin Logo">
       LOGO<br>HERE
     </div>
     <div class="dm-logo-placeholder">
       <span class="dm-logo-text">Dunder Mifflin</span>
-      <span class="dm-logo-sub">Paper Company, Inc. — Scranton Branch</span>
+      <span class="dm-logo-sub">Paper Company, Inc. - Scranton Branch</span>
     </div>
   </header>
 
@@ -48,7 +48,7 @@
     </div>
   </main>
 
-  <footer class="dm-footer">Dunder Mifflin, Inc. &copy; Scranton, PA &mdash; &ldquo;Limitless paper in a paperless world.&rdquo;</footer>
+  <footer class="dm-footer">Dunder Mifflin, Inc. &copy; Scranton, PA &ndash; &ldquo;Limitless paper in a paperless world.&rdquo;</footer>
 </div>
 
 <!-- ═══════════════════════════════════════════════
@@ -62,7 +62,7 @@
   <div class="screen-body centered">
     <div class="form-group">
       <label for="solo-name-input">Your Name</label>
-      <input type="text" id="solo-name-input" class="input-field" placeholder="e.g. Michael Scott" maxlength="30" autocomplete="off">
+      <input type="text" id="solo-name-input" class="input-field" placeholder="e.g. Michael Scott" maxlength="24" autocomplete="off">
     </div>
     <button class="btn btn-primary" id="btn-solo-name-continue" style="max-width:380px;width:100%">Proceed to Briefing →</button>
   </div>
@@ -95,6 +95,13 @@
       </div>
 
       <div class="lobby-section">
+        <span class="lobby-label">Character</span>
+        <select id="solo-character" class="select-field">
+          <option value="all">Any Character</option>
+        </select>
+      </div>
+
+      <div class="lobby-section">
         <span class="lobby-label">Difficulty</span>
         <div class="radio-group">
           <label class="radio-label"><input type="radio" name="solo-diff" value="Mixed" checked> Mixed</label>
@@ -122,11 +129,12 @@
             <input type="checkbox" id="solo-hardcore">
             <span class="toggle-slider"></span>
           </label>
-          <span class="toggle-desc">Hide multiple choice — recall the answer yourself</span>
+          <span class="toggle-desc">Hide multiple choice. Recall the answer yourself.</span>
         </div>
       </div>
 
     </div>
+    <p id="solo-pool-count" class="lobby-pool-count"></p>
     <button class="btn btn-primary btn-lg" id="btn-solo-start">Begin the Deposition</button>
   </div>
 </div>
@@ -140,6 +148,7 @@
     <div class="question-meta">
       <span id="q-player-label" class="q-player-label"></span>
       <span id="q-progress" class="q-progress"></span>
+      <button id="btn-pause-game" class="btn-pause-game hidden" title="Pause game">⏸ Pause</button>
       <button id="btn-exit-game" class="btn-exit-game" title="Leave game">← Leave</button>
     </div>
     <div class="question-badges">
@@ -221,6 +230,23 @@
     </div>
 
   </div>
+
+  <!-- Party countdown overlay (3-2-1-GO) -->
+  <div id="party-countdown" class="party-countdown hidden">
+    <div id="party-countdown-name" class="party-countdown-name"></div>
+    <div id="party-countdown-number" class="party-countdown-number">3</div>
+  </div>
+
+  <!-- Pause overlay (party mode only) -->
+  <div id="pause-overlay" class="pause-overlay hidden">
+    <div class="pause-card">
+      <div class="pause-badge">Game Paused</div>
+      <blockquote id="pause-quote-text" class="pause-quote-text"></blockquote>
+      <cite id="pause-quote-attr" class="pause-quote-attr"></cite>
+      <button id="btn-resume-game" class="btn btn-primary btn-lg" style="margin-top:1.5rem">Resume Game ▶</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- ═══════════════════════════════════════════════
@@ -252,7 +278,7 @@
 <div id="screen-leaderboard" class="screen">
   <div class="screen-header">
     <button class="btn-back" data-target="screen-home">← Back</button>
-    <h2>Employee Records — Top Performers</h2>
+    <h2>Employee Records: Top Performers</h2>
   </div>
   <div class="screen-body">
     <div id="leaderboard-list" class="leaderboard-list"></div>
@@ -266,7 +292,7 @@
 <div id="screen-party-names" class="screen">
   <div class="screen-header">
     <button class="btn-back" data-target="screen-home">← Back</button>
-    <h2>Conference Room — Sign In</h2>
+    <h2>Conference Room: Sign In</h2>
   </div>
   <div class="screen-body centered">
     <p class="screen-sub">Minimum 2 players. Maximum 8.</p>
@@ -303,6 +329,13 @@
       </div>
 
       <div class="lobby-section">
+        <span class="lobby-label">Character</span>
+        <select id="party-character" class="select-field">
+          <option value="all">Any Character</option>
+        </select>
+      </div>
+
+      <div class="lobby-section">
         <span class="lobby-label">Difficulty</span>
         <div class="radio-group">
           <label class="radio-label"><input type="radio" name="party-diff" value="Mixed" checked> Mixed</label>
@@ -335,6 +368,7 @@
       </div>
 
     </div>
+    <p id="party-pool-count" class="lobby-pool-count"></p>
     <button class="btn btn-primary btn-lg" id="btn-party-start">Call the Meeting to Order</button>
   </div>
 </div>
@@ -344,10 +378,19 @@
 ════════════════════════════════════════════════ -->
 <div id="screen-wager" class="screen">
   <div class="screen-header">
-    <h2>It Is a Tie — Wager Round</h2>
+    <h2>It Is a Tie: Wager Round</h2>
   </div>
   <div class="screen-body centered">
     <p class="screen-sub">Tied players: place your wager before the tiebreaker question is revealed. Win it, gain your wager. Miss it, lose it.</p>
+    <div id="wager-timer" class="wager-timer hidden">
+      <div class="wager-timer-label">Time to wager:</div>
+      <div class="wager-timer-bar-wrap">
+        <div class="wager-timer-bar">
+          <div id="wager-timer-fill" class="wager-timer-fill"></div>
+        </div>
+        <span id="wager-timer-value" class="wager-timer-value">45</span>
+      </div>
+    </div>
     <div id="wager-inputs" class="wager-inputs"></div>
     <button class="btn btn-primary btn-lg" id="btn-wager-reveal" style="max-width:380px">Reveal the Tiebreaker</button>
   </div>
@@ -358,7 +401,7 @@
 ════════════════════════════════════════════════ -->
 <div id="screen-party-results" class="screen">
   <div class="screen-header">
-    <h2>Meeting Adjourned — Final Standings</h2>
+    <h2>Meeting Adjourned: Final Standings</h2>
   </div>
   <div class="screen-body centered">
     <div id="podium" class="podium"></div>
@@ -376,7 +419,7 @@
 <div id="screen-settings" class="screen">
   <div class="screen-header">
     <button class="btn-back" data-target="screen-home">← Back</button>
-    <h2>HR Department — Settings</h2>
+    <h2>HR Department: Settings</h2>
   </div>
   <div class="screen-body">
 
@@ -396,12 +439,36 @@
     </div>
 
     <div class="settings-section">
+      <h3>Question Export</h3>
+      <p class="settings-desc">Export the full question bank as a CSV file. Choose which columns to include.</p>
+      <div class="export-col-header">
+        <span class="export-col-heading">Columns to include:</span>
+        <button type="button" class="btn-link export-col-toggle" id="btn-export-select-all">Select All</button>
+        <span class="export-col-sep">|</span>
+        <button type="button" class="btn-link export-col-toggle" id="btn-export-deselect-all">Deselect All</button>
+      </div>
+      <div class="export-col-grid">
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="id" checked> ID</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="question" checked> Question</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="answer" checked> Answer</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor1" checked> Distractor 1</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor2" checked> Distractor 2</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor3" checked> Distractor 3</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="category" checked> Category</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="difficulty" checked> Difficulty</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="tags"> Tags</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="type"> Type</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="enabled"> Enabled</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="community-avg"> Community Avg</label>
+        <label class="export-col-check"><input type="checkbox" name="export-col" value="community-count"> Community Count</label>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btn-export-questions" style="margin-top:0.75rem">Export as CSV</button>
+    </div>
+
+    <div class="settings-section">
       <h3>Answer History</h3>
       <p class="settings-desc">Every answered question is logged locally.</p>
-      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
-        <button class="btn btn-secondary btn-sm" id="btn-export-history">Export as CSV</button>
-        <button class="btn btn-secondary btn-sm" id="btn-clear-history">Clear History</button>
-      </div>
+      <button class="btn btn-secondary btn-sm" id="btn-clear-history">Clear History</button>
     </div>
 
   </div>
@@ -413,13 +480,14 @@
 <div id="screen-admin" class="screen">
   <div class="screen-header">
     <button class="btn-back" data-target="screen-settings">← Back to Settings</button>
-    <h2>Admin Mode — You Didn't Hear This From Me</h2>
+    <h2>Admin Mode: You Didn't Hear This From Me</h2>
   </div>
   <div class="screen-body">
 
     <div class="admin-tabs">
       <button class="admin-tab active" data-tab="questions">Questions</button>
-      <button class="admin-tab"        data-tab="review">Review</button>
+      <button class="admin-tab"        data-tab="review">Disputes &amp; Feedback</button>
+      <button class="admin-tab"        data-tab="community-ratings">Community Ratings</button>
     </div>
 
     <!-- QUESTIONS TAB -->
@@ -459,6 +527,23 @@
       <h3 class="review-section-title" style="margin-top:1.5rem">Submitted Feedback</h3>
       <div id="admin-feedback-list" class="admin-feedback-list"></div>
       <p id="admin-no-feedback" class="admin-empty hidden">No feedback submitted yet. The suggestion box is empty.</p>
+    </div>
+
+    <!-- COMMUNITY RATINGS TAB -->
+    <div id="admin-tab-community-ratings" class="admin-tab-panel hidden">
+      <div class="cr-toolbar">
+        <input type="text" id="cr-search" class="input-field" placeholder="Search questions or answers...">
+        <select id="cr-filter-status" class="select-field aq-filter-select">
+          <option value="all">All Questions</option>
+          <option value="has-ratings">Has Community Ratings</option>
+          <option value="overriding">Currently Overriding</option>
+          <option value="no-ratings">No Ratings Yet</option>
+        </select>
+      </div>
+      <div class="aq-count-row">
+        <span id="admin-ratings-count" class="aq-count"></span>
+      </div>
+      <div id="admin-ratings-list" class="cr-list"></div>
     </div>
 
   </div>
@@ -561,7 +646,7 @@
       </div>
 
       <div class="form-group">
-        <label for="fb-email">Email <span class="field-optional">(optional &mdash; if you&rsquo;d like a reply)</span></label>
+        <label for="fb-email">Email <span class="field-optional">(optional, for replies)</span></label>
         <input type="email" id="fb-email" class="input-field" placeholder="you@example.com" maxlength="100" autocomplete="off">
       </div>
 
@@ -583,7 +668,7 @@
       </div>
 
       <p id="fb-error" class="error-msg hidden"></p>
-      <p id="fb-success" class="feedback-success hidden">Message received! We read every one &mdash; thanks for being part of this.</p>
+      <p id="fb-success" class="feedback-success hidden">Message received! We read every one. Thanks for being part of this.</p>
 
       <div class="modal-actions">
         <button type="submit" class="btn btn-primary" id="btn-feedback-submit">Send to Corporate</button>
@@ -606,6 +691,18 @@
 <script src="js/admin.js"></script>
 <script src="js/feedback.js"></script>
 <script src="js/app.js"></script>
+
+<!-- ═══════════════════════════════════════════════
+     PRIVACY / STORAGE NOTICE
+════════════════════════════════════════════════ -->
+<div id="privacy-banner" class="privacy-banner hidden" role="status" aria-live="polite">
+  <p class="privacy-text">
+    This app saves your scores and game history in your browser's local storage.
+    Feedback you submit (including any optional email) is stored only on this local server and never shared.
+    No cookies, no tracking, no ads.
+  </p>
+  <button id="btn-privacy-ok" class="btn btn-sm btn-secondary privacy-ok-btn">Got it</button>
+</div>
 
 </body>
 </html>

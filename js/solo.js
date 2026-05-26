@@ -11,20 +11,21 @@ let soloCurrentRating = 5;
 let pendingQuoteTimer = null;
 
 function soloStart() {
-  const name  = document.getElementById('solo-name-input').value.trim();
+  const name  = sanitizeName(document.getElementById('solo-name-input').value);
   if (!name) { showToast('Please enter your name first.'); return; }
 
   const category   = document.getElementById('solo-category').value;
+  const character  = document.getElementById('solo-character').value;
   const difficulty = document.querySelector('input[name="solo-diff"]:checked').value;
   const count      = parseInt(document.querySelector('input[name="solo-count"]:checked').value, 10);
   const hardcore   = document.getElementById('solo-hardcore').checked;
 
-  const qs = selectQuestions(category, difficulty, count);
+  const qs = selectQuestions(category, difficulty, count, character);
   if (!qs.length) { showToast('Not enough questions for that combo. Try different settings.'); return; }
 
   resetGameState();
   GameState.mode = 'solo';
-  GameState.config = { category, difficulty, count, hardcore, speedRound: false };
+  GameState.config = { category, difficulty, count, hardcore, speedRound: false, character };
   GameState.questions = qs;
   GameState.players = [{ id: 1, name, score: 0, answers: [] }];
   GameState.currentPlayerIdx = 0;
@@ -61,8 +62,15 @@ function renderQuestionScreen() {
   document.getElementById('q-category').textContent = q.category;
   document.getElementById('q-category').className = 'badge badge-category';
   const diffBadge = document.getElementById('q-difficulty');
-  diffBadge.textContent = q.difficulty;
-  diffBadge.className = `badge ${difficultyClass(q.difficulty)}`;
+  const communityInfo = getCommunityDifficultyInfo(q.id);
+  const isOverriding = communityInfo && communityInfo.count >= COMMUNITY_THRESHOLD;
+  const displayDiff = isOverriding ? communityInfo.label : q.difficulty;
+  diffBadge.className = `badge ${difficultyClass(displayDiff)}`;
+  if (isOverriding) {
+    diffBadge.innerHTML = `${escHtml(displayDiff)}<span class="community-score-hint"> ★${communityInfo.avg}</span>`;
+  } else {
+    diffBadge.textContent = q.difficulty;
+  }
   document.getElementById('q-text').textContent = q.question;
 
   renderQuestionTags(q);
@@ -88,6 +96,15 @@ function renderQuestionScreen() {
   // Solo-only post-answer panel
   document.getElementById('q-solo-actions').classList.toggle('hidden', GameState.mode !== 'solo');
 
+  // Pause button: party-only
+  const pauseBtn = document.getElementById('btn-pause-game');
+  pauseBtn.classList.toggle('hidden', GameState.mode !== 'party');
+  pauseBtn.textContent = '⏸ Pause';
+  pauseBtn.title = 'Pause game';
+
+  // Ensure pause overlay is cleared between questions
+  document.getElementById('pause-overlay').classList.add('hidden');
+
   // Speed timer
   document.getElementById('speed-timer').classList.add('hidden');
 
@@ -102,10 +119,13 @@ function renderQuestionScreen() {
     renderMCOptions(q, soloCurrentOptions);
   }
 
-  // Party scoreboard
+  // Party scoreboard + per-question countdown
   if (GameState.mode === 'party') {
     renderPartyScoreboard();
-    if (GameState.config.speedRound) startSpeedTimer();
+    const player = GameState.players[GameState.currentPlayerIdx];
+    startPartyCountdown(player.name, () => {
+      if (GameState.config.speedRound) startSpeedTimer();
+    });
   }
 
   showScreen('screen-question');
@@ -222,14 +242,15 @@ function soloSubmitRating() {
   soloRatingSubmitted = true;
 }
 
-function soloSubmitDispute(text) {
-  if (!text.trim()) { showToast('Please describe the issue first.'); return; }
+function soloSubmitDispute(rawText) {
+  const text = sanitizeName(rawText, 300);
+  if (!text) { showToast('Please describe the issue first.'); return; }
   const q = GameState.questions[GameState.currentQIdx];
   const player = GameState.players[0];
   const rating = soloRatingSubmitted
     ? parseInt(document.getElementById('q-rate-slider').value, 10)
     : null;
-  addDispute(q, text.trim(), player.name, rating);
+  addDispute(q, text, player.name, rating);
   document.getElementById('q-dispute-form').classList.add('hidden');
   document.getElementById('btn-dispute-open').textContent = 'Flagged ✓';
   document.getElementById('btn-dispute-open').disabled = true;

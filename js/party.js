@@ -40,7 +40,7 @@ function initPartyNames() {
 function partyStartLobby() {
   const fields = document.querySelectorAll('.party-name-field');
   const names = [];
-  fields.forEach(f => { if (f.value.trim()) names.push(f.value.trim()); });
+  fields.forEach(f => { const n = sanitizeName(f.value); if (n) names.push(n); });
   if (names.length < 2) { showToast('At least 2 players are required.'); return; }
 
   GameState.partyNames = names;
@@ -51,17 +51,27 @@ function partyStart() {
   const names = GameState.partyNames;
   if (!names || names.length < 2) { showScreen('screen-party-names'); return; }
 
-  const category   = document.getElementById('party-category').value;
-  const difficulty = document.querySelector('input[name="party-diff"]:checked').value;
-  const count      = parseInt(document.querySelector('input[name="party-count"]:checked').value, 10);
-  const speedRound = document.getElementById('party-speed').checked;
+  const category    = document.getElementById('party-category').value;
+  const character   = document.getElementById('party-character').value;
+  const difficulty  = document.querySelector('input[name="party-diff"]:checked').value;
+  const rawCount    = parseInt(document.querySelector('input[name="party-count"]:checked').value, 10);
+  const speedRound  = document.getElementById('party-speed').checked;
 
-  const qs = selectQuestions(category, difficulty, count);
+  // Round down to the nearest multiple of player count so every player
+  // gets the exact same number of questions (never one player short-changed).
+  const playerCount = names.length;
+  const count = Math.max(playerCount, Math.floor(rawCount / playerCount) * playerCount);
+
+  if (count !== rawCount) {
+    showToast(`Using ${count} questions so each player gets ${count / playerCount} turn${count / playerCount !== 1 ? 's' : ''}.`);
+  }
+
+  const qs = selectQuestions(category, difficulty, count, character);
   if (!qs.length) { showToast('Not enough questions for that combo. Try different settings.'); return; }
 
   resetGameState();
   GameState.mode = 'party';
-  GameState.config = { category, difficulty, count, hardcore: false, speedRound };
+  GameState.config = { category, difficulty, count, hardcore: false, speedRound, character };
   GameState.questions = qs;
   GameState.players = names.map((name, i) => ({ id: i + 1, name, score: 0, answers: [] }));
   GameState.currentPlayerIdx = 0;
@@ -87,10 +97,51 @@ function partyNextQ() {
   partyNextQuestion();
 }
 
+// ── PARTY COUNTDOWN (3-2-1-GO) ────────────────────────────────────
+function startPartyCountdown(playerName, onComplete) {
+  const overlay = document.getElementById('party-countdown');
+  const numEl   = document.getElementById('party-countdown-number');
+  const nameEl  = document.getElementById('party-countdown-name');
+
+  nameEl.textContent = `${playerName}'s Question`;
+  numEl.className    = 'party-countdown-number';
+  numEl.textContent  = '3';
+  overlay.classList.remove('hidden');
+
+  // Trigger initial pop animation
+  void overlay.offsetWidth;
+  numEl.classList.add('countdown-anim');
+
+  let count = 3;
+
+  const tick = () => {
+    count--;
+    // Strip and re-add animation class to restart it (CSS reflow trick)
+    numEl.classList.remove('countdown-anim', 'countdown-go');
+    void numEl.offsetWidth;
+
+    if (count > 0) {
+      numEl.textContent = count;
+      numEl.classList.add('countdown-anim');
+      setTimeout(tick, 850);
+    } else {
+      numEl.textContent = 'GO!';
+      numEl.classList.add('countdown-go', 'countdown-anim');
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+        onComplete();
+      }, 650);
+    }
+  };
+
+  setTimeout(tick, 850);
+}
+
 // ── SPEED TIMER ───────────────────────────────────────────────────
-function startSpeedTimer() {
+function startSpeedTimer(resume) {
   const maxTime = GameState.speedMaxTime;
-  GameState.speedTimeLeft = maxTime;
+  // On resume=true, keep existing speedTimeLeft; otherwise reset to full
+  if (!resume) GameState.speedTimeLeft = maxTime;
   document.getElementById('speed-timer').classList.remove('hidden');
   updateSpeedTimerUI();
 
@@ -142,6 +193,79 @@ function handleTimeExpired() {
   pendingQuoteTimer = setTimeout(() => { pendingQuoteTimer = null; showQuote(false); }, 300);
 }
 
+// ── WAGER TIMER ───────────────────────────────────────────────────
+const WAGER_TIME = 45;
+let wagerTimerInterval = null;
+
+function startWagerTimer() {
+  let timeLeft = WAGER_TIME;
+  const timerEl  = document.getElementById('wager-timer');
+  const fillEl   = document.getElementById('wager-timer-fill');
+  const valueEl  = document.getElementById('wager-timer-value');
+
+  timerEl.classList.remove('hidden');
+  valueEl.textContent = timeLeft;
+  fillEl.style.width = '100%';
+  fillEl.className = 'wager-timer-fill';
+
+  wagerTimerInterval = setInterval(() => {
+    timeLeft--;
+    const pct = (timeLeft / WAGER_TIME) * 100;
+    valueEl.textContent = timeLeft;
+    fillEl.style.width = pct + '%';
+    fillEl.className = 'wager-timer-fill' + (pct <= 22 ? ' timer-danger' : pct <= 55 ? ' timer-warn' : '');
+
+    if (timeLeft <= 0) {
+      clearWagerTimer();
+      showToast('Time\'s up! Revealing the tiebreaker...');
+      partyRevealWagerQuestion();
+    }
+  }, 1000);
+}
+
+function clearWagerTimer() {
+  if (wagerTimerInterval) {
+    clearInterval(wagerTimerInterval);
+    wagerTimerInterval = null;
+  }
+  const timerEl = document.getElementById('wager-timer');
+  if (timerEl) timerEl.classList.add('hidden');
+}
+
+// ── PARTY PAUSE ───────────────────────────────────────────────────
+function toggleGamePause() {
+  const overlay = document.getElementById('pause-overlay');
+  const btn     = document.getElementById('btn-pause-game');
+  const isPaused = !overlay.classList.contains('hidden');
+
+  if (isPaused) {
+    // Resume
+    overlay.classList.add('hidden');
+    btn.textContent = '⏸ Pause';
+    btn.title = 'Pause game';
+    // Resume speed timer with remaining time (pass true to skip reset)
+    if (GameState.config?.speedRound && GameState.speedTimeLeft > 0 && !GameState.answerState) {
+      startSpeedTimer(true);
+    }
+  } else {
+    // Pause
+    // Suspend speed timer if running
+    if (GameState.speedInterval) {
+      clearInterval(GameState.speedInterval);
+      GameState.speedInterval = null;
+    }
+
+    // Pick a random pause quote
+    const q = PAUSE_QUOTES[Math.floor(Math.random() * PAUSE_QUOTES.length)];
+    document.getElementById('pause-quote-text').textContent = q.text;
+    document.getElementById('pause-quote-attr').textContent = '- ' + q.character;
+
+    overlay.classList.remove('hidden');
+    btn.textContent = '▶ Resume';
+    btn.title = 'Resume game';
+  }
+}
+
 // ── TIE DETECTION & WAGER ─────────────────────────────────────────
 function partyCheckTie() {
   const sorted = [...GameState.players].sort((a, b) => b.score - a.score);
@@ -163,6 +287,7 @@ function partyCheckTie() {
 
   renderWagerInputs(tied);
   showScreen('screen-wager');
+  startWagerTimer();
 }
 
 function renderWagerInputs(tiedPlayers) {
@@ -180,6 +305,7 @@ function renderWagerInputs(tiedPlayers) {
 }
 
 function partyRevealWagerQuestion() {
+  clearWagerTimer();
   const tiedPlayers = GameState.wagerTiedPlayers;
   const wagerFields = document.querySelectorAll('.wager-field');
   GameState.wagerAnswers = [];

@@ -260,6 +260,27 @@ function loadRatingsFromFile() {
     .catch(() => {});
 }
 
+const COMMUNITY_THRESHOLD = 3;
+
+function getCommunityDifficultyInfo(questionId) {
+  const all = getRatings().filter(r => r.questionId === questionId);
+  if (!all.length) return null;
+  const avg = all.reduce((sum, r) => sum + r.rating, 0) / all.length;
+  const rounded = Math.round(avg * 10) / 10;
+  const label = rounded < 4 ? 'Easy' : rounded < 7 ? 'Medium' : 'Hard';
+  return { count: all.length, avg: rounded, label };
+}
+
+function resetQuestionRatings(questionId) {
+  const filtered = getRatings().filter(r => r.questionId !== questionId);
+  localStorage.setItem('tlt_ratings', JSON.stringify(filtered));
+  fetch('/api/ratings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(filtered),
+  }).catch(() => {});
+}
+
 // ── TAGS ──────────────────────────────────────────────────────────
 function getAllTags() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.tags)) || {}; }

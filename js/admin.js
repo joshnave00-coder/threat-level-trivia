@@ -37,12 +37,14 @@ function adminLogin() {
 function switchAdminTab(tab) {
   activeAdminTab = tab;
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  const qPanel = document.getElementById('admin-tab-questions');
-  const rPanel = document.getElementById('admin-tab-review');
-  if (qPanel) qPanel.classList.toggle('hidden', tab !== 'questions');
-  if (rPanel) rPanel.classList.toggle('hidden', tab !== 'review');
+  const panels = ['questions', 'review', 'community-ratings'];
+  panels.forEach(name => {
+    const el = document.getElementById(`admin-tab-${name}`);
+    if (el) el.classList.toggle('hidden', tab !== name);
+  });
   if (tab === 'review') loadAndRenderAdminFeedback();
   if (tab === 'questions') renderAdminQuestions();
+  if (tab === 'community-ratings') renderAdminRatings();
 }
 
 // ── QUESTION MANAGEMENT ──────────────────────────────────────────
@@ -122,6 +124,63 @@ function populateCategoryDropdowns() {
     filterSelect.appendChild(new Option(cat, cat));
     modalSelect.appendChild(new Option(cat, cat));
   });
+}
+
+function populateCharacterDropdowns() {
+  ['solo-character', 'party-character'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    // Clear existing options past the "Any Character" default
+    while (sel.options.length > 1) sel.remove(1);
+    CHARACTER_TAGS.forEach(({ tag, label }) => {
+      sel.appendChild(new Option(label, tag));
+    });
+  });
+}
+
+function updateLobbyPoolCount(mode) {
+  const countEl = document.getElementById(`${mode}-pool-count`);
+  if (!countEl) return;
+  const category  = document.getElementById(`${mode}-category`)?.value || 'all';
+  const character = document.getElementById(`${mode}-character`)?.value || 'all';
+  const diffInput = document.querySelector(`input[name="${mode}-diff"]:checked`);
+  const difficulty = diffInput ? diffInput.value : 'Mixed';
+  const n = filterQuestions(category, difficulty, character).length;
+  if (category === 'all' && character === 'all' && difficulty === 'Mixed') {
+    countEl.textContent = '';
+  } else {
+    countEl.textContent = `${n} question${n !== 1 ? 's' : ''} available`;
+    countEl.className = `lobby-pool-count${n < 5 ? ' lobby-pool-count-low' : ''}`;
+  }
+}
+
+function autoTagAllQuestions() {
+  const allQs = getAllManagedQuestions();
+  let tagged = 0;
+
+  allQs.forEach(q => {
+    const haystack = `${q.question} ${q.answer}`;
+    const detected = [];
+
+    CHARACTER_TAGS.forEach(({ tag, patterns }) => {
+      const matches = patterns.some(p =>
+        new RegExp(`\\b${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(haystack)
+      );
+      if (matches) detected.push(tag);
+    });
+
+    if (!detected.length) return;
+
+    // Merge with existing tags (don't overwrite non-character tags)
+    const existing = getEffectiveTags(q);
+    const merged = [...new Set([...existing, ...detected])];
+    saveTagsForQuestion(q.id, merged);
+    tagged++;
+  });
+
+  // Persist merged tags to file
+  syncTagsToFile();
+  return tagged;
 }
 
 // ── QUESTION EDITOR MODAL ────────────────────────────────────────
@@ -231,6 +290,52 @@ function saveQuestion(e) {
   renderAdminQuestions();
 }
 
+// ── QUESTION EXPORT ───────────────────────────────────────────────
+
+const EXPORT_COL_MAP = {
+  'id':              { header: 'ID',               get: (q)         => q.id },
+  'question':        { header: 'Question',         get: (q)         => csvCell(q.question) },
+  'answer':          { header: 'Answer',           get: (q)         => csvCell(q.answer) },
+  'distractor1':     { header: 'Distractor 1',     get: (q)         => csvCell(q.distractors[0] || '') },
+  'distractor2':     { header: 'Distractor 2',     get: (q)         => csvCell(q.distractors[1] || '') },
+  'distractor3':     { header: 'Distractor 3',     get: (q)         => csvCell(q.distractors[2] || '') },
+  'category':        { header: 'Category',         get: (q)         => csvCell(q.category) },
+  'difficulty':      { header: 'Difficulty',       get: (q)         => q.difficulty },
+  'tags':            { header: 'Tags',             get: (q)         => csvCell(getEffectiveTags(q).join(', ')) },
+  'type':            { header: 'Type',             get: (q, ctx)    => !ctx.baseIds.has(q.id) ? 'Custom' : ctx.edits[q.id] ? 'Edited' : 'Base' },
+  'enabled':         { header: 'Enabled',          get: (q, ctx)    => ctx.disabled.includes(q.id) ? 'No' : 'Yes' },
+  'community-avg':   { header: 'Community Avg',    get: (q)         => { const i = getCommunityDifficultyInfo(q.id); return i ? i.avg : ''; } },
+  'community-count': { header: 'Community Count',  get: (q)         => { const i = getCommunityDifficultyInfo(q.id); return i ? i.count : '0'; } },
+};
+
+function csvCell(val) {
+  return `"${String(val).replace(/"/g, '""')}"`;
+}
+
+function exportQuestions() {
+  const allQs = getAllManagedQuestions();
+  if (!allQs.length) { showToast('No questions to export.'); return; }
+
+  const checked = [...document.querySelectorAll('input[name="export-col"]:checked')].map(c => c.value);
+  if (!checked.length) { showToast('Select at least one column to export.'); return; }
+
+  const ctx = {
+    baseIds:  new Set(QUESTIONS.map(q => q.id)),
+    edits:    getQuestionEdits(),
+    disabled: getDisabledQuestions(),
+  };
+
+  const headers = checked.map(c => EXPORT_COL_MAP[c].header);
+  const rows    = allQs.map(q => checked.map(c => EXPORT_COL_MAP[c].get(q, ctx)));
+  const csv     = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob    = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a       = document.createElement('a');
+  a.href        = URL.createObjectURL(blob);
+  a.download    = `tlt-questions-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  showToast(`Exported ${allQs.length} questions.`);
+}
+
 // ── DISPUTES ──────────────────────────────────────────────────────
 function renderAdminDisputes() {
   const disputes = getDisputes();
@@ -259,11 +364,13 @@ function renderAdminDisputes() {
       <div class="dispute-q"><strong>Q:</strong> ${escHtml(d.question)}</div>
       <div class="dispute-a"><strong>A:</strong> ${escHtml(d.answer)}</div>
       <div class="dispute-text"><strong>Issue:</strong> ${escHtml(d.disputeText)}</div>
-      ${d.status === 'open' ? `
-        <div class="dispute-actions">
+      <div class="dispute-actions">
+        ${d.questionId ? `<button class="btn btn-secondary btn-sm" onclick="openQuestionEditor(${d.questionId})">Edit Question</button>` : ''}
+        ${d.status === 'open' ? `
           <button class="btn btn-correct btn-sm" onclick="resolveDispute(${d.id},'approved')">Approve</button>
           <button class="btn btn-wrong btn-sm" onclick="resolveDispute(${d.id},'dismissed')">Dismiss</button>
-        </div>` : ''}
+        ` : ''}
+      </div>
     </div>`).join('');
 }
 
@@ -354,4 +461,109 @@ function renderAdminFeedback(entries) {
       </div>
       <div class="feedback-msg">${escHtml(fb.message)}</div>
     </div>`).join('');
+}
+
+// ── COMMUNITY DIFFICULTY RATINGS ─────────────────────────────────
+let adminRatingsFilter = { search: '', status: 'all' };
+
+function renderAdminRatings() {
+  const allQs = getAllManagedQuestions();
+  const disabled = getDisabledQuestions();
+
+  // Build per-question community info
+  const withInfo = allQs.map(q => ({
+    q,
+    isDisabled: disabled.includes(q.id),
+    info: getCommunityDifficultyInfo(q.id),
+  }));
+
+  // Apply filters
+  let filtered = withInfo;
+  if (adminRatingsFilter.search) {
+    const s = adminRatingsFilter.search.toLowerCase();
+    filtered = filtered.filter(({ q }) =>
+      q.question.toLowerCase().includes(s) || q.answer.toLowerCase().includes(s));
+  }
+  if (adminRatingsFilter.status === 'has-ratings') {
+    filtered = filtered.filter(({ info }) => info !== null);
+  } else if (adminRatingsFilter.status === 'overriding') {
+    filtered = filtered.filter(({ info }) => info && info.count >= COMMUNITY_THRESHOLD);
+  } else if (adminRatingsFilter.status === 'no-ratings') {
+    filtered = filtered.filter(({ info }) => info === null);
+  }
+
+  // Sort: questions with ratings first (most ratings first), then unrated
+  filtered.sort((a, b) => {
+    const ac = a.info ? a.info.count : -1;
+    const bc = b.info ? b.info.count : -1;
+    return bc - ac;
+  });
+
+  const container = document.getElementById('admin-ratings-list');
+  const countEl   = document.getElementById('admin-ratings-count');
+  if (!container || !countEl) return;
+
+  const totalRated    = withInfo.filter(({ info }) => info !== null).length;
+  const totalOverride = withInfo.filter(({ info }) => info && info.count >= COMMUNITY_THRESHOLD).length;
+  countEl.textContent =
+    `${filtered.length} of ${allQs.length} questions shown  |  ` +
+    `${totalRated} have community ratings  |  ` +
+    `${totalOverride} currently overriding`;
+
+  if (!filtered.length) {
+    container.innerHTML = '<p class="admin-empty">No questions match your filters.</p>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(({ q, isDisabled, info }) => {
+    const hasRatings  = info !== null;
+    const isOverride  = hasRatings && info.count >= COMMUNITY_THRESHOLD;
+    const needsMore   = hasRatings && !isOverride ? COMMUNITY_THRESHOLD - info.count : 0;
+
+    let statusBadge;
+    if (isOverride) {
+      statusBadge = `<span class="badge cr-badge-overriding">Overriding</span>`;
+    } else if (hasRatings) {
+      statusBadge = `<span class="badge cr-badge-pending">Need ${needsMore} more</span>`;
+    } else {
+      statusBadge = `<span class="cr-no-data">No ratings yet</span>`;
+    }
+
+    const communitySection = hasRatings ? `
+      <span class="cr-divider">|</span>
+      <span class="cr-label">Community:</span>
+      <span class="badge ${difficultyClass(info.label)}">${escHtml(info.label)}</span>
+      <span class="cr-score">avg ${info.avg}</span>
+      <span class="cr-count-text">(${info.count} rating${info.count !== 1 ? 's' : ''})</span>
+      ${statusBadge}` : statusBadge;
+
+    return `
+      <div class="cr-card ${!hasRatings ? 'cr-no-ratings' : ''} ${isDisabled ? 'aq-disabled' : ''}" data-qid="${q.id}">
+        <div class="cr-main">
+          <div class="cr-question-text">${escHtml(q.question)}</div>
+          <div class="cr-answer"><strong>A:</strong> ${escHtml(q.answer)}</div>
+          <div class="cr-data-row">
+            <span class="cr-label">Original:</span>
+            <span class="badge ${difficultyClass(q.difficulty)}">${escHtml(q.difficulty)}</span>
+            ${communitySection}
+          </div>
+        </div>
+        ${hasRatings ? `
+        <div class="cr-actions">
+          <button class="btn btn-sm aq-btn-disable" onclick="resetQuestionRatingsAdmin(${q.id})">Reset Ratings</button>
+        </div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function resetQuestionRatingsAdmin(questionId) {
+  const allQs = getAllManagedQuestions();
+  const q = allQs.find(x => x.id === questionId);
+  const info = getCommunityDifficultyInfo(questionId);
+  if (!info) return;
+  const label = q ? `"${q.question.slice(0, 40)}${q.question.length > 40 ? '...' : ''}"` : `question #${questionId}`;
+  if (!confirm(`Reset all ${info.count} community rating(s) for ${label}?\n\nThis cannot be undone.`)) return;
+  resetQuestionRatings(questionId);
+  renderAdminRatings();
+  showToast(`Community ratings cleared for question #${questionId}.`);
 }

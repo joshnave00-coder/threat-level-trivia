@@ -23,16 +23,19 @@ function getAllManagedQuestions() {
   return [...base, ...getCustomQuestions()];
 }
 
-function filterQuestions(category, difficulty) {
+function filterQuestions(category, difficulty, character) {
   const disabled = getDisabledQuestions();
   let pool = getAllManagedQuestions().filter(q => !disabled.includes(q.id));
   if (category && category !== 'all') pool = pool.filter(q => q.category === category);
   if (difficulty && difficulty !== 'Mixed') pool = pool.filter(q => q.difficulty === difficulty);
+  if (character && character !== 'all') {
+    pool = pool.filter(q => getEffectiveTags(q).includes(character));
+  }
   return pool;
 }
 
-function selectQuestions(category, difficulty, count) {
-  const pool = filterQuestions(category, difficulty);
+function selectQuestions(category, difficulty, count, character) {
+  const pool = filterQuestions(category, difficulty, character);
   if (!pool.length) return [];
 
   const recentIds = getRecentlySeenIds(100);

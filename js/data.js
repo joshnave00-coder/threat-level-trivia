@@ -898,6 +898,386 @@ const QUESTIONS = [
     answer: "Creed Bratton",
     distractors: ["Kevin Malone", "Meredith Palmer", "Ryan Howard"] },
 
+  // ── DUNDER MIFFLIN COMPANY ────────────────────────────────────
+  { id: 221, category: "Locations & Miscellaneous", difficulty: "Medium", tags: [],
+    question: "Who is the founder of Dunder Mifflin Paper Company?",
+    answer: "Robert Dunder and Robert Mifflin",
+    distractors: ["Robert Dunder and Sons", "William Mifflin and Bill Dunder", "Howard Dunder and Neil Mifflin"] },
+
+  { id: 222, category: "Characters", difficulty: "Medium", tags: [],
+    question: "Who is the CFO of Dunder Mifflin Paper Company?",
+    answer: "David Wallace",
+    distractors: ["Jan Levinson", "Charles Miner", "Robert California"] },
+
+  { id: 223, category: "Locations & Miscellaneous", difficulty: "Hard", tags: [],
+    question: "How many branches of Dunder Mifflin were shown or mentioned throughout the show?",
+    answer: "8",
+    distractors: ["6", "10", "12"] },
+
+  { id: 224, category: "Locations & Miscellaneous", difficulty: "Medium", tags: [],
+    question: "What is the official slogan of Dunder Mifflin Paper Company?",
+    answer: "Limitless paper in a paperless world.",
+    distractors: ["The people person's paper people", "Quality paper for quality people", "Paper you can trust in a digital world"] },
+
+  { id: 225, category: "Episodes & Events", difficulty: "Hard", tags: [],
+    question: "What embarrassing mistake does Dunder Mifflin make on a batch of paper that leads to a major PR crisis?",
+    answer: "They accidentally print an obscene watermark on the paper",
+    distractors: ["They ship a competitor's logo by mistake", "A rival company hijacks their paper supply chain", "Blank reams are mislabeled as premium stock"] },
+
+  { id: 226, category: "Locations & Miscellaneous", difficulty: "Easy", tags: [],
+    question: "Which city is the corporate headquarters of Dunder Mifflin located in?",
+    answer: "New York City",
+    distractors: ["Scranton, Pennsylvania", "Albany, New York", "Philadelphia, Pennsylvania"] },
+
+  { id: 227, category: "Locations & Miscellaneous", difficulty: "Easy", tags: [],
+    question: "Which Dunder Mifflin branch was shut down and merged with Scranton in Season 3?",
+    answer: "The Stamford branch",
+    distractors: ["The Utica branch", "The Nashua branch", "The Albany branch"] },
+
+  { id: 228, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "In the episode 'Branch Wars,' why does Michael want to prank the Utica branch?",
+    answer: "Because Stanley was offered a job there",
+    distractors: ["Because the Utica branch poached a major client from Scranton", "Because Michael was passed over for a promotion that went to the Utica manager", "Because the Utica branch filed a complaint against the Scranton branch"] },
+
+  { id: 229, category: "Locations & Miscellaneous", difficulty: "Medium", tags: [],
+    question: "What catchy slogan is used in Dunder Mifflin's company jingle featured in Season 3?",
+    answer: "The people person's paper people",
+    distractors: ["Limitless paper in a paperless world", "Quality paper for quality people", "Paper for a better tomorrow"] },
+
+  { id: 230, category: "Locations & Miscellaneous", difficulty: "Hard", tags: [],
+    question: "Which branch is mentioned as being located closest to Scranton?",
+    answer: "Binghamton, New York",
+    distractors: ["Utica, New York", "Albany, New York", "Nashua, New Hampshire"] },
+
+  { id: 231, category: "Episodes & Events", difficulty: "Easy", tags: [],
+    question: "What major event do all Dunder Mifflin branches attend together once a year?",
+    answer: "The company picnic",
+    distractors: ["The regional sales conference", "The annual awards ceremony", "The Dunder Mifflin Invitational"] },
+
+  // ── CHARACTERS (Vol. 3) ───────────────────────────────────────
+  { id: 232, category: "Characters", difficulty: "Medium", tags: [],
+    question: "What's the title of Michael Scott's self-written book?",
+    answer: "Somehow I Manage",
+    distractors: ["Managing with Heart", "The Michael Scott Method", "World's Best Boss: A Memoir"] },
+
+  { id: 233, category: "Characters", difficulty: "Hard", tags: [],
+    question: "What yogurt flavor does Pam like the most?",
+    answer: "Mixed berry",
+    distractors: ["Strawberry", "Peach", "Vanilla"] },
+
+  { id: 234, category: "Characters", difficulty: "Hard", tags: [],
+    question: "What does Dwight call his pet porcupine?",
+    answer: "Henrietta",
+    distractors: ["Brunhilde", "Beatrice", "Helga"] },
+
+  { id: 235, category: "Characters", difficulty: "Easy", tags: [],
+    question: "What is the name of Jan's candle business she starts after being fired?",
+    answer: "Serenity by Jan",
+    distractors: ["Jan's Aromatics", "Candles by Jan", "Luxe by Jan Levinson"] },
+
+  { id: 236, category: "Characters", difficulty: "Medium", tags: [],
+    question: "What art school does Pam attend in New York?",
+    answer: "The Pratt Institute",
+    distractors: ["The Art Institute of New York", "NYU", "New York Academy of Art"] },
+
+  { id: 237, category: "Characters", difficulty: "Easy", tags: [],
+    question: "What college did Andy Bernard attend and frequently mention?",
+    answer: "Cornell University",
+    distractors: ["Yale University", "Harvard University", "Dartmouth College"] },
+
+  { id: 238, category: "Music & Performances", difficulty: "Easy", tags: [],
+    question: "What musical instrument does Andy often play in the office?",
+    answer: "Banjo",
+    distractors: ["Guitar", "Ukulele", "Mandolin"] },
+
+  { id: 239, category: "Characters", difficulty: "Hard", tags: [],
+    question: "What middle name is revealed for Michael Scott in the series?",
+    answer: "Gary",
+    distractors: ["James", "Alan", "Scott"] },
+
+  { id: 240, category: "Characters", difficulty: "Easy", tags: [],
+    question: "What is the name of the warehouse foreman at the Scranton branch of Dunder Mifflin?",
+    answer: "Darryl Philbin",
+    distractors: ["Roy Anderson", "Lonny Collins", "Hidetoshi Hasegawa"] },
+
+  { id: 241, category: "Characters", difficulty: "Easy", tags: [],
+    question: "What is Stanley Hudson's favorite work day?",
+    answer: "Pretzel Day",
+    distractors: ["Hawaiian Shirt Day", "Casual Friday", "Bring Your Kid to Work Day"] },
+
+  { id: 242, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "What is the name of Ryan Howard's startup company?",
+    answer: "WUPHF.com",
+    distractors: ["TempNation.org", "HowardTechnologies.com", "RealTalk.com"] },
+
+  { id: 243, category: "Characters", difficulty: "Medium", tags: [],
+    question: "What is the name of Angela Martin's state senator husband?",
+    answer: "Robert Lipton",
+    distractors: ["Robert California", "Senator David Clark", "Senator James Harrison"] },
+
+  { id: 244, category: "Characters", difficulty: "Hard", tags: [],
+    question: "What is the name of Darryl Philbin's daughter?",
+    answer: "Jada",
+    distractors: ["Jasmine", "Jordan", "Maya"] },
+
+  { id: 245, category: "Characters", difficulty: "Medium", tags: [],
+    question: "What is the name of Jan Levinson's daughter?",
+    answer: "Astrid",
+    distractors: ["Ingrid", "Petra", "Helene"] },
+
+  // ── BEHIND THE SCENES (Vol. 3) ────────────────────────────────
+  { id: 246, category: "Behind the Scenes", difficulty: "Hard", tags: [],
+    question: "Where was the exterior shot of the Dunder Mifflin Scranton branch filmed?",
+    answer: "Panorama City, California",
+    distractors: ["Burbank, California", "Van Nuys, California", "Woodland Hills, California"] },
+
+  { id: 247, category: "Behind the Scenes", difficulty: "Hard", tags: [],
+    question: "Where was the Steamtown Mall location used in the show?",
+    answer: "Westfield Topanga Mall in Canoga Park, California",
+    distractors: ["Westfield Century City in Los Angeles, California", "The Burbank Town Center in Burbank, California", "The Glendale Galleria in Glendale, California"] },
+
+  { id: 251, category: "Behind the Scenes", difficulty: "Easy", tags: [],
+    question: "What British comedian co-created the original UK version of The Office?",
+    answer: "Ricky Gervais",
+    distractors: ["Stephen Merchant", "Karl Pilkington", "Steve Coogan"] },
+
+  { id: 252, category: "Behind the Scenes", difficulty: "Hard", tags: [],
+    question: "Who composed The Office theme song?",
+    answer: "Jay Ferguson",
+    distractors: ["Greg Daniels", "Michael Schur", "Thomas Newman"] },
+
+  { id: 253, category: "Behind the Scenes", difficulty: "Medium", tags: [],
+    question: "Which cast member who played Mose also co-created another popular sitcom, Parks and Recreation?",
+    answer: "Michael Schur",
+    distractors: ["Greg Daniels", "B.J. Novak", "Paul Lieberstein"] },
+
+  // ── EPISODES & EVENTS (Vol. 3) ────────────────────────────────
+  { id: 248, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "What restaurant did Pam get banned from after drinking too much?",
+    answer: "Chili's",
+    distractors: ["Benihana", "Poor Richard's", "Applebee's"] },
+
+  { id: 249, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "Where did Michael take the team for Booze Cruise?",
+    answer: "Lake Wallenpaupack",
+    distractors: ["Lake Scranton", "Atlantic Ocean", "the Susquehanna River"] },
+
+  { id: 250, category: "Locations & Miscellaneous", difficulty: "Medium", tags: [],
+    question: "What is the name of the bar where the Scranton crew often hangs out?",
+    answer: "Poor Richard's",
+    distractors: ["McGillicuddy's Pub", "Cooler's Bar", "Slack's Tavern"] },
+
+  { id: 254, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "In Season 2, what theme did the Dunder Mifflin Christmas party have?",
+    answer: "Yankee Swap (a.k.a. White Elephant)",
+    distractors: ["Winter Wonderland", "Secret Santa", "Moroccan Christmas"] },
+
+  { id: 255, category: "Episodes & Events", difficulty: "Easy", tags: [],
+    question: "In the 'Pool Party' episode, whose pool party is the office invited to?",
+    answer: "Robert California's",
+    distractors: ["Andy Bernard's", "Dwight Schrute's", "David Wallace's"] },
+
+  { id: 256, category: "Episodes & Events", difficulty: "Easy", tags: [],
+    question: "What event does the 'Niagara' two-part episode revolve around?",
+    answer: "Jim and Pam's wedding",
+    distractors: ["Dwight and Angela's engagement party", "Michael's farewell party", "The Dunder Mifflin company anniversary"] },
+
+  { id: 257, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "What theme does Phyllis choose when she takes over the Christmas party in Season 5?",
+    answer: "Moroccan theme",
+    distractors: ["Winter Wonderland", "Yankee Swap", "Hawaiian theme"] },
+
+  { id: 258, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "What is Michael forced to do during the Halloween episode in Season 2?",
+    answer: "Fire someone",
+    distractors: ["Wear a costume all day", "Attend sensitivity training", "Apologize to the entire office"] },
+
+  { id: 259, category: "Episodes & Events", difficulty: "Easy", tags: [],
+    question: "During the 'Fun Run' charity event, what is the cause the office is supporting?",
+    answer: "Rabies awareness",
+    distractors: ["Breast cancer research", "Hunger relief", "Animal shelter funding"] },
+
+  { id: 260, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "What type of party does Dwight host at Schrute Farms for the office team?",
+    answer: "Garden party",
+    distractors: ["Beet harvest festival", "Christmas party", "Birthday party"] },
+
+  { id: 267, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "In 'Office Olympics,' what unusual medal do winners receive?",
+    answer: "Yogurt lids",
+    distractors: ["Paper clip chains", "Bottle cap ribbons", "Sticky note stars"] },
+
+  { id: 268, category: "Episodes & Events", difficulty: "Easy", tags: [],
+    question: "In 'Scott's Tots,' what does Michael bring as a replacement gift for the students?",
+    answer: "Laptop batteries",
+    distractors: ["Gift cards", "Coupon booklet", "Notebooks and pens"] },
+
+  { id: 266, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "What is the name of Dwight's family Christmas tradition celebration?",
+    answer: "Belsnickel",
+    distractors: ["Schrute Fun Family Christmas", "The Schrute Harvest Festival", "Bratwurst Day"] },
+
+  { id: 265, category: "Episodes & Events", difficulty: "Easy", tags: [],
+    question: "What is the name of the movie Michael Scott writes and stars in?",
+    answer: "Threat Level Midnight",
+    distractors: ["Agent Michael: The Movie", "Scranton Nights", "The Michael Scott Story"] },
+
+  { id: 270, category: "Episodes & Events", difficulty: "Hard", tags: [],
+    question: "In 'Money,' which unusual piece of technology does Michael purchase for his condo that contributes to his financial problems?",
+    answer: "An exercise machine called 'Core Blaster Extreme'",
+    distractors: ["A home theater system", "A robotic vacuum cleaner", "A high-end treadmill"] },
+
+  { id: 271, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "In the 'Launch Party' episode, who did Dwight challenge to prove he is a better salesman than technology?",
+    answer: "Dunder Mifflin Infinity website",
+    distractors: ["Ryan Howard", "Jim Halpert", "A sales rep from Staples"] },
+
+  { id: 272, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "In 'Dinner Party,' what small gadget does Michael proudly show off in his condo as his prized possession?",
+    answer: "His tiny plasma TV",
+    distractors: ["A high-end stereo system", "A cappuccino machine", "A mini fridge"] },
+
+  { id: 274, category: "Episodes & Events", difficulty: "Hard", tags: [],
+    question: "In 'The Office Olympics,' who wins the gold medal in the game of 'Flonkerton'?",
+    answer: "Phyllis",
+    distractors: ["Pam", "Kevin", "Oscar"] },
+
+  { id: 275, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "In 'Beach Games,' what does Michael tell everyone the winner will receive?",
+    answer: "His job as Regional Manager",
+    distractors: ["A cash prize of $1,000", "A work trip to Canada", "Employee of the year award"] },
+
+  { id: 276, category: "Episodes & Events", difficulty: "Hard", tags: [],
+    question: "Who wins the paper airplane contest in Season 9?",
+    answer: "Toby",
+    distractors: ["Dwight", "Jim", "Kevin"] },
+
+  { id: 277, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "In 'Murder,' what game does Michael introduce to distract everyone from bad company news?",
+    answer: "Belles, Bourbon, and Bullets",
+    distractors: ["Clue", "Murder in the Manor", "Southern Comfort Mystery"] },
+
+  // ── COLD OPENS & RUNNING GAGS (Vol. 2) ───────────────────────
+  { id: 261, category: "Cold Opens & Running Gags", difficulty: "Medium", tags: [],
+    question: "What does Jim put in Andy's office ceiling to annoy him as a prank?",
+    answer: "His cell phone",
+    distractors: ["A radio", "An alarm clock", "A walkie talkie"] },
+
+  { id: 262, category: "Cold Opens & Running Gags", difficulty: "Medium", tags: [],
+    question: "Who encased Andy's calculator in Jell-O?",
+    answer: "Jim",
+    distractors: ["Dwight", "Pam", "Ryan"] },
+
+  { id: 264, category: "Cold Opens & Running Gags", difficulty: "Medium", tags: [],
+    question: "What did Jim name his team in response to Dwight naming his as Gryffindor?",
+    answer: "Voldemort",
+    distractors: ["Slytherin", "Hufflepuff", "Skywalker"] },
+
+  // ── EPISODES & EVENTS (Pranks & Parties) ─────────────────────
+  { id: 263, category: "Episodes & Events", difficulty: "Medium", tags: [],
+    question: "Who did Jim hire for Phyllis's bachelorette party?",
+    answer: "A Benjamin Franklin impersonator",
+    distractors: ["A male stripper", "A stand-up comedian", "A fortune teller"] },
+
+  // ── CHARACTERS (Vol. 4) ───────────────────────────────────────
+  { id: 269, category: "Characters", difficulty: "Medium", tags: [],
+    question: "Who invented the Suck It vacuum-like invention in The Office?",
+    answer: "David Wallace",
+    distractors: ["Dwight Schrute", "Ryan Howard", "Hank Doyle"] },
+
+  // ── RELATIONSHIPS & ROMANCE (Vol. 3) ─────────────────────────
+  { id: 273, category: "Relationships & Romance", difficulty: "Hard", tags: [],
+    question: "What romantic partner does Darryl Philbin pursue after moving to the upstairs office?",
+    answer: "Val Johnson",
+    distractors: ["Kelly Kapoor", "Donna Newton", "Nellie Bertram"] },
+
+  // ── MUSIC & PERFORMANCES (Vol. 2) ────────────────────────────
+  { id: 278, category: "Music & Performances", difficulty: "Medium", tags: [],
+    question: "In 'Andy's Play,' which musical does Andy perform in for his community theater show?",
+    answer: "Sweeney Todd",
+    distractors: ["Les Miserables", "The Phantom of the Opera", "Cats"] },
+
+  // ── QUOTES (Vol. 3) ───────────────────────────────────────────
+  { id: 279, category: "Quotes", difficulty: "Easy", tags: [],
+    question: "Who said, 'Would I rather be feared or loved? Easy. Both. I want people to be afraid of how much they love me.'",
+    answer: "Michael Scott",
+    distractors: ["Dwight Schrute", "Robert California", "Andy Bernard"] },
+
+  { id: 280, category: "Quotes", difficulty: "Hard", tags: [],
+    question: "'If I had to, I could clean out my desk in five seconds, and nobody would ever know that I'd ever been here. And I'd forget, too.' Who said this quote?",
+    answer: "Ryan Howard",
+    distractors: ["Toby Flenderson", "Jim Halpert", "Kelly Kapoor"] },
+
+  { id: 281, category: "Quotes", difficulty: "Medium", tags: [],
+    question: "Who said this line: 'Boy have you done lost your mind, 'cause I'll help you find it!'",
+    answer: "Stanley Hudson",
+    distractors: ["Darryl Philbin", "Michael Scott", "Kevin Malone"] },
+
+  { id: 282, category: "Quotes", difficulty: "Medium", tags: [],
+    question: "'I love inside jokes. I'd love to be a part of one someday.' Which character quoted this line?",
+    answer: "Michael Scott",
+    distractors: ["Andy Bernard", "Kevin Malone", "Toby Flenderson"] },
+
+  { id: 283, category: "Quotes", difficulty: "Medium", tags: [],
+    question: "Who said: 'I just want to lie on the beach and eat hot dogs. That's all I've ever wanted.'",
+    answer: "Kevin Malone",
+    distractors: ["Michael Scott", "Darryl Philbin", "Creed Bratton"] },
+
+  { id: 284, category: "Quotes", difficulty: "Hard", tags: [],
+    question: "'Do I need to be liked? Absolutely not. I like to be liked. I enjoy being liked. I have to be liked, but it's not like this compulsive need to be liked, like my need to be praised.' Who said this line?",
+    answer: "Michael Scott",
+    distractors: ["Dwight Schrute", "Andy Bernard", "Robert California"] },
+
+  { id: 285, category: "Quotes", difficulty: "Medium", tags: [],
+    question: "Who said: 'I am running away from my responsibilities. And it feels good.'",
+    answer: "Michael Scott",
+    distractors: ["Dwight Schrute", "Ryan Howard", "Kevin Malone"] },
+
+  { id: 286, category: "Quotes", difficulty: "Hard", tags: [],
+    question: "Which character said, 'The real crime, I think, was the beard.'",
+    answer: "Oscar Martinez",
+    distractors: ["Kevin Malone", "Toby Flenderson", "Jim Halpert"] },
+
+  { id: 287, category: "Quotes", difficulty: "Medium", tags: [],
+    question: "Who said: 'Sometimes I'll start a sentence and I don't even know where it's going. I just hope I find it along the way, like an improv conversation...an improversation.'",
+    answer: "Michael Scott",
+    distractors: ["Andy Bernard", "Kevin Malone", "Dwight Schrute"] },
+
+  { id: 288, category: "Quotes", difficulty: "Hard", tags: [],
+    question: "'It's true. Around this office, in the past, I have been a little abrupt with people. But the doctor said if I can't find a new way to relate more positively to my surroundings, I'm going to die.' Who quoted this line?",
+    answer: "Stanley Hudson",
+    distractors: ["Michael Scott", "Dwight Schrute", "Angela Martin"] },
+
+  { id: 289, category: "Quotes", difficulty: "Hard", tags: [],
+    question: "Who said, 'Close your mouth, sweetie. You look like a trout.'",
+    answer: "Phyllis Vance",
+    distractors: ["Angela Martin", "Jan Levinson", "Kelly Kapoor"] },
+
+  { id: 290, category: "Quotes", difficulty: "Easy", tags: [],
+    question: "Which character quoted: 'I am Beyonce, always.'",
+    answer: "Michael Scott",
+    distractors: ["Kelly Kapoor", "Ryan Howard", "Erin Hannon"] },
+
+  { id: 291, category: "Quotes", difficulty: "Easy", tags: [],
+    question: "Who said this hilarious line: 'Why waste time use lot word when few word do trick?'",
+    answer: "Kevin Malone",
+    distractors: ["Michael Scott", "Creed Bratton", "Dwight Schrute"] },
+
+  { id: 292, category: "Quotes", difficulty: "Medium", tags: [],
+    question: "Who said, 'I wish there was a way to know you're in the good old days before you've actually left them'?",
+    answer: "Andy Bernard",
+    distractors: ["Michael Scott", "Jim Halpert", "Pam Beesly"] },
+
+  { id: 293, category: "Quotes", difficulty: "Medium", tags: [],
+    question: "'Through concentration, I can raise and lower my cholesterol at will.' Who said it?",
+    answer: "Dwight Schrute",
+    distractors: ["Michael Scott", "Creed Bratton", "Robert California"] },
+
+  { id: 294, category: "Quotes", difficulty: "Medium", tags: [],
+    question: "There's a lot of beauty in ordinary things. Isn't that kind of the point? Who said this in the final episode?",
+    answer: "Pam Beesly",
+    distractors: ["Jim Halpert", "Michael Scott", "Holly Flax"] },
+
 ];
 
 // ── QUOTE REACTIONS ───────────────────────────────────────────────

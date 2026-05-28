@@ -222,6 +222,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mode === 'solo') updateSoloLbStatus();
       });
     });
+    document.querySelectorAll(`input[name="${mode}-count"]`).forEach(radio => {
+      radio.addEventListener('change', () => updateLobbyPoolCount(mode));
+    });
   });
 
   // Leaderboard qualifier status — also updates on question count and hardcore changes

@@ -66,7 +66,6 @@ function getLeaderboard() {
 
 function saveLeaderboard(entries) {
   localStorage.setItem(STORAGE_KEYS.leaderboard, JSON.stringify(entries));
-  _persistLeaderboardToFile(entries);
 }
 
 function addLeaderboardEntry(name, score, total, category, difficulty) {

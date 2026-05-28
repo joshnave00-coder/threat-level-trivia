@@ -203,11 +203,22 @@ function updateLobbyPoolCount(mode) {
   const diffInput = document.querySelector(`input[name="${mode}-diff"]:checked`);
   const difficulty = diffInput ? diffInput.value : 'Mixed';
   const n = filterQuestions(category, difficulty, character).length;
-  if (category === 'all' && character === 'all' && difficulty === 'Mixed') {
+
+  const countInput = document.querySelector(`input[name="${mode}-count"]:checked`);
+  const requested = countInput ? parseInt(countInput.value, 10) : 10;
+  const startBtn = document.getElementById(`btn-${mode}-start`);
+
+  if (n < requested) {
+    countEl.textContent = `Only ${n} question${n !== 1 ? 's' : ''} available (need ${requested})`;
+    countEl.className = 'lobby-pool-count lobby-pool-count-low';
+    if (startBtn) startBtn.disabled = true;
+  } else if (category === 'all' && character === 'all' && difficulty === 'Mixed') {
     countEl.textContent = '';
+    if (startBtn) startBtn.disabled = false;
   } else {
     countEl.textContent = `${n} question${n !== 1 ? 's' : ''} available`;
     countEl.className = `lobby-pool-count${n < 5 ? ' lobby-pool-count-low' : ''}`;
+    if (startBtn) startBtn.disabled = false;
   }
 }
 

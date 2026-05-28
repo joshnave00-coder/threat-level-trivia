@@ -84,34 +84,31 @@ function addLeaderboardEntry(name, score, total, category, difficulty) {
 
 function clearLeaderboard() {
   localStorage.removeItem(STORAGE_KEYS.leaderboard);
-  _persistLeaderboardToFile([]);
-}
-
-function _persistLeaderboardToFile(entries) {
-  fetch('/api/leaderboard', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(entries),
-  }).catch(() => {});
 }
 
 function loadLeaderboardFromFile() {
-  fetch('/api/leaderboard')
-    .then(r => r.json())
-    .then(fileEntries => {
-      if (!Array.isArray(fileEntries) || !fileEntries.length) return;
-      const local = getLeaderboard();
-      // Merge: combine both sets, re-sort, keep top 10
-      const combined = [...fileEntries];
-      local.forEach(le => {
-        const alreadyIn = combined.some(fe =>
-          fe.name === le.name && fe.date === le.date && fe.score === le.score);
-        if (!alreadyIn) combined.push(le);
-      });
-      combined.sort((a, b) => b.score - a.score || b.accuracy - a.accuracy);
-      localStorage.setItem(STORAGE_KEYS.leaderboard, JSON.stringify(combined.slice(0, 10)));
-    })
-    .catch(() => {});
+  // Global leaderboard is fetched live from the server when the leaderboard screen opens.
+}
+
+async function submitGlobalLeaderboardEntry(name, score, total, category, difficulty) {
+  try {
+    const res = await fetch('/api/leaderboard/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        score,
+        total,
+        accuracy: total > 0 ? Math.round((score / total) * 100) : 0,
+        category: category === 'all' ? 'All Categories' : category,
+        difficulty,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 // ── HISTORY LOG ───────────────────────────────────────────────────

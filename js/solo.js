@@ -11,6 +11,27 @@ let soloCurrentRating = 5;
 let soloVoteSubmitted = false;
 let pendingQuoteTimer = null;
 
+function updateSoloLbStatus() {
+  const el = document.getElementById('solo-lb-status');
+  if (!el) return;
+  const diff  = document.querySelector('input[name="solo-diff"]:checked')?.value;
+  const count = parseInt(document.querySelector('input[name="solo-count"]:checked')?.value || '0', 10);
+  const hardcore  = document.getElementById('solo-hardcore')?.checked;
+  const qualifies = (diff === 'Medium' || diff === 'Hard') && count >= 25 && !hardcore;
+  if (qualifies) {
+    el.innerHTML = '<span class="lb-status-pill qualifies">★ Qualifies for Global Leaderboard</span>';
+  } else {
+    const reasons = [];
+    if (diff !== 'Medium' && diff !== 'Hard') reasons.push('Medium or Hard difficulty');
+    if (count < 25) reasons.push('25 questions');
+    if (reasons.length) {
+      el.innerHTML = `<span class="lb-status-pill no-qualify">Needs ${reasons.join(' + ')} to qualify for Global Leaderboard</span>`;
+    } else {
+      el.innerHTML = '<span class="lb-status-pill no-qualify">Hardcore Mode disqualifies from leaderboard</span>';
+    }
+  }
+}
+
 function soloStart() {
   const name  = sanitizeName(document.getElementById('solo-name-input').value);
   if (!name) { showToast('Please enter your name first.'); return; }
@@ -177,15 +198,25 @@ function revealAnswer(q, wasRight) {
   const resultEl = document.getElementById('q-reveal-result');
   document.getElementById('q-reveal-answer').textContent = q.answer;
 
+  const ctxEl = document.getElementById('q-reveal-context');
+  if (!wasRight && q.context) {
+    ctxEl.textContent = q.context;
+    ctxEl.classList.remove('hidden');
+  } else {
+    ctxEl.textContent = '';
+    ctxEl.classList.add('hidden');
+  }
+
   if (GameState.config.hardcore) {
     // Don't show correct/incorrect yet — player will self-score
     resultEl.textContent = 'The answer is:';
     resultEl.className = 'reveal-result';
     document.getElementById('q-hc-score').classList.remove('hidden');
+    // Context deferred until self-score for hardcore
+    ctxEl.classList.add('hidden');
   } else {
     resultEl.textContent = wasRight ? '✓ Correct!' : '✗ Incorrect';
     resultEl.className = 'reveal-result ' + (wasRight ? 'result-correct' : 'result-wrong');
-    // Score immediately for MC
     scoreAnswer(wasRight);
     if (pendingQuoteTimer) clearTimeout(pendingQuoteTimer);
     pendingQuoteTimer = setTimeout(() => { pendingQuoteTimer = null; showQuote(wasRight); }, 300);
@@ -231,6 +262,14 @@ function handleHCScore(wasRight) {
   resultEl.className = 'reveal-result ' + (wasRight ? 'result-correct' : 'result-wrong');
   document.getElementById('q-hc-score').classList.add('hidden');
   scoreAnswer(wasRight);
+
+  const q = GameState.questions[GameState.currentQIdx];
+  const ctxEl = document.getElementById('q-reveal-context');
+  if (!wasRight && q.context) {
+    ctxEl.textContent = q.context;
+    ctxEl.classList.remove('hidden');
+  }
+
   showQuote(wasRight);
 }
 
@@ -301,11 +340,24 @@ function handleVote(direction) {
   btnDown.disabled = true;
 }
 
-function soloFinish() {
-  const player = GameState.players[0];
-  const total  = player.answers.length;
-  const correct = player.answers.filter(a => a.wasCorrect).length;
-  addLeaderboardEntry(player.name, correct, total, GameState.config.category, GameState.config.difficulty);
+async function soloFinish() {
+  const player   = GameState.players[0];
+  const total    = player.answers.length;
+  const correct  = player.answers.filter(a => a.wasCorrect).length;
+  const { difficulty, category } = GameState.config;
+
+  addLeaderboardEntry(player.name, correct, total, category, difficulty);
+
+  const qualifies = total >= 25 && (difficulty === 'Medium' || difficulty === 'Hard') && !GameState.config.hardcore;
+  GameState.lastGameQualified = qualifies;
+  GameState.globalSubmitted   = false;
+
+  if (qualifies) {
+    GameState.globalSubmitted = await submitGlobalLeaderboardEntry(
+      player.name, correct, total, category, difficulty
+    );
+  }
+
   renderSoloResults(player);
   showScreen('screen-solo-results');
 }

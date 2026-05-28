@@ -72,6 +72,7 @@
     <div class="home-links">
       <button class="btn-link" id="btn-leaderboard">Employee Records</button>
       <button class="btn-link" id="btn-feedback">Suggestion Box</button>
+      <button class="btn-link" id="btn-donate">Party Planning Committee</button>
     </div>
 
     <div class="home-social">
@@ -160,7 +161,12 @@
 
       <section class="rules-section">
         <h3>Solo Mode - "Begin the Deposition"</h3>
-        <p>Test your Office knowledge on your own. Enter your name, pick a category, difficulty, and how many questions you want. Answer multiple-choice questions (or go <strong>Hardcore</strong> and type your own answers). Your score gets saved to the Employee Records leaderboard.</p>
+        <p>Test your Office knowledge on your own. Enter your name, pick a category, difficulty, and how many questions you want. Answer multiple-choice questions (or go <strong>Hardcore</strong> and type your own answers).</p>
+      </section>
+
+      <section class="rules-section">
+        <h3>Employee Records (Global Leaderboard)</h3>
+        <p>The global leaderboard tracks the best scores across all players. To qualify, you must complete <strong>25 questions</strong> on <strong>Medium or Hard difficulty</strong>. Easy questions and Mixed difficulty do not qualify. This keeps the rankings honest - no cherry-picking easy questions or stopping at 5 to lock in a perfect score.</p>
       </section>
 
       <section class="rules-section">
@@ -286,6 +292,7 @@
 
     </div>
     <p id="solo-pool-count" class="lobby-pool-count"></p>
+    <div id="solo-lb-status" class="solo-lb-status"></div>
     <button class="btn btn-primary btn-lg" id="btn-solo-start">Begin the Deposition</button>
   </div>
 </div>
@@ -342,6 +349,7 @@
         <span class="reveal-label">Correct Answer:</span>
         <span id="q-reveal-answer" class="reveal-answer-text"></span>
       </div>
+      <div id="q-reveal-context" class="reveal-context hidden"></div>
 
       <!-- Hardcore self-scoring -->
       <div id="q-hc-score" class="hc-score-panel hidden">
@@ -430,6 +438,7 @@
       <div class="results-accuracy"  id="results-accuracy"></div>
       <div class="results-grade"     id="results-grade"></div>
     </div>
+    <div id="results-global-status" class="results-global-status"></div>
     <div class="results-breakdown" id="results-breakdown"></div>
     <div class="results-actions">
       <button class="btn btn-primary"    id="btn-view-leaderboard">Employee Records</button>
@@ -448,8 +457,8 @@
     <h2>Employee Records: Top Performers</h2>
   </div>
   <div class="screen-body">
+    <p class="lb-qualifier-note">Global rankings. Qualify by completing 25 questions on Medium or Hard difficulty.</p>
     <div id="leaderboard-list" class="leaderboard-list"></div>
-    <button class="btn-link" id="btn-clear-leaderboard" style="margin-top:0.5rem">Clear Records</button>
   </div>
 </div>
 
@@ -623,6 +632,7 @@
       <button class="admin-nav-item active" data-panel="questions">Questions</button>
       <button class="admin-nav-item" data-panel="review">Disputes &amp; Feedback</button>
       <button class="admin-nav-item" data-panel="community-ratings">Community Ratings</button>
+      <button class="admin-nav-item" data-panel="leaderboard">Leaderboard</button>
       <button class="admin-nav-item" data-panel="export">Export</button>
       <button class="admin-nav-item" data-panel="password">Change Password</button>
       <div class="admin-nav-spacer"></div>
@@ -683,6 +693,14 @@
         <div id="admin-ratings-list" class="cr-list"></div>
       </div>
 
+      <!-- LEADERBOARD PANEL -->
+      <div id="admin-panel-leaderboard" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.5rem;color:var(--navy)">Global Leaderboard</h3>
+        <p class="settings-desc">Remove entries with inappropriate usernames. Deletions are permanent.</p>
+        <div id="admin-lb-list" class="admin-lb-list"></div>
+        <p id="admin-lb-empty" class="admin-empty hidden">No leaderboard entries yet.</p>
+      </div>
+
       <!-- EXPORT PANEL -->
       <div id="admin-panel-export" class="admin-panel hidden">
         <h3 style="margin-bottom:0.5rem;color:var(--navy)">Export Questions</h3>
@@ -702,6 +720,7 @@
           <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor3" checked> Distractor 3</label>
           <label class="export-col-check"><input type="checkbox" name="export-col" value="category" checked> Category</label>
           <label class="export-col-check"><input type="checkbox" name="export-col" value="difficulty" checked> Difficulty</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="context"> Answer Context</label>
           <label class="export-col-check"><input type="checkbox" name="export-col" value="tags"> Tags</label>
           <label class="export-col-check"><input type="checkbox" name="export-col" value="type"> Type</label>
           <label class="export-col-check"><input type="checkbox" name="export-col" value="enabled"> Enabled</label>
@@ -834,6 +853,12 @@
       </div>
 
       <div class="form-group form-group-full">
+        <label for="qe-context">Answer Context <span class="field-optional">(shown on incorrect answers)</span></label>
+        <textarea id="qe-context" class="input-field qe-context-textarea" placeholder="Optional context explaining why this is the correct answer..." maxlength="1000"></textarea>
+        <div class="char-counter"><span id="qe-context-count">0</span> / 1,000</div>
+      </div>
+
+      <div class="form-group form-group-full">
         <label>Tags</label>
         <div class="qe-tags-area">
           <div id="qe-tag-chips" class="tag-chips"></div>
@@ -912,6 +937,30 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════
+     DONATE MODAL — Party Planning Committee
+════════════════════════════════════════════════ -->
+<div id="donate-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="donate-modal-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="donate-modal-title">Donate to the Party Planning Committee</h2>
+      <button class="btn-icon modal-close" id="btn-donate-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="donate-body">
+      <blockquote class="donate-quote" id="donate-quote-text"></blockquote>
+      <cite class="donate-quote-attr" id="donate-quote-attr"></cite>
+      <p class="donate-desc">This is a fan project built with an embarrassing amount of love and an irresponsible number of rewatches. If it made you laugh, argue, or say &ldquo;wait, that&rsquo;s actually from Season 3,&rdquo; consider buying the developer a coffee. Michael Scott would call it an investment in human capital. We&rsquo;ll just call it very appreciated.</p>
+      <a href="https://buymeacoffee.com/threatleveltrivia" target="_blank" rel="noopener noreferrer" class="btn btn-primary donate-coffee-btn">
+        &#9749; Buy Me a Coffee
+      </a>
+      <p class="donate-note">Fan-made. 100% independent. Not affiliated with NBC, Universal, or Corporate. (Corporate never helped us anyway.)</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-donate-cancel">Not Today, Michael</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
      SCRIPTS — load order matters
 ════════════════════════════════════════════════ -->
 <script src="js/data.js"></script>
@@ -922,6 +971,7 @@
 <script src="js/party.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/feedback.js"></script>
+<script src="js/donate.js"></script>
 <script src="js/app.js"></script>
 <script>
   // Route /admin directly to the login screen (runs immediately, no external JS dependency)

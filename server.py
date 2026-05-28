@@ -150,6 +150,12 @@ class TLTHandler(SimpleHTTPRequestHandler):
                 '/api/ratings':  RATINGS_FILE,
             }
             self._save_file(file_map[self.path])
+        elif self.path == '/api/leaderboard/submit':
+            self._save_leaderboard_entry()
+        elif self.path == '/api/admin/leaderboard/remove':
+            if not self._check_admin_token():
+                return
+            self._remove_leaderboard_entry()
         elif self.path in ('/api/tags', '/api/leaderboard',
                            '/api/question-edits', '/api/custom-questions', '/api/disabled-questions'):
             if not self._check_admin_token():
@@ -284,6 +290,89 @@ class TLTHandler(SimpleHTTPRequestHandler):
             data = json.loads(raw)
             with open(path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
+            self._send_json(200, {'ok': True})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def _remove_leaderboard_entry(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            raw    = self.rfile.read(min(length, 256))
+            data   = json.loads(raw)
+            entry_id = data.get('id')
+            if entry_id is None:
+                self.send_error(400, 'id required')
+                return
+            if os.path.exists(LEADERBOARD_FILE):
+                with open(LEADERBOARD_FILE, 'r', encoding='utf-8') as f:
+                    entries = json.load(f)
+                if not isinstance(entries, list):
+                    entries = []
+            else:
+                entries = []
+            entries = [e for e in entries if e.get('id') != entry_id]
+            with open(LEADERBOARD_FILE, 'w', encoding='utf-8') as f:
+                json.dump(entries, f, indent=2, ensure_ascii=False)
+            self._send_json(200, {'ok': True})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def _save_leaderboard_entry(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            if length > 2048:
+                self.send_error(413, 'Payload too large')
+                return
+            raw  = self.rfile.read(min(length, 2048))
+            data = json.loads(raw)
+
+            name       = str(data.get('name')     or '').strip()[:30]
+            score      = data.get('score')
+            total      = data.get('total')
+            category   = str(data.get('category') or 'All Categories').strip()[:60]
+            difficulty = str(data.get('difficulty') or '').strip()
+            date_str   = str(data.get('date')      or '').strip()[:32]
+
+            if not name:
+                self.send_error(400, 'Name required')
+                return
+            if not isinstance(score, int) or not isinstance(total, int):
+                self.send_error(400, 'Invalid score')
+                return
+            if total < 25 or difficulty not in ('Medium', 'Hard'):
+                self.send_error(400, 'Does not meet qualification requirements')
+                return
+            if not (0 <= score <= 25):
+                self.send_error(400, 'Score out of range')
+                return
+
+            accuracy = round((score / total) * 100)
+
+            if os.path.exists(LEADERBOARD_FILE):
+                with open(LEADERBOARD_FILE, 'r', encoding='utf-8') as f:
+                    entries = json.load(f)
+                if not isinstance(entries, list):
+                    entries = []
+            else:
+                entries = []
+
+            entries.append({
+                'id':         int(__import__('time').time() * 1000),
+                'name':       name,
+                'score':      score,
+                'total':      total,
+                'accuracy':   accuracy,
+                'category':   category,
+                'difficulty': difficulty,
+                'date':       date_str,
+            })
+
+            entries.sort(key=lambda e: (-e.get('score', 0), -e.get('accuracy', 0)))
+            entries = entries[:100]
+
+            with open(LEADERBOARD_FILE, 'w', encoding='utf-8') as f:
+                json.dump(entries, f, indent=2, ensure_ascii=False)
+
             self._send_json(200, {'ok': True})
         except Exception as e:
             self.send_error(500, str(e))

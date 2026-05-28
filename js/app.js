@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── FEEDBACK ──────────────────────────────────────────────────────
   initFeedback();
 
+  // ── DONATE ────────────────────────────────────────────────────────
+  initDonate();
+
   // ── HAMBURGER MENU ───────────────────────────────────────────────
   const hamburgerBtn = document.getElementById('btn-hamburger');
   const hamburgerMenu = document.getElementById('hamburger-menu');
@@ -165,12 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-home-from-results').addEventListener('click', () => showScreen('screen-home'));
 
   // ── LEADERBOARD ──────────────────────────────────────────────────
-  document.getElementById('btn-clear-leaderboard').addEventListener('click', () => {
-    if (confirm('Clear all employee records? This cannot be undone.')) {
-      clearLeaderboard();
-      renderLeaderboard();
-    }
-  });
 
   // ── PARTY FLOW ───────────────────────────────────────────────────
   document.getElementById('btn-add-player').addEventListener('click', partyBuildNameInputs);
@@ -220,9 +217,19 @@ document.addEventListener('DOMContentLoaded', () => {
       _bind(id, 'change', () => updateLobbyPoolCount(mode));
     });
     document.querySelectorAll(`input[name="${mode}-diff"]`).forEach(radio => {
-      radio.addEventListener('change', () => updateLobbyPoolCount(mode));
+      radio.addEventListener('change', () => {
+        updateLobbyPoolCount(mode);
+        if (mode === 'solo') updateSoloLbStatus();
+      });
     });
   });
+
+  // Leaderboard qualifier status — also updates on question count and hardcore changes
+  document.querySelectorAll('input[name="solo-count"]').forEach(radio => {
+    radio.addEventListener('change', updateSoloLbStatus);
+  });
+  _bind('solo-hardcore', 'change', updateSoloLbStatus);
+  updateSoloLbStatus();
 
   _bind('aq-search', 'input', e => { adminQFilter.search = e.target.value; renderAdminQuestions(); });
   _bind('aq-filter-category', 'change', e => { adminQFilter.category = e.target.value; renderAdminQuestions(); });
@@ -233,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
   _bind('btn-qe-cancel', 'click', closeQuestionEditor);
   _bind('btn-qe-add-tag', 'click', addModalTag);
   _bind('qe-tag-input', 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addModalTag(); } });
+  _bind('qe-context', 'input', e => { document.getElementById('qe-context-count').textContent = e.target.value.length; });
   _bind('question-modal', 'click', e => { if (e.target.id === 'question-modal') closeQuestionEditor(); });
 
   // Community ratings tab controls

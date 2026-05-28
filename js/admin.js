@@ -29,6 +29,7 @@ async function adminLogin() {
       try { renderAdminQuestions(); } catch (err) { console.error('renderAdminQuestions failed:', err); }
       try { renderAdminDisputes();  } catch (err) { console.error('renderAdminDisputes failed:', err);  }
       loadAndRenderAdminFeedback();
+      loadAndRenderAdminLeaderboard();
       showScreen('screen-admin');
     } else {
       errorEl.classList.remove('hidden');
@@ -93,13 +94,14 @@ function switchAdminPanel(panel) {
   activeAdminTab = panel;
   document.querySelectorAll('.admin-nav-item').forEach(el =>
     el.classList.toggle('active', el.dataset.panel === panel));
-  ['questions', 'review', 'community-ratings', 'export', 'password', 'admin-help'].forEach(name => {
+  ['questions', 'review', 'community-ratings', 'leaderboard', 'export', 'password', 'admin-help'].forEach(name => {
     const el = document.getElementById(`admin-panel-${name}`);
     if (el) el.classList.toggle('hidden', panel !== name);
   });
   if (panel === 'review') loadAndRenderAdminFeedback();
   if (panel === 'questions') renderAdminQuestions();
   if (panel === 'community-ratings') renderAdminRatings();
+  if (panel === 'leaderboard') loadAndRenderAdminLeaderboard();
 }
 
 // ── QUESTION MANAGEMENT ──────────────────────────────────────────
@@ -261,12 +263,16 @@ function openQuestionEditor(id) {
     document.getElementById('qe-d3').value = q.distractors[2] || '';
     document.getElementById('qe-category').value = q.category;
     document.getElementById('qe-difficulty').value = q.difficulty;
+    document.getElementById('qe-context').value = q.context || '';
+    document.getElementById('qe-context-count').textContent = (q.context || '').length;
     editingTagsFor = [...getEffectiveTags(q)];
   } else {
     title.textContent = 'Add New Question';
     document.getElementById('qe-id').value = '';
     document.getElementById('qe-category').value = CATEGORIES[0];
     document.getElementById('qe-difficulty').value = 'Medium';
+    document.getElementById('qe-context').value = '';
+    document.getElementById('qe-context-count').textContent = '0';
     editingTagsFor = [];
   }
 
@@ -321,7 +327,9 @@ function saveQuestion(e) {
   }
   errorEl.classList.add('hidden');
 
+  const context = document.getElementById('qe-context').value.trim();
   const data = { question, answer, distractors: [d1, d2, d3], category, difficulty };
+  if (context) data.context = context;
   const baseIds = new Set(QUESTIONS.map(q => q.id));
 
   if (idVal) {
@@ -356,6 +364,7 @@ const EXPORT_COL_MAP = {
   'distractor3':     { header: 'Distractor 3',     get: (q)         => csvCell(q.distractors[2] || '') },
   'category':        { header: 'Category',         get: (q)         => csvCell(q.category) },
   'difficulty':      { header: 'Difficulty',       get: (q)         => q.difficulty },
+  'context':         { header: 'Answer Context',    get: (q)         => csvCell(q.context || '') },
   'tags':            { header: 'Tags',             get: (q)         => csvCell(getEffectiveTags(q).join(', ')) },
   'type':            { header: 'Type',             get: (q, ctx)    => !ctx.baseIds.has(q.id) ? 'Custom' : ctx.edits[q.id] ? 'Edited' : 'Base' },
   'enabled':         { header: 'Enabled',          get: (q, ctx)    => ctx.disabled.includes(q.id) ? 'No' : 'Yes' },
@@ -445,6 +454,64 @@ const _FB_TYPE_LABELS = {
   general: 'General', suggestion: 'Suggestion', bug: 'Bug Report',
   question: 'Question Idea', other: 'Other',
 };
+
+// ── LEADERBOARD MANAGEMENT ────────────────────────────────────────
+
+function loadAndRenderAdminLeaderboard() {
+  const list  = document.getElementById('admin-lb-list');
+  const empty = document.getElementById('admin-lb-empty');
+  if (!list) return;
+  list.innerHTML = '<p class="admin-empty">Loading...</p>';
+
+  fetch('/api/leaderboard')
+    .then(r => r.json())
+    .then(entries => {
+      if (!Array.isArray(entries) || !entries.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = entries.map((e, i) => `
+        <div class="admin-lb-row">
+          <span class="admin-lb-rank">${i + 1}</span>
+          <div class="admin-lb-info">
+            <span class="admin-lb-name">${escHtml(e.name)}</span>
+            <span class="admin-lb-detail">${e.score}/${e.total} &middot; ${e.accuracy}% &middot; ${escHtml(e.difficulty)} &middot; ${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>
+          </div>
+          <button class="btn btn-wrong btn-sm admin-lb-remove" onclick="removeLeaderboardEntry(${e.id ?? 'null'}, this)">Remove</button>
+        </div>`).join('');
+    })
+    .catch(() => {
+      if (list) list.innerHTML = '<p class="admin-empty">Could not load leaderboard.</p>';
+    });
+}
+
+async function removeLeaderboardEntry(id, btn) {
+  if (id === null || id === undefined) { showToast('Entry has no ID - cannot remove.'); return; }
+  if (!confirm('Remove this leaderboard entry? This cannot be undone.')) return;
+  btn.disabled = true;
+  btn.textContent = 'Removing...';
+  try {
+    const res = await fetch('/api/admin/leaderboard/remove', {
+      method: 'POST',
+      headers: _adminHeaders(),
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) {
+      showToast('Entry removed.');
+      loadAndRenderAdminLeaderboard();
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Remove';
+      showToast('Failed to remove entry.');
+    }
+  } catch {
+    btn.disabled = false;
+    btn.textContent = 'Remove';
+    showToast('Server error - could not remove entry.');
+  }
+}
 
 function loadAndRenderAdminFeedback() {
   fetch('/api/feedback')

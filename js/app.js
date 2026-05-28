@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sync all persistent data from files into localStorage on every load
   loadDisputesFromFile();
   loadRatingsFromFile();
+  loadVotesFromFile();
   loadTagsFromFile();
   loadLeaderboardFromFile();
   loadQuestionEditsFromFile();
@@ -17,6 +18,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── FEEDBACK ──────────────────────────────────────────────────────
   initFeedback();
+
+  // ── HAMBURGER MENU ───────────────────────────────────────────────
+  const hamburgerBtn = document.getElementById('btn-hamburger');
+  const hamburgerMenu = document.getElementById('hamburger-menu');
+
+  hamburgerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hamburgerMenu.classList.toggle('hidden');
+    hamburgerBtn.classList.toggle('hamburger-open');
+  });
+
+  document.getElementById('menu-about').addEventListener('click', (e) => {
+    e.stopPropagation();
+    hamburgerMenu.classList.add('hidden');
+    hamburgerBtn.classList.remove('hamburger-open');
+    showScreen('screen-about');
+  });
+
+  document.getElementById('menu-rules').addEventListener('click', (e) => {
+    e.stopPropagation();
+    hamburgerMenu.classList.add('hidden');
+    hamburgerBtn.classList.remove('hamburger-open');
+    showScreen('screen-rules');
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener('click', () => {
+    if (!hamburgerMenu.classList.contains('hidden')) {
+      hamburgerMenu.classList.add('hidden');
+      hamburgerBtn.classList.remove('hamburger-open');
+    }
+  });
 
   // ── HOME ────────────────────────────────────────────────────────
   document.getElementById('btn-solo').addEventListener('click', () => showScreen('screen-solo-name'));
@@ -28,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLeaderboard();
     showScreen('screen-leaderboard');
   });
-  document.getElementById('btn-settings').addEventListener('click', () => showScreen('screen-settings'));
 
   // ── BACK BUTTONS ────────────────────────────────────────────────
   document.querySelectorAll('.btn-back[data-target]').forEach(btn => {
@@ -104,6 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirm(msg)) showScreen('screen-home');
   });
 
+  // Vote buttons
+  document.getElementById('btn-vote-up').addEventListener('click', () => handleVote('up'));
+  document.getElementById('btn-vote-down').addEventListener('click', () => handleVote('down'));
+
   // Dispute
   document.getElementById('btn-dispute-open').addEventListener('click', () => {
     document.getElementById('q-dispute-form').classList.toggle('hidden');
@@ -164,30 +200,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('admin-password-input');
     input.type = input.type === 'password' ? 'text' : 'password';
   });
-  document.getElementById('btn-export-questions').addEventListener('click', exportQuestions);
-  document.getElementById('btn-export-select-all').addEventListener('click', () => {
-    document.querySelectorAll('input[name="export-col"]').forEach(c => c.checked = true);
-  });
-  document.getElementById('btn-export-deselect-all').addEventListener('click', () => {
-    document.querySelectorAll('input[name="export-col"]').forEach(c => c.checked = false);
-  });
-  document.getElementById('btn-clear-history').addEventListener('click', () => {
-    if (confirm('Clear all answer history? This cannot be undone.')) {
-      clearHistory();
-      showToast('History cleared.');
-    }
-  });
+  const _bind = (id, evt, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(evt, fn); };
+  _bind('btn-export-questions',   'click', exportQuestions);
+  _bind('btn-export-select-all',   'click', () => document.querySelectorAll('input[name="export-col"]').forEach(c => c.checked = true));
+  _bind('btn-export-deselect-all', 'click', () => document.querySelectorAll('input[name="export-col"]').forEach(c => c.checked = false));
 
-  // ── ADMIN TABS ───────────────────────────────────────────────────
-  document.querySelectorAll('.admin-tab').forEach(tab => {
-    tab.addEventListener('click', () => switchAdminTab(tab.dataset.tab));
+  // ── ADMIN NAV ────────────────────────────────────────────────────
+  document.querySelectorAll('.admin-nav-item').forEach(item => {
+    item.addEventListener('click', () => switchAdminPanel(item.dataset.panel));
   });
 
   // Question management controls (guarded so missing elements don't break login)
   populateCategoryDropdowns();
   populateCharacterDropdowns();
 
-  const _bind = (id, evt, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(evt, fn); };
   // Pool count live updates for both lobbies
   ['solo', 'party'].forEach(mode => {
     [`${mode}-category`, `${mode}-character`].forEach(id => {
@@ -236,5 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dl.appendChild(opt);
     });
   }
+
+  _bind('btn-chpw-save', 'click', changeAdminPassword);
 
 });

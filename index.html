@@ -3,7 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Threat Level Trivia: Dunder Mifflin</title>
+  <title>Threat Level Trivia - The Ultimate Office Trivia Game</title>
+  <meta name="description" content="Test your knowledge of The Office with hundreds of trivia questions across characters, episodes, quotes, and behind-the-scenes facts. Solo and multiplayer modes.">
+
+  <!-- Open Graph (Facebook, Discord, iMessage, etc.) -->
+  <meta property="og:title" content="Threat Level Trivia - The Ultimate Office Trivia Game">
+  <meta property="og:description" content="Hundreds of questions about The Office. Solo play, party mode, difficulty ratings, and a leaderboard. How well do you really know Dunder Mifflin?">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://threatleveltrivia.com">
+  <meta property="og:site_name" content="Threat Level Trivia">
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@ThreatLevelTriv">
+  <meta name="twitter:title" content="Threat Level Trivia - The Ultimate Office Trivia Game">
+  <meta name="twitter:description" content="Hundreds of questions about The Office. Solo play, party mode, and a leaderboard. How well do you really know Dunder Mifflin?">
+
+  <link rel="icon" type="image/png" href="/favicon.PNG">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -21,14 +37,26 @@
 ════════════════════════════════════════════════ -->
 <div id="screen-home" class="screen active">
   <header class="dm-header">
-    <!-- Image placeholder: swap src with actual logo file when ready -->
-    <div class="dm-logo-img" title="Dunder Mifflin Logo">
-      LOGO<br>HERE
-    </div>
+    <img src="/favicon.PNG" alt="Threat Level Trivia Logo" class="dm-logo-img">
     <div class="dm-logo-placeholder">
       <span class="dm-logo-text">Dunder Mifflin</span>
       <span class="dm-logo-sub">Paper Company, Inc. - Scranton Branch</span>
     </div>
+    <button class="hamburger-btn" id="btn-hamburger" aria-label="Menu" title="Menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    <nav class="hamburger-menu hidden" id="hamburger-menu">
+      <button class="hamburger-menu-item" id="menu-about">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        About
+      </button>
+      <button class="hamburger-menu-item" id="menu-rules">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        How to Play
+      </button>
+    </nav>
   </header>
 
   <main class="home-main">
@@ -43,12 +71,135 @@
 
     <div class="home-links">
       <button class="btn-link" id="btn-leaderboard">Employee Records</button>
-      <button class="btn-link" id="btn-settings">File a Complaint</button>
       <button class="btn-link" id="btn-feedback">Suggestion Box</button>
+    </div>
+
+    <div class="home-social">
+      <a href="https://youtube.com/@ThreatLevelTrivia" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" aria-hidden="true">
+          <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/>
+        </svg>
+      </a>
+      <a href="https://x.com/ThreatLevelTriv" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="X / Twitter">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+      </a>
+      <a href="https://instagram.com/threatleveltrivia" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="23" height="23" aria-hidden="true">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+      </a>
+      <a href="mailto:Threat.Level.Trivia@gmail.com" class="social-icon" aria-label="Email us">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" aria-hidden="true">
+          <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+        </svg>
+      </a>
     </div>
   </main>
 
-  <footer class="dm-footer">Dunder Mifflin, Inc. &copy; Scranton, PA &ndash; &ldquo;Limitless paper in a paperless world.&rdquo;</footer>
+  <footer class="dm-footer">
+    <span>Dunder Mifflin, Inc. &copy; Scranton, PA &ndash; &ldquo;Limitless paper in a paperless world.&rdquo;</span>
+    <span class="dm-disclaimer">Fan-made project. Not affiliated with, endorsed by, or associated with NBC, Universal Television, or any related entities. The Office is a trademark of Universal Television.</span>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: ABOUT
+════════════════════════════════════════════════ -->
+<div id="screen-about" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-home">&larr; Back</button>
+    <h2>About</h2>
+  </div>
+  <div class="screen-body">
+    <div class="about-letter">
+      <div class="about-memo-header">
+        <p class="about-memo-line"><strong>FROM THE DESK OF THE REGIONAL MANAGER</strong></p>
+        <p class="about-memo-line"><strong>RE:</strong> Threat Level Trivia....and Why?</p>
+        <p class="about-memo-line"><strong>TO:</strong> The Interwebs</p>
+      </div>
+
+      <div class="about-body">
+        <p>It all started by attending an Office trivia night, apparently trivia nights have become quite 'a thing' - and it appears The Office themed events are always packed. When I attended my first...Standing room only. That part was great. The questions? Not so much.</p>
+
+        <p>They were the kind of questions where, if you know just enough, you get them right, but if you actually know the show deeply, you start raising your hand to dispute the answer. The kind where the wording leaves a crack open for a technically-correct-but-obscure counterpoint, and instead of celebrating what you know, you're arguing with a pleasant and kind host, who's hardly watched the show, about Season 4 continuity. That's not trivia. That's frustration with a microphone.</p>
+
+        <p>And look, I'm not trying to be difficult. I don't want to be the person standing up in a crowded bar yelling "ACTUALLY, Dwight said that in Season 3, not Season 2." But if you're going to ask me trivia about a show I've watched enough times to qualify as a dependent on my taxes, the answers need to be right.</p>
+
+        <p>So this became the thing: There needs to be a better Office trivia question bank. Not just a casual quiz you click through once on some clickbait site between listicles about which character is your spirit animal. A real, curated, community-validated collection of questions that hold up under scrutiny from people who have seen the show way more times than they probably should admit. We're talking Dinner Party episode uncomfortable levels of scrutiny.</p>
+
+        <p>Threat Level Trivia is that project. Named after the legendary Michael Scott film Threat Level Midnight (but just different enough to keep the lawyers at bay), it's a free, browser-based trivia game built for the kind of fan who appreciates accuracy.</p>
+
+        <p>The game has solo mode for those lone wolves out there (Dwight would approve - he works best alone, obviously), party mode for groups who want to settle debates the right way, difficulty tiers ranging from "Casual Friday" to "basically a Schrute family hazing ritual," and most importantly, a community feedback loop. Every question can be rated for difficulty and flagged for disputes, because this isn't a top-down trivia dictatorship. It's more of a "suggestion box that people actually read" situation. Unlike a certain suggestion box at a certain paper company that was mostly used for complaints about a certain regional manager.</p>
+
+        <p>The best Office trivia should be shaped by the people who care about it the most. There is always somebody who knows more than you do about any given thing, and this project is built to welcome exactly those people. You know the name of the bat that got loose in the office? You remember what Ryan's business degree thesis was about? You can recite the rules of Flonkerton? Welcome home.</p>
+
+        <p>It's a fan-made labor of love, built one question at a time, validated by the community, and served up in the aesthetic of Scranton's finest paper company. No question goes in without being held to a standard, and no answer gets to hide behind lazy wording. We spent a lot of late nights making sure every single one could handle whatever you throw at it - and trust me, it's harder than it looks. That's what she said.</p>
+
+        <p>If you think you know The Office, prove it. And if you find a question to dispute...Great! That's the whole point. File a complaint, rate the difficulty, tell us we're wrong. This project runs on that kind of passion. As the great Wayne Gretzky, as quoted by the great Michael Scott, once said: "You miss 100% of the shots you don't take."</p>
+
+        <p class="about-signoff">So take the shot.</p>
+      </div>
+
+      <p class="about-disclaimer"><em>Threat Level Trivia is a fan project and is not affiliated with NBC, Universal Television, or any related entities.</em></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: HOW TO PLAY
+════════════════════════════════════════════════ -->
+<div id="screen-rules" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" data-target="screen-home">&larr; Back</button>
+    <h2>How to Play</h2>
+  </div>
+  <div class="screen-body">
+    <div class="rules-content">
+
+      <section class="rules-section">
+        <h3>Solo Mode - "Begin the Deposition"</h3>
+        <p>Test your Office knowledge on your own. Enter your name, pick a category, difficulty, and how many questions you want. Answer multiple-choice questions (or go <strong>Hardcore</strong> and type your own answers). Your score gets saved to the Employee Records leaderboard.</p>
+      </section>
+
+      <section class="rules-section">
+        <h3>Party Mode - "Call a Meeting"</h3>
+        <p>Grab 2-8 players for a group showdown. Everyone takes turns answering questions on the same screen. Enable <strong>Speed Round</strong> to add a timer for bonus points. If there's a tie at the end, a sudden-death wager round settles it.</p>
+      </section>
+
+      <section class="rules-section">
+        <h3>Difficulty Levels</h3>
+        <ul>
+          <li><strong>Easy:</strong> If you've seen the show, you'll probably get these. General characters, big moments, famous quotes.</li>
+          <li><strong>Medium:</strong> You've watched a few times through. Specific episodes, side characters, running gags.</li>
+          <li><strong>Hard:</strong> Deep cuts. Background details, exact quotes, obscure episode facts. You basically live in Scranton.</li>
+          <li><strong>Random:</strong> A mix of everything. Good luck.</li>
+        </ul>
+      </section>
+
+      <section class="rules-section">
+        <h3>Hardcore Mode</h3>
+        <p>No multiple choice. The question appears and you have to know the answer before clicking "Reveal." Then you honestly score yourself. It's the honor system - something Dwight would never trust, but we're going with it anyway.</p>
+      </section>
+
+      <section class="rules-section">
+        <h3>Community Feedback</h3>
+        <p>After each question you can:</p>
+        <ul>
+          <li><strong>Vote:</strong> Thumbs up or down to tell us if it's a good question.</li>
+          <li><strong>Rate difficulty:</strong> Slide the scale from 1 (easy) to 10 (hard). Enough ratings and the community score overrides the original difficulty label.</li>
+          <li><strong>File a Dispute:</strong> Think the answer is wrong or the wording is off? Let us know. Every dispute gets reviewed.</li>
+        </ul>
+      </section>
+
+      <section class="rules-section">
+        <h3>Suggestion Box</h3>
+        <p>Have an idea, feedback, or just want to tell us your favorite Michael Scott moment? Hit the Suggestion Box on the home screen. We actually read these.</p>
+      </section>
+
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════
@@ -201,21 +352,39 @@
         </div>
       </div>
 
-      <!-- Solo-only: rate + dispute -->
+      <button id="btn-next-question" class="btn btn-primary btn-lg next-btn">Next Question →</button>
+
+      <!-- Community feedback (secondary, below next button) -->
       <div id="q-solo-actions" class="solo-actions hidden">
+        <div class="community-divider">
+          <span>Community Feedback</span>
+        </div>
+
+        <div class="vote-row">
+          <button class="vote-btn vote-up" id="btn-vote-up" title="Good question - well written, accurate, and fun to answer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            <span class="vote-label">Good Question</span>
+          </button>
+          <button class="vote-btn vote-down" id="btn-vote-down" title="Bad question - unclear wording, inaccurate, or not fun">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+            <span class="vote-label">Bad Question</span>
+          </button>
+        </div>
+
         <div class="rate-section">
           <div class="rate-top-row">
-            <span class="rate-label">Rate this question's difficulty (optional):</span>
+            <span class="rate-label" title="Help calibrate difficulty - your rating shapes what other players see">Rate difficulty (optional):</span>
             <span id="q-rate-value" class="rate-value rate-null-val">–</span>
           </div>
           <div class="rate-control">
-            <input type="range" id="q-rate-slider" min="1" max="10" step="1" value="5" class="rate-slider rate-untouched">
+            <input type="range" id="q-rate-slider" min="1" max="10" step="1" value="5" class="rate-slider rate-untouched" title="1 = very easy, 10 = extremely hard">
             <div class="rate-ticks" aria-hidden="true">
               <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
             </div>
           </div>
         </div>
-        <button class="btn-link dispute-link" id="btn-dispute-open">Flag this question</button>
+
+        <button class="btn-link dispute-link" id="btn-dispute-open" title="Report an issue with this question - wrong answer, unclear wording, or bad info">File a Dispute</button>
         <div id="q-dispute-form" class="dispute-form hidden">
           <h4>File a Dispute</h4>
           <textarea id="dispute-text" class="dispute-textarea input-field" placeholder="What's wrong with this question or answer?" maxlength="300"></textarea>
@@ -225,8 +394,6 @@
           </div>
         </div>
       </div>
-
-      <button id="btn-next-question" class="btn btn-primary btn-lg next-btn">Next Question →</button>
     </div>
 
   </div>
@@ -438,39 +605,6 @@
       </div>
     </div>
 
-    <div class="settings-section">
-      <h3>Question Export</h3>
-      <p class="settings-desc">Export the full question bank as a CSV file. Choose which columns to include.</p>
-      <div class="export-col-header">
-        <span class="export-col-heading">Columns to include:</span>
-        <button type="button" class="btn-link export-col-toggle" id="btn-export-select-all">Select All</button>
-        <span class="export-col-sep">|</span>
-        <button type="button" class="btn-link export-col-toggle" id="btn-export-deselect-all">Deselect All</button>
-      </div>
-      <div class="export-col-grid">
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="id" checked> ID</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="question" checked> Question</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="answer" checked> Answer</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor1" checked> Distractor 1</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor2" checked> Distractor 2</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor3" checked> Distractor 3</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="category" checked> Category</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="difficulty" checked> Difficulty</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="tags"> Tags</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="type"> Type</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="enabled"> Enabled</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="community-avg"> Community Avg</label>
-        <label class="export-col-check"><input type="checkbox" name="export-col" value="community-count"> Community Count</label>
-      </div>
-      <button class="btn btn-secondary btn-sm" id="btn-export-questions" style="margin-top:0.75rem">Export as CSV</button>
-    </div>
-
-    <div class="settings-section">
-      <h3>Answer History</h3>
-      <p class="settings-desc">Every answered question is logged locally.</p>
-      <button class="btn btn-secondary btn-sm" id="btn-clear-history">Clear History</button>
-    </div>
-
   </div>
 </div>
 
@@ -479,73 +613,171 @@
 ════════════════════════════════════════════════ -->
 <div id="screen-admin" class="screen">
   <div class="screen-header">
-    <button class="btn-back" data-target="screen-settings">← Back to Settings</button>
+    <button class="btn-back" data-target="screen-settings">← Back</button>
     <h2>Admin Mode: You Didn't Hear This From Me</h2>
   </div>
-  <div class="screen-body">
+  <div class="admin-layout">
 
-    <div class="admin-tabs">
-      <button class="admin-tab active" data-tab="questions">Questions</button>
-      <button class="admin-tab"        data-tab="review">Disputes &amp; Feedback</button>
-      <button class="admin-tab"        data-tab="community-ratings">Community Ratings</button>
+    <!-- LEFT NAV -->
+    <nav class="admin-nav">
+      <button class="admin-nav-item active" data-panel="questions">Questions</button>
+      <button class="admin-nav-item" data-panel="review">Disputes &amp; Feedback</button>
+      <button class="admin-nav-item" data-panel="community-ratings">Community Ratings</button>
+      <button class="admin-nav-item" data-panel="export">Export</button>
+      <button class="admin-nav-item" data-panel="password">Change Password</button>
+      <div class="admin-nav-spacer"></div>
+      <button class="admin-nav-item admin-nav-help" data-panel="admin-help">Help &amp; Guide</button>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="admin-content">
+
+      <!-- QUESTIONS PANEL -->
+      <div id="admin-panel-questions" class="admin-panel">
+        <div class="aq-toolbar">
+          <input type="text" id="aq-search" class="input-field" placeholder="Search questions or answers...">
+          <select id="aq-filter-category" class="select-field aq-filter-select">
+            <option value="all">All Categories</option>
+          </select>
+          <select id="aq-filter-difficulty" class="select-field aq-filter-select">
+            <option value="all">All Difficulties</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="btn-add-question">+ Add New Question</button>
+        </div>
+        <div class="aq-count-row">
+          <span id="admin-questions-count" class="aq-count"></span>
+        </div>
+        <div id="admin-questions-list" class="aq-list"></div>
+      </div>
+
+      <!-- REVIEW PANEL (Disputes + Feedback) -->
+      <div id="admin-panel-review" class="admin-panel hidden">
+        <h3 class="review-section-title">Flagged Questions</h3>
+        <div id="admin-disputes-list" class="admin-disputes-list"></div>
+        <p id="admin-no-disputes" class="admin-empty hidden">No flagged questions. The office is at peace.</p>
+
+        <h3 class="review-section-title" style="margin-top:1.5rem">Submitted Feedback</h3>
+        <div id="admin-feedback-list" class="admin-feedback-list"></div>
+        <p id="admin-no-feedback" class="admin-empty hidden">No feedback submitted yet. The suggestion box is empty.</p>
+      </div>
+
+      <!-- COMMUNITY RATINGS PANEL -->
+      <div id="admin-panel-community-ratings" class="admin-panel hidden">
+        <div class="cr-toolbar">
+          <input type="text" id="cr-search" class="input-field" placeholder="Search questions or answers...">
+          <select id="cr-filter-status" class="select-field aq-filter-select">
+            <option value="all">All Questions</option>
+            <option value="has-ratings">Has Community Ratings</option>
+            <option value="overriding">Currently Overriding</option>
+            <option value="no-ratings">No Ratings Yet</option>
+            <option value="has-votes">Has Votes</option>
+            <option value="more-downvotes">More Downvotes Than Upvotes</option>
+          </select>
+        </div>
+        <div class="aq-count-row">
+          <span id="admin-ratings-count" class="aq-count"></span>
+        </div>
+        <div id="admin-ratings-list" class="cr-list"></div>
+      </div>
+
+      <!-- EXPORT PANEL -->
+      <div id="admin-panel-export" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.5rem;color:var(--navy)">Export Questions</h3>
+        <p class="settings-desc">Export the full question bank as a CSV file. Choose which columns to include.</p>
+        <div class="export-col-header">
+          <span class="export-col-heading">Columns to include:</span>
+          <button type="button" class="btn-link export-col-toggle" id="btn-export-select-all">Select All</button>
+          <span class="export-col-sep">|</span>
+          <button type="button" class="btn-link export-col-toggle" id="btn-export-deselect-all">Deselect All</button>
+        </div>
+        <div class="export-col-grid">
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="id" checked> ID</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="question" checked> Question</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="answer" checked> Answer</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor1" checked> Distractor 1</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor2" checked> Distractor 2</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="distractor3" checked> Distractor 3</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="category" checked> Category</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="difficulty" checked> Difficulty</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="tags"> Tags</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="type"> Type</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="enabled"> Enabled</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="community-avg"> Community Avg</label>
+          <label class="export-col-check"><input type="checkbox" name="export-col" value="community-count"> Community Count</label>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btn-export-questions" style="margin-top:0.75rem">Export as CSV</button>
+      </div>
+
+      <!-- CHANGE PASSWORD PANEL -->
+      <!-- HELP & GUIDE PANEL -->
+      <div id="admin-panel-admin-help" class="admin-panel hidden">
+        <h3 class="admin-help-title">Admin Guide</h3>
+        <p class="admin-help-intro">A quick reference for everything in the admin panel. If you're reading this, congratulations - you have more power than Dwight ever did. Use it wisely.</p>
+
+        <div class="admin-help-section">
+          <h4>Questions</h4>
+          <p>The full question bank. Every question in the game lives here.</p>
+          <ul>
+            <li><strong>Search &amp; Filter:</strong> Narrow down by keyword, category, or difficulty. The count updates in real time.</li>
+            <li><strong>Edit:</strong> Opens the question editor where you can change the question text, answer, category, difficulty, and tags. Edits to built-in questions are stored as overrides - the original is preserved underneath.</li>
+            <li><strong>Disable/Enable:</strong> Disabling a question hides it from gameplay without deleting it. Useful for pulling a bad question while you fix it.</li>
+            <li><strong>Add New Question:</strong> Creates a custom question that gets added to the pool. Custom questions are tagged with a "CUSTOM" badge so you can tell them apart from the built-in set.</li>
+            <li><strong>Tags:</strong> Optional labels on questions (like character names or episode references). Players can filter by character in the lobby, and tags power that filtering.</li>
+          </ul>
+        </div>
+
+        <div class="admin-help-section">
+          <h4>Disputes &amp; Feedback</h4>
+          <p>Two sections in one panel:</p>
+          <ul>
+            <li><strong>Flagged Questions:</strong> When a player thinks a question or answer is wrong, they can file a dispute during gameplay. Each dispute shows the question, the player's comment, and when it was filed. You can mark them as <em>Approved</em> (the dispute is valid and you'll fix it) or <em>Dismissed</em> (the question is fine as-is). These status changes are just labels for your tracking - they don't automatically modify the question.</li>
+            <li><strong>Submitted Feedback:</strong> Messages from the Suggestion Box on the home screen. Players can submit general feedback, bug reports, question ideas, or suggestions. These are view-only.</li>
+          </ul>
+        </div>
+
+        <div class="admin-help-section">
+          <h4>Community Ratings</h4>
+          <p>Shows how players are rating and voting on questions.</p>
+          <ul>
+            <li><strong>Difficulty Ratings:</strong> Players rate each question's difficulty on a 1-10 scale after answering. Once a question gets enough ratings (currently 3+), the community average overrides the original difficulty label in gameplay. The "Overriding" badge means the community score is active.</li>
+            <li><strong>Votes (Upvotes/Downvotes):</strong> Players can thumbs-up or thumbs-down each question. Green numbers are upvotes, red are downvotes. A "Needs Review" badge appears when a question has 5+ total votes and more downvotes than upvotes - that's a signal the community thinks the question has a problem.</li>
+            <li><strong>Reset Ratings / Reset Votes:</strong> Clears all community data for that specific question. Useful after you've edited a question and want fresh feedback.</li>
+            <li><strong>Filters:</strong> "More Downvotes Than Upvotes" is the quickest way to find problem questions that need attention.</li>
+          </ul>
+        </div>
+
+        <div class="admin-help-section">
+          <h4>Export</h4>
+          <p>Download the full question bank as a CSV file. You pick which columns to include (question, answer, category, difficulty, tags, etc.). Handy for backups, sharing with collaborators, or importing into a spreadsheet for bulk review.</p>
+        </div>
+
+        <div class="admin-help-section">
+          <h4>Change Password</h4>
+          <p>Update the admin password. You'll need to enter the current password first. The password is stored securely on the server (hashed), not in the browser.</p>
+        </div>
+
+        <div class="admin-help-section">
+          <h4>How Data Works</h4>
+          <p>Player-submitted data (ratings, votes, disputes, feedback) is saved to the server automatically when a player submits it. It's also cached in each player's browser for faster loading. The server JSON files in the <code>data/</code> folder are the source of truth.</p>
+          <p>Admin changes (question edits, disabling questions, resolving disputes) also save to the server immediately. You don't need to manually sync anything.</p>
+        </div>
+      </div>
+
+      <div id="admin-panel-password" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.75rem;color:var(--navy)">Change Password</h3>
+        <div style="max-width:320px;display:flex;flex-direction:column;gap:0.5rem">
+          <input type="password" id="chpw-current" class="input-field" placeholder="Current password" autocomplete="current-password">
+          <input type="password" id="chpw-new" class="input-field" placeholder="New password (min 4 characters)" autocomplete="new-password">
+          <input type="password" id="chpw-confirm" class="input-field" placeholder="Confirm new password" autocomplete="new-password">
+          <p id="chpw-error" class="error-msg hidden"></p>
+          <button class="btn btn-secondary btn-sm" id="btn-chpw-save" style="margin-top:0.25rem">Save New Password</button>
+        </div>
+      </div>
+
     </div>
-
-    <!-- QUESTIONS TAB -->
-    <div id="admin-tab-questions" class="admin-tab-panel">
-      <div class="aq-toolbar">
-        <input type="text" id="aq-search" class="input-field" placeholder="Search questions or answers...">
-        <select id="aq-filter-category" class="select-field aq-filter-select">
-          <option value="all">All Categories</option>
-        </select>
-        <select id="aq-filter-difficulty" class="select-field aq-filter-select">
-          <option value="all">All Difficulties</option>
-          <option value="Easy">Easy</option>
-          <option value="Medium">Medium</option>
-          <option value="Hard">Hard</option>
-        </select>
-        <button class="btn btn-primary btn-sm" id="btn-add-question">+ Add New Question</button>
-      </div>
-      <div class="aq-count-row">
-        <span id="admin-questions-count" class="aq-count"></span>
-      </div>
-      <div id="admin-questions-list" class="aq-list"></div>
-    </div>
-
-    <!-- REVIEW TAB (Disputes + Feedback) -->
-    <div id="admin-tab-review" class="admin-tab-panel hidden">
-      <div class="admin-disputes-toolbar">
-        <button class="btn btn-secondary btn-sm" onclick="syncDisputesToFile()">Sync Disputes</button>
-        <button class="btn btn-secondary btn-sm" onclick="syncRatingsToFile()">Sync Ratings</button>
-        <button class="btn btn-secondary btn-sm" onclick="syncTagsToFile()">Sync Tags</button>
-        <button class="btn btn-secondary btn-sm" onclick="syncLeaderboardToFile()">Sync Leaderboard</button>
-      </div>
-
-      <h3 class="review-section-title">Flagged Questions</h3>
-      <div id="admin-disputes-list" class="admin-disputes-list"></div>
-      <p id="admin-no-disputes" class="admin-empty hidden">No flagged questions. The office is at peace.</p>
-
-      <h3 class="review-section-title" style="margin-top:1.5rem">Submitted Feedback</h3>
-      <div id="admin-feedback-list" class="admin-feedback-list"></div>
-      <p id="admin-no-feedback" class="admin-empty hidden">No feedback submitted yet. The suggestion box is empty.</p>
-    </div>
-
-    <!-- COMMUNITY RATINGS TAB -->
-    <div id="admin-tab-community-ratings" class="admin-tab-panel hidden">
-      <div class="cr-toolbar">
-        <input type="text" id="cr-search" class="input-field" placeholder="Search questions or answers...">
-        <select id="cr-filter-status" class="select-field aq-filter-select">
-          <option value="all">All Questions</option>
-          <option value="has-ratings">Has Community Ratings</option>
-          <option value="overriding">Currently Overriding</option>
-          <option value="no-ratings">No Ratings Yet</option>
-        </select>
-      </div>
-      <div class="aq-count-row">
-        <span id="admin-ratings-count" class="aq-count"></span>
-      </div>
-      <div id="admin-ratings-list" class="cr-list"></div>
-    </div>
-
   </div>
 </div>
 
@@ -691,6 +923,17 @@
 <script src="js/admin.js"></script>
 <script src="js/feedback.js"></script>
 <script src="js/app.js"></script>
+<script>
+  // Route /admin directly to the login screen (runs immediately, no external JS dependency)
+  (function() {
+    var p = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+    if (p === '/admin') {
+      document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+      var settings = document.getElementById('screen-settings');
+      if (settings) settings.classList.add('active');
+    }
+  })();
+</script>
 
 <!-- ═══════════════════════════════════════════════
      PRIVACY / STORAGE NOTICE

@@ -1,6 +1,9 @@
 # Runtime data — generated at play time, do not commit
 data/
 
+# Environment variables — never commit secrets
+.env
+
 # Claude Code IDE files — local machine config only
 .claude/
 memory/

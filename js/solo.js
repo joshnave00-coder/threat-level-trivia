@@ -8,6 +8,7 @@ let soloCurrentOptions = [];
 let soloRatingSubmitted = false;
 let soloRatingTouched = false;
 let soloCurrentRating = 5;
+let soloVoteSubmitted = false;
 let pendingQuoteTimer = null;
 
 function soloStart() {
@@ -41,6 +42,7 @@ function soloNextQuestion() {
   }
   soloRatingSubmitted = false;
   soloRatingTouched = false;
+  soloVoteSubmitted = false;
   GameState.answerState = null;
   GameState.wasCorrect = null;
   renderQuestionScreen();
@@ -81,8 +83,17 @@ function renderQuestionScreen() {
   document.getElementById('q-hc-score').classList.add('hidden');
   document.getElementById('q-dispute-form').classList.add('hidden');
   document.getElementById('dispute-text').value = '';
-  document.getElementById('btn-dispute-open').textContent = 'Flag this question';
+  document.getElementById('btn-dispute-open').textContent = 'File a Dispute';
   document.getElementById('btn-dispute-open').disabled = false;
+
+  // Vote reset
+  const btnUp = document.getElementById('btn-vote-up');
+  const btnDown = document.getElementById('btn-vote-down');
+  btnUp.classList.remove('vote-active-up');
+  btnDown.classList.remove('vote-active-down');
+  btnUp.disabled = false;
+  btnDown.disabled = false;
+  soloVoteSubmitted = false;
 
   // Rating reset
   const slider = document.getElementById('q-rate-slider');
@@ -252,7 +263,7 @@ function soloSubmitDispute(rawText) {
     : null;
   addDispute(q, text, player.name, rating);
   document.getElementById('q-dispute-form').classList.add('hidden');
-  document.getElementById('btn-dispute-open').textContent = 'Flagged ✓';
+  document.getElementById('btn-dispute-open').textContent = 'Dispute Filed ✓';
   document.getElementById('btn-dispute-open').disabled = true;
   showToast('Dispute filed. HR has been notified. (Nobody will do anything.)');
 }
@@ -270,6 +281,24 @@ function soloNextQ() {
   }
   GameState.currentQIdx++;
   soloNextQuestion();
+}
+
+function handleVote(direction) {
+  if (soloVoteSubmitted) return;
+  soloVoteSubmitted = true;
+  const q = GameState.questions[GameState.currentQIdx];
+  const player = GameState.players[GameState.currentPlayerIdx];
+  addVote(q, direction, player.name);
+
+  const btnUp = document.getElementById('btn-vote-up');
+  const btnDown = document.getElementById('btn-vote-down');
+  if (direction === 'up') {
+    btnUp.classList.add('vote-active-up');
+  } else {
+    btnDown.classList.add('vote-active-down');
+  }
+  btnUp.disabled = true;
+  btnDown.disabled = true;
 }
 
 function soloFinish() {

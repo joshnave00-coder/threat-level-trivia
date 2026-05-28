@@ -8,6 +8,7 @@ so flagged questions are captured in the project folder for review.
 import json
 import os
 import re
+import secrets
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 BASE_DIR         = os.path.dirname(os.path.abspath(__file__))
@@ -20,8 +21,27 @@ FEEDBACK_FILE           = os.path.join(DATA_DIR, 'feedback.json')
 QUESTION_EDITS_FILE     = os.path.join(DATA_DIR, 'question-edits.json')
 CUSTOM_QUESTIONS_FILE   = os.path.join(DATA_DIR, 'custom-questions.json')
 DISABLED_QUESTIONS_FILE = os.path.join(DATA_DIR, 'disabled-questions.json')
+VOTES_FILE              = os.path.join(DATA_DIR, 'votes.json')
 
 os.makedirs(DATA_DIR, exist_ok=True)
+
+
+def _load_env():
+    """Load .env file into os.environ without overwriting existing vars."""
+    env_path = os.path.join(BASE_DIR, '.env')
+    if not os.path.exists(env_path):
+        return
+    with open(env_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                k, v = line.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip())
+
+
+_load_env()
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')
+_active_tokens = set()   # in-memory session tokens; cleared on password change
 
 _NOT_FOUND_PAGE = """<!DOCTYPE html>
 <html lang="en">
@@ -104,31 +124,44 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._serve_file(CUSTOM_QUESTIONS_FILE)
         elif p == '/api/disabled-questions':
             self._serve_file(DISABLED_QUESTIONS_FILE)
+        elif p == '/api/votes':
+            self._serve_file(VOTES_FILE)
+        elif p in ('/admin', '/admin/'):
+            self._serve_index()
         else:
             super().do_GET()
 
     def end_headers(self):
-        # Attach no-cache headers to every response before flushing headers
         self._set_no_cache()
         super().end_headers()
 
     def do_POST(self):
-        if self.path == '/api/disputes':
-            self._save_file(DISPUTES_FILE)
-        elif self.path == '/api/ratings':
-            self._save_file(RATINGS_FILE)
-        elif self.path == '/api/tags':
-            self._save_file(TAGS_FILE)
-        elif self.path == '/api/leaderboard':
-            self._save_file(LEADERBOARD_FILE)
+        if self.path == '/api/admin/login':
+            self._handle_admin_login()
+        elif self.path == '/api/admin/change-password':
+            self._handle_change_password()
         elif self.path == '/api/feedback':
             self._save_feedback()
-        elif self.path == '/api/question-edits':
-            self._save_file(QUESTION_EDITS_FILE)
-        elif self.path == '/api/custom-questions':
-            self._save_file(CUSTOM_QUESTIONS_FILE)
-        elif self.path == '/api/disabled-questions':
-            self._save_file(DISABLED_QUESTIONS_FILE)
+        elif self.path in ('/api/votes', '/api/disputes', '/api/ratings'):
+            # Player-submitted data — no admin token required
+            file_map = {
+                '/api/votes':    VOTES_FILE,
+                '/api/disputes': DISPUTES_FILE,
+                '/api/ratings':  RATINGS_FILE,
+            }
+            self._save_file(file_map[self.path])
+        elif self.path in ('/api/tags', '/api/leaderboard',
+                           '/api/question-edits', '/api/custom-questions', '/api/disabled-questions'):
+            if not self._check_admin_token():
+                return
+            file_map = {
+                '/api/tags':               TAGS_FILE,
+                '/api/leaderboard':        LEADERBOARD_FILE,
+                '/api/question-edits':     QUESTION_EDITS_FILE,
+                '/api/custom-questions':   CUSTOM_QUESTIONS_FILE,
+                '/api/disabled-questions': DISABLED_QUESTIONS_FILE,
+            }
+            self._save_file(file_map[self.path])
         else:
             self.send_error(404, 'Not found')
 
@@ -142,12 +175,90 @@ class TLTHandler(SimpleHTTPRequestHandler):
     def _set_cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Token')
 
     def _set_no_cache(self):
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.send_header('Pragma', 'no-cache')
         self.send_header('Expires', '0')
+
+    def _send_json(self, code, obj):
+        body = json.dumps(obj).encode('utf-8')
+        self.send_response(code)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(body)))
+        self._set_cors()
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_index(self):
+        idx = os.path.join(BASE_DIR, 'index.html')
+        with open(idx, 'rb') as f:
+            body = f.read()
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self._set_cors()
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _check_admin_token(self):
+        token = self.headers.get('X-Admin-Token', '')
+        if token and token in _active_tokens:
+            return True
+        self._send_json(401, {'ok': False, 'error': 'Unauthorized'})
+        return False
+
+    def _handle_admin_login(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            raw = self.rfile.read(length)
+            data = json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            self.send_error(400, 'Invalid JSON')
+            return
+
+        if not ADMIN_PASSWORD:
+            self._send_json(500, {'ok': False, 'error': 'Server has no admin password configured'})
+            return
+
+        if data.get('password') == ADMIN_PASSWORD:
+            token = secrets.token_hex(32)
+            _active_tokens.add(token)
+            self._send_json(200, {'ok': True, 'token': token})
+        else:
+            self._send_json(401, {'ok': False})
+
+    def _handle_change_password(self):
+        global ADMIN_PASSWORD
+        if not self._check_admin_token():
+            return
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            raw = self.rfile.read(length)
+            data = json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            self.send_error(400, 'Invalid JSON')
+            return
+
+        current = data.get('current', '')
+        new_pw  = str(data.get('new', '')).strip()
+
+        if current != ADMIN_PASSWORD:
+            self._send_json(400, {'ok': False, 'error': 'Current password is incorrect'})
+            return
+        if len(new_pw) < 4:
+            self._send_json(400, {'ok': False, 'error': 'New password must be at least 4 characters'})
+            return
+
+        env_path = os.path.join(BASE_DIR, '.env')
+        with open(env_path, 'w') as f:
+            f.write(f'ADMIN_PASSWORD={new_pw}\n')
+
+        ADMIN_PASSWORD = new_pw
+        _active_tokens.clear()
+
+        self._send_json(200, {'ok': True})
 
     def _serve_file(self, path):
         try:
@@ -173,13 +284,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
             data = json.loads(raw)
             with open(path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            resp = b'{"ok":true}'
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', str(len(resp)))
-            self._set_cors()
-            self.end_headers()
-            self.wfile.write(resp)
+            self._send_json(200, {'ok': True})
         except Exception as e:
             self.send_error(500, str(e))
 
@@ -198,7 +303,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
             message  = str(data.get('message') or '').strip()
             sent_at  = str(data.get('submittedAt') or '').strip()[:32]
 
-            # Validate message (required, 10–1000 chars)
+            # Validate message (required, 10-1000 chars)
             if not (10 <= len(message) <= 1000):
                 self.send_error(400, 'Message length out of range')
                 return
@@ -230,13 +335,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
             with open(FEEDBACK_FILE, 'w', encoding='utf-8') as f:
                 json.dump(existing, f, indent=2, ensure_ascii=False)
 
-            resp = b'{"ok":true}'
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', str(len(resp)))
-            self._set_cors()
-            self.end_headers()
-            self.wfile.write(resp)
+            self._send_json(200, {'ok': True})
         except Exception as e:
             self.send_error(500, str(e))
 

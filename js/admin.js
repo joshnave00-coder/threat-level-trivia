@@ -4,47 +4,102 @@
    Password gate, question management, dispute/feedback review
    ================================================================ */
 
-const ADMIN_PASSWORD = 'dundermifflin';
+let _adminToken = sessionStorage.getItem('tlt_admin_token') || null;
 let activeAdminTab = 'questions';
 let adminQFilter = { search: '', category: 'all', difficulty: 'all' };
 let editingTagsFor = [];
 
-function adminLogin() {
-  const input = document.getElementById('admin-password-input');
-  if (input.value === ADMIN_PASSWORD) {
-    input.value = '';
-    document.getElementById('admin-login-error').classList.add('hidden');
-    try {
-      renderAdminQuestions();
-    } catch (err) {
-      console.error('renderAdminQuestions failed:', err);
+async function adminLogin() {
+  const input   = document.getElementById('admin-password-input');
+  const errorEl = document.getElementById('admin-login-error');
+  const password = input.value;
+  input.value = '';
+
+  try {
+    const res  = await fetch('/api/admin/login', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    if (data.ok && data.token) {
+      _adminToken = data.token;
+      sessionStorage.setItem('tlt_admin_token', data.token);
+      errorEl.classList.add('hidden');
+      try { renderAdminQuestions(); } catch (err) { console.error('renderAdminQuestions failed:', err); }
+      try { renderAdminDisputes();  } catch (err) { console.error('renderAdminDisputes failed:', err);  }
+      loadAndRenderAdminFeedback();
+      showScreen('screen-admin');
+    } else {
+      errorEl.classList.remove('hidden');
+      document.getElementById('admin-password-input').focus();
     }
-    try {
-      renderAdminDisputes();
-    } catch (err) {
-      console.error('renderAdminDisputes failed:', err);
-    }
-    loadAndRenderAdminFeedback();
-    showScreen('screen-admin');
-  } else {
-    document.getElementById('admin-login-error').classList.remove('hidden');
-    input.value = '';
-    input.focus();
+  } catch {
+    errorEl.classList.remove('hidden');
+    document.getElementById('admin-password-input').focus();
   }
 }
 
-// ── TABS ──────────────────────────────────────────────────────────
-function switchAdminTab(tab) {
-  activeAdminTab = tab;
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  const panels = ['questions', 'review', 'community-ratings'];
-  panels.forEach(name => {
-    const el = document.getElementById(`admin-tab-${name}`);
-    if (el) el.classList.toggle('hidden', tab !== name);
+async function changeAdminPassword() {
+  const currentEl = document.getElementById('chpw-current');
+  const newEl     = document.getElementById('chpw-new');
+  const confirmEl = document.getElementById('chpw-confirm');
+  const errorEl   = document.getElementById('chpw-error');
+
+  const current = currentEl.value;
+  const newPw   = newEl.value;
+  const confirm = confirmEl.value;
+
+  errorEl.classList.add('hidden');
+
+  if (newPw !== confirm) {
+    errorEl.textContent = 'New passwords do not match.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  if (newPw.length < 4) {
+    errorEl.textContent = 'New password must be at least 4 characters.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const res  = await fetch('/api/admin/change-password', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': _adminToken || '' },
+      body:    JSON.stringify({ current, new: newPw }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      _adminToken = null;
+      sessionStorage.removeItem('tlt_admin_token');
+      currentEl.value = '';
+      newEl.value     = '';
+      confirmEl.value = '';
+      showToast('Password changed. Please log in again.');
+      showScreen('screen-settings');
+    } else {
+      errorEl.textContent = data.error || 'Failed to change password.';
+      errorEl.classList.remove('hidden');
+    }
+  } catch {
+    errorEl.textContent = 'Could not reach the server.';
+    errorEl.classList.remove('hidden');
+  }
+}
+
+// ── NAV PANELS ────────────────────────────────────────────────────
+function switchAdminPanel(panel) {
+  activeAdminTab = panel;
+  document.querySelectorAll('.admin-nav-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.panel === panel));
+  ['questions', 'review', 'community-ratings', 'export', 'password', 'admin-help'].forEach(name => {
+    const el = document.getElementById(`admin-panel-${name}`);
+    if (el) el.classList.toggle('hidden', panel !== name);
   });
-  if (tab === 'review') loadAndRenderAdminFeedback();
-  if (tab === 'questions') renderAdminQuestions();
-  if (tab === 'community-ratings') renderAdminRatings();
+  if (panel === 'review') loadAndRenderAdminFeedback();
+  if (panel === 'questions') renderAdminQuestions();
+  if (panel === 'community-ratings') renderAdminRatings();
 }
 
 // ── QUESTION MANAGEMENT ──────────────────────────────────────────
@@ -380,53 +435,10 @@ function resolveDispute(id, status) {
   showToast(status === 'approved' ? 'Question approved for review.' : 'Dispute dismissed. Moving on.');
 }
 
-function syncDisputesToFile() {
-  const disputes = getDisputes();
-  fetch('/api/disputes', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(disputes),
-  })
-    .then(r => r.json())
-    .then(() => showToast(`${disputes.length} dispute(s) synced.`))
-    .catch(() => showToast('Sync failed - is the server running?'));
+function _adminHeaders() {
+  return { 'Content-Type': 'application/json', 'X-Admin-Token': _adminToken || '' };
 }
 
-function syncRatingsToFile() {
-  const ratings = getRatings();
-  fetch('/api/ratings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ratings),
-  })
-    .then(r => r.json())
-    .then(() => showToast(`${ratings.length} rating(s) synced.`))
-    .catch(() => showToast('Sync failed - is the server running?'));
-}
-
-function syncTagsToFile() {
-  const tags = getAllTags();
-  fetch('/api/tags', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(tags),
-  })
-    .then(r => r.json())
-    .then(() => showToast('Tags synced.'))
-    .catch(() => showToast('Sync failed - is the server running?'));
-}
-
-function syncLeaderboardToFile() {
-  const entries = getLeaderboard();
-  fetch('/api/leaderboard', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(entries),
-  })
-    .then(r => r.json())
-    .then(() => showToast(`${entries.length} leaderboard entry/entries synced.`))
-    .catch(() => showToast('Sync failed - is the server running?'));
-}
 
 // ── SUBMITTED FEEDBACK (admin view) ──────────────────────────────
 const _FB_TYPE_LABELS = {
@@ -475,6 +487,7 @@ function renderAdminRatings() {
     q,
     isDisabled: disabled.includes(q.id),
     info: getCommunityDifficultyInfo(q.id),
+    votes: getVoteSummary(q.id),
   }));
 
   // Apply filters
@@ -490,6 +503,10 @@ function renderAdminRatings() {
     filtered = filtered.filter(({ info }) => info && info.count >= COMMUNITY_THRESHOLD);
   } else if (adminRatingsFilter.status === 'no-ratings') {
     filtered = filtered.filter(({ info }) => info === null);
+  } else if (adminRatingsFilter.status === 'has-votes') {
+    filtered = filtered.filter(({ votes }) => votes.total > 0);
+  } else if (adminRatingsFilter.status === 'more-downvotes') {
+    filtered = filtered.filter(({ votes }) => votes.total > 0 && votes.down > votes.up);
   }
 
   // Sort: questions with ratings first (most ratings first), then unrated
@@ -505,20 +522,27 @@ function renderAdminRatings() {
 
   const totalRated    = withInfo.filter(({ info }) => info !== null).length;
   const totalOverride = withInfo.filter(({ info }) => info && info.count >= COMMUNITY_THRESHOLD).length;
-  countEl.textContent =
+  const totalVoted    = withInfo.filter(({ votes }) => votes.total > 0).length;
+  const totalUpvotes  = withInfo.reduce((sum, { votes }) => sum + votes.up, 0);
+  const totalDownvotes = withInfo.reduce((sum, { votes }) => sum + votes.down, 0);
+  countEl.innerHTML =
     `${filtered.length} of ${allQs.length} questions shown  |  ` +
     `${totalRated} have community ratings  |  ` +
-    `${totalOverride} currently overriding`;
+    `${totalOverride} currently overriding<br>` +
+    `${totalVoted} have votes  |  ` +
+    `<span class="cr-summary-up">&#x25B2; ${totalUpvotes}</span> upvotes  |  ` +
+    `<span class="cr-summary-down">&#x25BC; ${totalDownvotes}</span> downvotes`;
 
   if (!filtered.length) {
     container.innerHTML = '<p class="admin-empty">No questions match your filters.</p>';
     return;
   }
 
-  container.innerHTML = filtered.map(({ q, isDisabled, info }) => {
+  container.innerHTML = filtered.map(({ q, isDisabled, info, votes }) => {
     const hasRatings  = info !== null;
     const isOverride  = hasRatings && info.count >= COMMUNITY_THRESHOLD;
     const needsMore   = hasRatings && !isOverride ? COMMUNITY_THRESHOLD - info.count : 0;
+    const hasVotes    = votes.total > 0;
 
     let statusBadge;
     if (isOverride) {
@@ -537,8 +561,17 @@ function renderAdminRatings() {
       <span class="cr-count-text">(${info.count} rating${info.count !== 1 ? 's' : ''})</span>
       ${statusBadge}` : statusBadge;
 
+    const voteSection = hasVotes ? `
+      <div class="cr-vote-row">
+        <span class="cr-label">Votes:</span>
+        <span class="cr-vote-up" title="${votes.up} player${votes.up !== 1 ? 's' : ''} upvoted this question">&#x25B2; ${votes.up}</span>
+        <span class="cr-vote-down" title="${votes.down} player${votes.down !== 1 ? 's' : ''} downvoted this question">&#x25BC; ${votes.down}</span>
+        <span class="cr-vote-total">(${votes.total} vote${votes.total !== 1 ? 's' : ''})</span>
+        ${votes.total >= 5 && votes.down > votes.up ? '<span class="badge cr-badge-flagged">Needs Review</span>' : ''}
+      </div>` : `<div class="cr-vote-row"><span class="cr-no-data">No votes yet</span></div>`;
+
     return `
-      <div class="cr-card ${!hasRatings ? 'cr-no-ratings' : ''} ${isDisabled ? 'aq-disabled' : ''}" data-qid="${q.id}">
+      <div class="cr-card ${!hasRatings && !hasVotes ? 'cr-no-ratings' : ''} ${isDisabled ? 'aq-disabled' : ''}" data-qid="${q.id}">
         <div class="cr-main">
           <div class="cr-question-text">${escHtml(q.question)}</div>
           <div class="cr-answer"><strong>A:</strong> ${escHtml(q.answer)}</div>
@@ -547,10 +580,12 @@ function renderAdminRatings() {
             <span class="badge ${difficultyClass(q.difficulty)}">${escHtml(q.difficulty)}</span>
             ${communitySection}
           </div>
+          ${voteSection}
         </div>
-        ${hasRatings ? `
+        ${hasRatings || hasVotes ? `
         <div class="cr-actions">
-          <button class="btn btn-sm aq-btn-disable" onclick="resetQuestionRatingsAdmin(${q.id})">Reset Ratings</button>
+          ${hasRatings ? `<button class="btn btn-sm aq-btn-disable" onclick="resetQuestionRatingsAdmin(${q.id})">Reset Ratings</button>` : ''}
+          ${hasVotes ? `<button class="btn btn-sm aq-btn-disable" onclick="resetQuestionVotesAdmin(${q.id})">Reset Votes</button>` : ''}
         </div>` : ''}
       </div>`;
   }).join('');
@@ -566,4 +601,16 @@ function resetQuestionRatingsAdmin(questionId) {
   resetQuestionRatings(questionId);
   renderAdminRatings();
   showToast(`Community ratings cleared for question #${questionId}.`);
+}
+
+function resetQuestionVotesAdmin(questionId) {
+  const allQs = getAllManagedQuestions();
+  const q = allQs.find(x => x.id === questionId);
+  const votes = getVoteSummary(questionId);
+  if (!votes.total) return;
+  const label = q ? `"${q.question.slice(0, 40)}${q.question.length > 40 ? '...' : ''}"` : `question #${questionId}`;
+  if (!confirm(`Reset all ${votes.total} vote(s) for ${label}?\n\nThis cannot be undone.`)) return;
+  resetQuestionVotes(questionId);
+  renderAdminRatings();
+  showToast(`Votes cleared for question #${questionId}.`);
 }

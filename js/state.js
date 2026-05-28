@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   history:           'tlt_history',
   disputes:          'tlt_disputes',
   tags:              'tlt_tags',
+  votes:             'tlt_votes',
   questionEdits:     'tlt_question_edits',
   customQuestions:   'tlt_custom_questions',
   disabledQuestions: 'tlt_disabled_questions',
@@ -279,6 +280,70 @@ function resetQuestionRatings(questionId) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(filtered),
   }).catch(() => {});
+}
+
+// ── VOTES (question quality up/down) ─────────────────────────────
+function getVotes() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.votes)) || []; }
+  catch { return []; }
+}
+
+function addVote(question, vote, playerName) {
+  const votes = getVotes();
+  // Remove any existing vote by this player on this question
+  const filtered = votes.filter(v => !(v.questionId === question.id && v.player === playerName));
+  filtered.push({
+    id: Date.now(),
+    questionId: question.id,
+    question: question.question,
+    category: question.category,
+    vote, // 'up' or 'down'
+    player: playerName,
+    timestamp: new Date().toLocaleString('en-US'),
+  });
+  localStorage.setItem(STORAGE_KEYS.votes, JSON.stringify(filtered));
+  // Persist to file
+  fetch('/api/votes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(filtered),
+  }).catch(() => {});
+}
+
+function getVoteSummary(questionId) {
+  const all = getVotes().filter(v => v.questionId === questionId);
+  const up = all.filter(v => v.vote === 'up').length;
+  const down = all.filter(v => v.vote === 'down').length;
+  return { up, down, total: all.length };
+}
+
+function getPlayerVote(questionId, playerName) {
+  const votes = getVotes();
+  const v = votes.find(v => v.questionId === questionId && v.player === playerName);
+  return v ? v.vote : null;
+}
+
+function resetQuestionVotes(questionId) {
+  const filtered = getVotes().filter(v => v.questionId !== questionId);
+  localStorage.setItem(STORAGE_KEYS.votes, JSON.stringify(filtered));
+  fetch('/api/votes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(filtered),
+  }).catch(() => {});
+}
+
+function loadVotesFromFile() {
+  fetch('/api/votes')
+    .then(r => r.json())
+    .then(fileVotes => {
+      if (!Array.isArray(fileVotes) || !fileVotes.length) return;
+      const local = getVotes();
+      const fileIds = new Set(fileVotes.map(v => v.id));
+      const merged = [...fileVotes, ...local.filter(v => !fileIds.has(v.id))];
+      localStorage.setItem(STORAGE_KEYS.votes, JSON.stringify(merged));
+    })
+    .catch(() => {});
 }
 
 // ── TAGS ──────────────────────────────────────────────────────────

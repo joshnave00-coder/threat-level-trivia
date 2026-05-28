@@ -30,6 +30,7 @@ async function adminLogin() {
       try { renderAdminDisputes();  } catch (err) { console.error('renderAdminDisputes failed:', err);  }
       loadAndRenderAdminFeedback();
       loadAndRenderAdminLeaderboard();
+      loadAndRenderAdminSuggestions();
       showScreen('screen-admin');
     } else {
       errorEl.classList.remove('hidden');
@@ -94,12 +95,15 @@ function switchAdminPanel(panel) {
   activeAdminTab = panel;
   document.querySelectorAll('.admin-nav-item').forEach(el =>
     el.classList.toggle('active', el.dataset.panel === panel));
-  ['questions', 'review', 'community-ratings', 'leaderboard', 'export', 'password', 'admin-help'].forEach(name => {
+  ['questions', 'suggestions', 'disputes', 'feedback', 'community-ratings', 'leaderboard', 'export', 'site-settings', 'password', 'version-history', 'admin-help'].forEach(name => {
     const el = document.getElementById(`admin-panel-${name}`);
     if (el) el.classList.toggle('hidden', panel !== name);
   });
-  if (panel === 'review') loadAndRenderAdminFeedback();
+  if (panel === 'site-settings') applySiteSettings();
+  if (panel === 'disputes') renderAdminDisputes();
+  if (panel === 'feedback') loadAndRenderAdminFeedback();
   if (panel === 'questions') renderAdminQuestions();
+  if (panel === 'suggestions') loadAndRenderAdminSuggestions();
   if (panel === 'community-ratings') renderAdminRatings();
   if (panel === 'leaderboard') loadAndRenderAdminLeaderboard();
 }
@@ -145,6 +149,7 @@ function renderAdminQuestions() {
     return `
       <div class="aq-card ${isDisabled ? 'aq-disabled' : ''}" data-qid="${q.id}">
         <div class="aq-main">
+          <div class="aq-id">#${q.id}</div>
           <div class="aq-text">${escHtml(q.question)}</div>
           <div class="aq-answer"><strong>A:</strong> ${escHtml(q.answer)}</div>
           <div class="aq-badges">
@@ -161,6 +166,8 @@ function renderAdminQuestions() {
                   onclick="toggleQuestionDisabledAdmin(${q.id})">
             ${isDisabled ? 'Enable' : 'Disable'}
           </button>
+          ${isEdited ? `<button class="btn btn-sm aq-btn-revert" onclick="revertAdminQuestionEdit(${q.id})">Revert</button>` : ''}
+          <button class="btn btn-wrong btn-sm" onclick="deleteAdminQuestion(${q.id})">Delete</button>
         </div>
       </div>`;
   }).join('');
@@ -171,6 +178,20 @@ function toggleQuestionDisabledAdmin(id) {
   setQuestionDisabled(id, !wasDisabled);
   renderAdminQuestions();
   showToast(wasDisabled ? 'Question enabled.' : 'Question disabled - hidden from gameplay.');
+}
+
+function deleteAdminQuestion(id) {
+  if (!confirm('Permanently delete this question? This cannot be undone.')) return;
+  markQuestionDeleted(id);
+  renderAdminQuestions();
+  showToast('Question deleted.');
+}
+
+function revertAdminQuestionEdit(id) {
+  if (!confirm('Revert this question to its original text? Your edits will be lost.')) return;
+  revertQuestionEdit(id);
+  renderAdminQuestions();
+  showToast('Question reverted to original.');
 }
 
 function populateCategoryDropdowns() {
@@ -295,6 +316,7 @@ function openQuestionEditor(id) {
 function closeQuestionEditor() {
   document.getElementById('question-modal').classList.add('hidden');
   document.body.classList.remove('modal-open');
+  if (typeof _clearSuggestionReviewState === 'function') _clearSuggestionReviewState();
 }
 
 function renderModalTags() {
@@ -358,6 +380,11 @@ function saveQuestion(e) {
     addCustomQuestion(newQ);
     if (editingTagsFor.length) saveTagsForQuestion(newId, editingTagsFor);
     showToast('New question added!');
+  }
+
+  if (typeof _reviewingSuggestionIdx !== 'undefined' && _reviewingSuggestionIdx != null &&
+      typeof _markSuggestionApprovedAfterSave === 'function') {
+    _markSuggestionApprovedAfterSave();
   }
 
   closeQuestionEditor();
@@ -691,4 +718,61 @@ function resetQuestionVotesAdmin(questionId) {
   resetQuestionVotes(questionId);
   renderAdminRatings();
   showToast(`Votes cleared for question #${questionId}.`);
+}
+
+// ── SITE SETTINGS ────────────────────────────────────────────────
+
+// ── SITE SETTINGS ────────────────────────────────────────────────
+
+const _SITE_TOGGLES = [
+  { key: 'showDonateLink', toggleId: 'ss-donate-link', elementId: 'btn-donate',       label: 'Donate link' },
+  { key: 'showYouTube',    toggleId: 'ss-youtube',     elementId: 'social-youtube',    label: 'YouTube icon' },
+  { key: 'showX',          toggleId: 'ss-x',           elementId: 'social-x',          label: 'X / Twitter icon' },
+  { key: 'showInstagram',  toggleId: 'ss-instagram',   elementId: 'social-instagram',  label: 'Instagram icon' },
+  { key: 'showEmail',      toggleId: 'ss-email',       elementId: 'social-email',      label: 'Email icon' },
+];
+
+async function loadSiteSettings() {
+  try {
+    const res = await fetch('/api/site-settings');
+    const settings = await res.json();
+    return settings && typeof settings === 'object' ? settings : {};
+  } catch {
+    return {};
+  }
+}
+
+async function applySiteSettings() {
+  const settings = await loadSiteSettings();
+  _SITE_TOGGLES.forEach(({ key, toggleId, elementId }) => {
+    const el = document.getElementById(elementId);
+    if (el) el.style.display = settings[key] === false ? 'none' : '';
+    const toggle = document.getElementById(toggleId);
+    if (toggle) toggle.checked = settings[key] !== false;
+  });
+}
+
+async function saveSiteSettings(settings) {
+  try {
+    await fetch('/api/site-settings', {
+      method: 'POST',
+      headers: _adminHeaders(),
+      body: JSON.stringify(settings),
+    });
+  } catch {
+    showToast('Failed to save site settings.');
+  }
+}
+
+async function handleSiteToggle(key) {
+  const entry = _SITE_TOGGLES.find(t => t.key === key);
+  if (!entry) return;
+  const toggle = document.getElementById(entry.toggleId);
+  const show = toggle.checked;
+  const settings = await loadSiteSettings();
+  settings[key] = show;
+  await saveSiteSettings(settings);
+  const el = document.getElementById(entry.elementId);
+  if (el) el.style.display = show ? '' : 'none';
+  showToast(show ? `${entry.label} is now visible.` : `${entry.label} is now hidden.`);
 }

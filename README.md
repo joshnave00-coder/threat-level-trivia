@@ -30,14 +30,19 @@ A browser-based trivia game for fans of *The Office* (US). Test your knowledge o
 ### Community & Feedback
 - **Question Rating** - Rate individual question difficulty (1-10 scale) after answering.
 - **Community Difficulty Override** - When 3+ players rate a question, its displayed difficulty updates to reflect community consensus.
-- **Dispute System** - Flag a question if the answer seems wrong or the wording is unclear.
-- **Suggestion Box** - Submit feedback and feature requests directly from the home screen.
+- **Question Feedback / Dispute** - Flag a question if the answer seems wrong, the wording is unclear, or you have any other per-question feedback.
+- **Suggestion Box** - Submit general feedback, bug reports, and feature requests directly from the home screen.
+- **Submit a Trivia Question** - Players can pitch full trivia questions (question, correct answer, three wrong answers, category, difficulty, optional context) from inside the Suggestion Box. Submissions land in an admin review queue.
 
 ### Admin Panel (password-protected)
-- **Questions Tab** - Full question bank management. Add, edit, disable questions. Manage tags.
-- **Disputes & Feedback Tab** - Review flagged questions with direct "Edit Question" shortcut. Read submitted feedback.
-- **Community Ratings Tab** - View community ratings per question, see which questions are overriding, reset ratings.
+- **Questions Tab** - Full question bank management. Add, edit, disable, revert, and permanently delete questions. Manage tags. Each card shows the question ID for cross-referencing.
+- **Suggested Questions Tab** - Review player-submitted trivia questions. Review & Revise opens each in the question editor for polishing before approval. Defer or delete as needed.
+- **Flagged Questions Tab** - Review player-submitted disputes with direct "Edit Question" shortcut. Approve or dismiss each flag.
+- **Submitted Feedback Tab** - Read general messages from the Suggestion Box (feedback, bug reports, feature ideas).
+- **Community Ratings Tab** - View community ratings per question, see which questions are overriding, reset ratings or votes.
+- **Leaderboard Tab** - Remove leaderboard entries with inappropriate usernames or fraudulent scores.
 - **Question Export** - Export the full question bank as CSV with selectable columns (ID, question, answer, distractors, category, difficulty, tags, type, status, community data).
+- **Change Password** - Update the server-side admin password.
 
 ### Polish
 - Custom themed 404 page
@@ -57,7 +62,7 @@ python server.py
 
 Then open **http://localhost:3000** in your browser.
 
-The server handles both static file serving and a small JSON API that persists game data (disputes, ratings, tags, leaderboard, feedback, question edits, custom questions, disabled questions) to a local `data/` folder. That folder is created automatically on first run and is gitignored.
+The server handles both static file serving and a JSON API that persists game data (disputes, ratings, votes, tags, leaderboard, feedback, question edits, custom questions, disabled questions, deleted questions, question suggestions) to a local `data/` folder. That folder is created automatically on first run and is gitignored. Admin write operations require a session token issued by `/api/admin/login`.
 
 ---
 
@@ -76,7 +81,7 @@ No build step. No npm. No dependencies to install.
 
 ## Question Bank
 
-216 questions across 8 categories in `js/data.js`:
+290+ questions across 8 categories in `js/data.js`:
 
 - Characters
 - Episodes & Events
@@ -95,18 +100,24 @@ Questions support admin editing, custom additions, community difficulty ratings,
 
 ```
 index.html          Single-page app (all screens as hidden divs)
-server.py           Python dev server + JSON API endpoints
+server.py           Python dev server + JSON API endpoints + admin auth
 css/styles.css      All styles (Dunder Mifflin aesthetic)
-js/data.js          216 questions, quote reactions, character tags, pause quotes
+js/data.js          290+ questions, quote reactions, character tags, pause quotes
 js/state.js         GameState object, localStorage helpers, persistence
 js/questions.js     Filtering, shuffle, MC option generation, grading
-js/ui.js            Screen routing, quote callout, results rendering
+js/ui.js            Screen routing, quote callout, results rendering, leaderboard
 js/solo.js          Solo game flow + shared renderQuestionScreen()
 js/party.js         Party flow, speed timer, wager, countdown, pause
-js/admin.js         Admin panel, question editor, export, dispute review
+js/admin.js         Admin panel, question editor, export, dispute review, delete/revert
 js/feedback.js      Suggestion box form handling
+js/suggestions.js   Player question submission form + admin review queue
+js/donate.js        Buy-Me-A-Coffee donate modal
 js/app.js           Entry point, all event binding
-data/               Server-persisted JSON (gitignored, auto-created)
+data/               Server-persisted JSON (gitignored, auto-created):
+                      disputes.json, ratings.json, votes.json, tags.json,
+                      leaderboard.json, feedback.json, question-edits.json,
+                      custom-questions.json, disabled-questions.json,
+                      deleted-questions.json, question-suggestions.json
 ```
 
 ---

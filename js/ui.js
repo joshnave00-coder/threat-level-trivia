@@ -114,7 +114,7 @@ function renderLeaderboard() {
           <span class="lb-name">${escHtml(e.name)}</span>
           <span class="lb-score">${e.score}/25</span>
           <span class="lb-pct">${e.accuracy}%</span>
-          <span class="lb-meta">${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>
+          <span class="lb-meta">${escHtml(e.difficulty)} &middot; ${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>
         </div>`).join('');
     })
     .catch(() => {

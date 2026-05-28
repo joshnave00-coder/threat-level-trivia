@@ -22,6 +22,9 @@ QUESTION_EDITS_FILE     = os.path.join(DATA_DIR, 'question-edits.json')
 CUSTOM_QUESTIONS_FILE   = os.path.join(DATA_DIR, 'custom-questions.json')
 DISABLED_QUESTIONS_FILE = os.path.join(DATA_DIR, 'disabled-questions.json')
 VOTES_FILE              = os.path.join(DATA_DIR, 'votes.json')
+SUGGESTIONS_FILE        = os.path.join(DATA_DIR, 'question-suggestions.json')
+DELETED_QUESTIONS_FILE  = os.path.join(DATA_DIR, 'deleted-questions.json')
+SITE_SETTINGS_FILE      = os.path.join(DATA_DIR, 'site-settings.json')
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -126,6 +129,12 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._serve_file(DISABLED_QUESTIONS_FILE)
         elif p == '/api/votes':
             self._serve_file(VOTES_FILE)
+        elif p == '/api/question-suggestions':
+            self._serve_file(SUGGESTIONS_FILE)
+        elif p == '/api/deleted-questions':
+            self._serve_file(DELETED_QUESTIONS_FILE)
+        elif p == '/api/site-settings':
+            self._serve_file(SITE_SETTINGS_FILE)
         elif p in ('/admin', '/admin/'):
             self._serve_index()
         else:
@@ -142,6 +151,11 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._handle_change_password()
         elif self.path == '/api/feedback':
             self._save_feedback()
+        elif self.path == '/api/question-suggestions':
+            if self.headers.get('X-Admin-Token', '') in _active_tokens:
+                self._save_file(SUGGESTIONS_FILE)
+            else:
+                self._save_question_suggestion()
         elif self.path in ('/api/votes', '/api/disputes', '/api/ratings'):
             # Player-submitted data — no admin token required
             file_map = {
@@ -157,7 +171,9 @@ class TLTHandler(SimpleHTTPRequestHandler):
                 return
             self._remove_leaderboard_entry()
         elif self.path in ('/api/tags', '/api/leaderboard',
-                           '/api/question-edits', '/api/custom-questions', '/api/disabled-questions'):
+                           '/api/question-edits', '/api/custom-questions',
+                           '/api/disabled-questions', '/api/deleted-questions',
+                           '/api/site-settings'):
             if not self._check_admin_token():
                 return
             file_map = {
@@ -166,6 +182,8 @@ class TLTHandler(SimpleHTTPRequestHandler):
                 '/api/question-edits':     QUESTION_EDITS_FILE,
                 '/api/custom-questions':   CUSTOM_QUESTIONS_FILE,
                 '/api/disabled-questions': DISABLED_QUESTIONS_FILE,
+                '/api/deleted-questions':  DELETED_QUESTIONS_FILE,
+                '/api/site-settings':      SITE_SETTINGS_FILE,
             }
             self._save_file(file_map[self.path])
         else:
@@ -273,7 +291,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
                     body = f.read().encode('utf-8')
             else:
                 # Tags and edits are stored as objects {}, everything else as []
-                body = b'{}' if path in (TAGS_FILE, QUESTION_EDITS_FILE) else b'[]'
+                body = b'{}' if path in (TAGS_FILE, QUESTION_EDITS_FILE, SITE_SETTINGS_FILE) else b'[]'
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(body)))
@@ -422,6 +440,73 @@ class TLTHandler(SimpleHTTPRequestHandler):
             })
 
             with open(FEEDBACK_FILE, 'w', encoding='utf-8') as f:
+                json.dump(existing, f, indent=2, ensure_ascii=False)
+
+            self._send_json(200, {'ok': True})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def _save_question_suggestion(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            if length > 8192:
+                self.send_error(413, 'Payload too large')
+                return
+            raw  = self.rfile.read(min(length, 8192))
+            data = json.loads(raw)
+
+            submitter   = str(data.get('submitter') or '').strip()[:60]
+            question    = str(data.get('question') or '').strip()[:500]
+            answer      = str(data.get('answer') or '').strip()[:200]
+            distractors = data.get('distractors', [])
+            category    = str(data.get('category') or '').strip()
+            difficulty  = str(data.get('difficulty') or '').strip()
+            context     = str(data.get('context') or '').strip()[:1000]
+            sent_at     = str(data.get('submittedAt') or '').strip()[:32]
+
+            if not question or len(question) < 10:
+                self.send_error(400, 'Question too short')
+                return
+            if not answer:
+                self.send_error(400, 'Answer required')
+                return
+            if not isinstance(distractors, list) or len(distractors) != 3:
+                self.send_error(400, 'Exactly 3 distractors required')
+                return
+            distractors = [str(d).strip()[:200] for d in distractors]
+            if not all(distractors):
+                self.send_error(400, 'All distractors must be non-empty')
+                return
+
+            valid_categories = [
+                'Characters', 'Episodes & Events', 'Quotes', 'Behind the Scenes',
+                'Relationships & Romance', 'Music & Performances',
+                'Locations & Miscellaneous', 'Cold Opens & Running Gags',
+            ]
+            if category not in valid_categories:
+                category = valid_categories[0]
+            if difficulty not in ('Easy', 'Medium', 'Hard'):
+                difficulty = 'Medium'
+
+            if os.path.exists(SUGGESTIONS_FILE):
+                with open(SUGGESTIONS_FILE, 'r', encoding='utf-8') as f:
+                    existing = json.load(f)
+            else:
+                existing = []
+
+            existing.append({
+                'submitter':   submitter or None,
+                'question':    question,
+                'answer':      answer,
+                'distractors': distractors,
+                'category':    category,
+                'difficulty':  difficulty,
+                'context':     context or None,
+                'status':      'pending',
+                'submittedAt': sent_at,
+            })
+
+            with open(SUGGESTIONS_FILE, 'w', encoding='utf-8') as f:
                 json.dump(existing, f, indent=2, ensure_ascii=False)
 
             self._send_json(200, {'ok': True})

@@ -4,6 +4,31 @@ All notable changes to Threat Level Trivia are documented here.
 
 ---
 
+## v1.4.0 - 2026-05-28
+
+### Features
+- **Player Question Submissions** - New "Submit a Question" form inside the Suggestion Box. Players can submit a full trivia question (question text, correct answer, three wrong answers, category, difficulty, and optional context). Submissions are honeypot-protected and rate-limited. Selecting "New Question Idea" in the feedback type dropdown auto-redirects to this dedicated form.
+- **Admin Suggested Questions Tab** - New admin panel tab listing all player-submitted questions. Each suggestion sorts by status (pending, deferred, resolved). Admin can **Review & Revise** (opens the full question editor pre-filled with the suggestion; the save button reads "Add to Question Bank" and the suggestion is only marked approved on save), **Review Later** (defers), or **Delete** (rejects with confirmation).
+- **Admin Question Delete** - Every question card in the Questions tab now has a Delete button. Custom questions are erased outright. Built-in questions are added to a new `data/deleted-questions.json` list and filtered out everywhere (admin view + gameplay), distinct from the reversible Disable toggle.
+- **Admin Question Revert** - Edited built-in questions show a new Revert button that strips the edit overlay and restores the original question text.
+- **Admin Question ID Display** - Each question card now shows its question ID in small italic text in the top-left for cross-referencing with disputes, exports, and community ratings.
+- **Leaderboard Difficulty Display** - Public leaderboard entries now show the difficulty level (Medium/Hard) alongside the category and date.
+
+### Changes
+- "File a Dispute" renamed to **"Question Feedback / Dispute"** everywhere (question screen button, dispute form heading, in-game reset state, How to Play rules).
+- Admin **"Disputes & Feedback"** tab split into two separate tabs: **Flagged Questions** and **Submitted Feedback**, each with their own nav button and dedicated panel.
+- Admin help guide rewritten to cover all current admin features: question ID badge, Delete, Revert, Suggested Questions queue, Leaderboard management, split Disputes/Feedback panels.
+- README updated with current question count (290+), new file list, new API/data files.
+- How to Play rules screen updated with new "Submit a Trivia Question" section and refreshed Community Feedback wording.
+
+### Infrastructure
+- New server endpoints: `GET /api/question-suggestions`, `POST /api/question-suggestions` (public submission appends; admin token overwrites), `GET /api/deleted-questions`, `POST /api/deleted-questions` (admin-only).
+- New localStorage key: `tlt_deleted_questions`.
+- New data files: `data/question-suggestions.json`, `data/deleted-questions.json`.
+- New JS module: `js/suggestions.js` (player submission form + admin review queue).
+
+---
+
 ## v1.3.0 - 2025-05-25
 
 ### Features

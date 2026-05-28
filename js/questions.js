@@ -19,7 +19,8 @@ function getEffectiveQuestion(q) {
 }
 
 function getAllManagedQuestions() {
-  const base = QUESTIONS.map(q => getEffectiveQuestion(q));
+  const deleted = getDeletedQuestions();
+  const base = QUESTIONS.map(q => getEffectiveQuestion(q)).filter(q => !deleted.includes(q.id));
   return [...base, ...getCustomQuestions()];
 }
 

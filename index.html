@@ -76,22 +76,22 @@
     </div>
 
     <div class="home-social">
-      <a href="https://youtube.com/@ThreatLevelTrivia" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="YouTube">
+      <a href="https://youtube.com/@ThreatLevelTrivia" target="_blank" rel="noopener noreferrer" class="social-icon" id="social-youtube" aria-label="YouTube">
         <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" aria-hidden="true">
           <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/>
         </svg>
       </a>
-      <a href="https://x.com/ThreatLevelTriv" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="X / Twitter">
+      <a href="https://x.com/ThreatLevelTriv" target="_blank" rel="noopener noreferrer" class="social-icon" id="social-x" aria-label="X / Twitter">
         <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" aria-hidden="true">
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
         </svg>
       </a>
-      <a href="https://instagram.com/threatleveltrivia" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram">
+      <a href="https://instagram.com/threatleveltrivia" target="_blank" rel="noopener noreferrer" class="social-icon" id="social-instagram" aria-label="Instagram">
         <svg viewBox="0 0 24 24" fill="currentColor" width="23" height="23" aria-hidden="true">
           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
         </svg>
       </a>
-      <a href="mailto:Threat.Level.Trivia@gmail.com" class="social-icon" aria-label="Email us">
+      <a href="mailto:Threat.Level.Trivia@gmail.com" class="social-icon" id="social-email" aria-label="Email us">
         <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" aria-hidden="true">
           <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
         </svg>
@@ -195,13 +195,18 @@
         <ul>
           <li><strong>Vote:</strong> Thumbs up or down to tell us if it's a good question.</li>
           <li><strong>Rate difficulty:</strong> Slide the scale from 1 (easy) to 10 (hard). Enough ratings and the community score overrides the original difficulty label.</li>
-          <li><strong>File a Dispute:</strong> Think the answer is wrong or the wording is off? Let us know. Every dispute gets reviewed.</li>
+          <li><strong>Question Feedback / Dispute:</strong> Think the answer is wrong, the wording is off, or you want to leave any other feedback about a specific question? Let us know. Every submission gets reviewed.</li>
         </ul>
       </section>
 
       <section class="rules-section">
         <h3>Suggestion Box</h3>
-        <p>Have an idea, feedback, or just want to tell us your favorite Michael Scott moment? Hit the Suggestion Box on the home screen. We actually read these.</p>
+        <p>Have an idea, general feedback, or just want to tell us your favorite Michael Scott moment? Hit the Suggestion Box on the home screen. We actually read these.</p>
+      </section>
+
+      <section class="rules-section">
+        <h3>Submit a Trivia Question</h3>
+        <p>Think you've got a stumper the world needs to see? Inside the Suggestion Box there's a "Submit it here" link that opens a dedicated form where you can pitch a full question (question text, correct answer, three wrong answers, category, difficulty, and optional context). Submissions land in a review queue and the admin can polish them before adding them to the official bank.</p>
       </section>
 
     </div>
@@ -392,9 +397,9 @@
           </div>
         </div>
 
-        <button class="btn-link dispute-link" id="btn-dispute-open" title="Report an issue with this question - wrong answer, unclear wording, or bad info">File a Dispute</button>
+        <button class="btn-link dispute-link" id="btn-dispute-open" title="Report an issue with this question - wrong answer, unclear wording, or bad info">Question Feedback / Dispute</button>
         <div id="q-dispute-form" class="dispute-form hidden">
-          <h4>File a Dispute</h4>
+          <h4>Question Feedback / Dispute</h4>
           <textarea id="dispute-text" class="dispute-textarea input-field" placeholder="What's wrong with this question or answer?" maxlength="300"></textarea>
           <div class="dispute-actions">
             <button class="btn btn-secondary btn-sm" id="btn-dispute-submit">Submit</button>
@@ -630,12 +635,16 @@
     <!-- LEFT NAV -->
     <nav class="admin-nav">
       <button class="admin-nav-item active" data-panel="questions">Questions</button>
-      <button class="admin-nav-item" data-panel="review">Disputes &amp; Feedback</button>
+      <button class="admin-nav-item" data-panel="suggestions">Suggested Questions</button>
+      <button class="admin-nav-item" data-panel="disputes">Flagged Questions</button>
+      <button class="admin-nav-item" data-panel="feedback">Submitted Feedback</button>
       <button class="admin-nav-item" data-panel="community-ratings">Community Ratings</button>
       <button class="admin-nav-item" data-panel="leaderboard">Leaderboard</button>
       <button class="admin-nav-item" data-panel="export">Export</button>
+      <button class="admin-nav-item" data-panel="site-settings">Site Settings</button>
       <button class="admin-nav-item" data-panel="password">Change Password</button>
       <div class="admin-nav-spacer"></div>
+      <button class="admin-nav-item admin-nav-help" data-panel="version-history">Version History</button>
       <button class="admin-nav-item admin-nav-help" data-panel="admin-help">Help &amp; Guide</button>
     </nav>
 
@@ -663,13 +672,26 @@
         <div id="admin-questions-list" class="aq-list"></div>
       </div>
 
-      <!-- REVIEW PANEL (Disputes + Feedback) -->
-      <div id="admin-panel-review" class="admin-panel hidden">
-        <h3 class="review-section-title">Flagged Questions</h3>
+      <!-- SUGGESTED QUESTIONS PANEL -->
+      <div id="admin-panel-suggestions" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.25rem;color:var(--navy)">Suggested Questions</h3>
+        <p class="settings-desc">Questions submitted by players. Review, edit, and approve them to add to the official question bank.</p>
+        <div id="admin-suggestions-list" class="admin-suggestions-list"></div>
+        <p id="admin-no-suggestions" class="admin-empty hidden">No pending suggestions. The people have spoken... by staying silent.</p>
+      </div>
+
+      <!-- DISPUTES PANEL -->
+      <div id="admin-panel-disputes" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.25rem;color:var(--navy)">Flagged Questions</h3>
+        <p class="settings-desc">Questions flagged by players during gameplay. Review each dispute and take action.</p>
         <div id="admin-disputes-list" class="admin-disputes-list"></div>
         <p id="admin-no-disputes" class="admin-empty hidden">No flagged questions. The office is at peace.</p>
+      </div>
 
-        <h3 class="review-section-title" style="margin-top:1.5rem">Submitted Feedback</h3>
+      <!-- FEEDBACK PANEL -->
+      <div id="admin-panel-feedback" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.25rem;color:var(--navy)">Submitted Feedback</h3>
+        <p class="settings-desc">General messages submitted through the Suggestion Box on the home screen.</p>
         <div id="admin-feedback-list" class="admin-feedback-list"></div>
         <p id="admin-no-feedback" class="admin-empty hidden">No feedback submitted yet. The suggestion box is empty.</p>
       </div>
@@ -730,6 +752,192 @@
         <button class="btn btn-secondary btn-sm" id="btn-export-questions" style="margin-top:0.75rem">Export as CSV</button>
       </div>
 
+      <!-- VERSION HISTORY PANEL -->
+      <div id="admin-panel-version-history" class="admin-panel hidden">
+        <h3 class="admin-help-title">Version History</h3>
+        <p class="admin-help-intro">A running log of every release, what landed in it, and when it shipped. Most recent at the top.</p>
+
+        <div class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v1.4.0</span>
+            <span class="version-date">2026-05-28</span>
+          </div>
+          <div class="version-section">
+            <h5>Features</h5>
+            <ul>
+              <li><strong>Player Question Submissions:</strong> New "Submit a Question" form inside the Suggestion Box. Players can pitch a full trivia question (question text, correct answer, three wrong answers, category, difficulty, optional context). Selecting "New Question Idea" in the feedback type dropdown auto-redirects to this dedicated form.</li>
+              <li><strong>Admin Suggested Questions Tab:</strong> New admin tab listing all player-submitted questions, sorted by status. Review &amp; Revise opens each in the question editor; the suggestion is only marked approved when "Add to Question Bank" is clicked.</li>
+              <li><strong>Admin Question Delete:</strong> Every question card now has a Delete button. Custom questions are erased outright; built-in questions are added to a permanent deleted list (distinct from the reversible Disable toggle).</li>
+              <li><strong>Admin Question Revert:</strong> Edited built-in questions show a Revert button that strips the edit overlay and restores the original question text.</li>
+              <li><strong>Admin Question ID Display:</strong> Each question card shows its ID in small italic text in the top-left for cross-referencing with disputes, exports, and ratings.</li>
+              <li><strong>Leaderboard Difficulty Display:</strong> Public leaderboard entries now show the difficulty level (Medium/Hard) alongside category and date.</li>
+            </ul>
+          </div>
+          <div class="version-section">
+            <h5>Changes</h5>
+            <ul>
+              <li>"File a Dispute" renamed to <strong>Question Feedback / Dispute</strong> everywhere.</li>
+              <li>Admin Help guide rewritten to cover all current admin features (ID badge, Delete, Revert, Suggested Questions queue, Leaderboard management).</li>
+              <li>How to Play rules screen refreshed with new "Submit a Trivia Question" section.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v1.3.0</span>
+            <span class="version-date">2025-05-25</span>
+          </div>
+          <div class="version-section">
+            <h5>Features</h5>
+            <ul>
+              <li><strong>Party Countdown:</strong> 3-2-1-GO animated countdown before each party question. Question is hidden behind an overlay until "GO!" so no player can read ahead.</li>
+              <li><strong>Equal Question Distribution:</strong> Party mode now enforces that every player gets the same number of questions. Count is rounded to the nearest multiple of players.</li>
+              <li><strong>Wager Timer:</strong> 45-second countdown on the wager screen with progress bar that turns amber then red. Auto-submits current values when time expires.</li>
+              <li><strong>Party Pause:</strong> Host can pause mid-question. Full-screen overlay hides question/answer and displays a random Office quote. Speed-round timer suspends and resumes with remaining time.</li>
+              <li><strong>Question Export (CSV):</strong> Admin selects columns via checkboxes and exports the question bank. Includes Select All / Deselect All.</li>
+              <li><strong>Edit from Disputes:</strong> Each dispute card has an "Edit Question" button that opens the question editor pre-populated with that question's data.</li>
+            </ul>
+          </div>
+          <div class="version-section">
+            <h5>Changes</h5>
+            <ul>
+              <li>Admin "Review" tab renamed to "Disputes &amp; Feedback".</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v1.2.0</span>
+            <span class="version-date">2025-05-25</span>
+          </div>
+          <div class="version-section">
+            <h5>Features</h5>
+            <ul>
+              <li><strong>Community Difficulty Ratings (Admin):</strong> New "Community Ratings" admin tab showing each question's average rating, count, and override status. Admin can reset individual question ratings.</li>
+              <li><strong>Community Difficulty Override:</strong> When 3+ players rate a question, the displayed difficulty badge auto-updates to reflect the community average (thresholds: &lt;4 Easy, 4-6.9 Medium, 7+ Hard).</li>
+              <li><strong>Character Auto-Tagging:</strong> 24 character definitions with regex patterns. Scans all questions and assigns character tags based on name mentions.</li>
+              <li><strong>Character Filter:</strong> "Character" dropdown in both solo and party lobby screens to filter the question pool by mentioned character.</li>
+              <li><strong>Live Pool Count:</strong> Shows how many questions match the current filter combo. Turns red when fewer than 5 are available.</li>
+              <li><strong>Custom 404 Page:</strong> Themed 404 with ruled-paper grid background and a Michael Scott quote.</li>
+              <li><strong>Screen Fade-In:</strong> CSS animation on screen transitions to prevent blank flash on slow connections.</li>
+              <li><strong>Privacy Banner:</strong> One-time dismissible banner disclosing localStorage usage and optional email collection.</li>
+            </ul>
+          </div>
+          <div class="version-section">
+            <h5>Fixes</h5>
+            <ul>
+              <li><strong>Input Sanitization:</strong> Strips HTML tags, control characters, and excess whitespace from all free-form inputs. Max lengths enforced.</li>
+              <li><strong>Em Dash Removal:</strong> All user-visible em dashes removed from UI text. Replaced with hyphens, colons, commas, or rephrased.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v1.1.0</span>
+            <span class="version-date">2025-05-24</span>
+          </div>
+          <div class="version-section">
+            <h5>Features</h5>
+            <ul>
+              <li><strong>Suggestion Box:</strong> Feedback form on the home screen (name, email optional; type selector; message).</li>
+              <li><strong>Feedback Admin View:</strong> "Submitted Feedback" section in the admin Review tab. Displays all entries reverse-chronologically.</li>
+              <li><strong>Admin Question Management:</strong> Full CRUD for the question bank: add custom questions, edit base questions (stored as overlays), disable/enable individual questions. Question editor modal with tags, distractors, category, difficulty.</li>
+              <li><strong>Admin Tag System:</strong> Per-question tag management via the question editor modal, with a tag suggestions datalist.</li>
+              <li><strong>Question Edits Persistence:</strong> Edited base questions stored as overlays. Custom questions and disabled lists persisted to the server.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v1.0.0</span>
+            <span class="version-date">2025-05-24</span>
+          </div>
+          <div class="version-section">
+            <h5>Initial Release</h5>
+            <ul>
+              <li><strong>Solo Mode:</strong> Single-player trivia with category, difficulty, and question count selection. Hardcore mode (no multiple choice). Score saved to leaderboard.</li>
+              <li><strong>Party Mode:</strong> 2-8 player hot-seat with round-robin turns. Optional speed round (15-second timer, faster = more points). Wager round for tied scores.</li>
+              <li><strong>216 Questions:</strong> 8 categories, 3 difficulty levels (Easy/Medium/Hard), 4 answer options per question.</li>
+              <li><strong>Leaderboard:</strong> Local high scores with player name, score, accuracy, grade, date.</li>
+              <li><strong>Answer History:</strong> Full log of every answered question with player, result, timestamp.</li>
+              <li><strong>Question Rating:</strong> Post-answer 1-10 difficulty rating slider.</li>
+              <li><strong>Dispute System:</strong> Flag incorrect/unclear questions. Disputes stored with question context, player name, and optional rating.</li>
+              <li><strong>Quote Reactions:</strong> 15 correct + 15 incorrect character quotes shown after each answer.</li>
+              <li><strong>Admin Panel:</strong> Password-protected with dispute review and data sync.</li>
+              <li><strong>Python Dev Server:</strong> JSON API for disputes, ratings, and leaderboard persistence.</li>
+              <li><strong>Dunder Mifflin Aesthetic:</strong> Cream/navy/beige color scheme, ruled-paper grid background, serif headings.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SITE SETTINGS PANEL -->
+      <div id="admin-panel-site-settings" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.25rem;color:var(--navy)">Site Settings</h3>
+        <p class="settings-desc">Toggle site-wide features on or off. Changes take effect immediately for all visitors.</p>
+
+        <div class="site-settings-list" style="margin-top:1rem">
+          <div class="lobby-section">
+            <span class="lobby-label">Party Planning Committee (Donate Link)</span>
+            <div class="toggle-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ss-donate-link" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-desc">Show the "Party Planning Committee" link on the home screen (links to Buy Me a Coffee).</span>
+            </div>
+          </div>
+
+          <div class="lobby-section">
+            <span class="lobby-label">YouTube Icon</span>
+            <div class="toggle-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ss-youtube" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-desc">Show the YouTube icon on the home screen.</span>
+            </div>
+          </div>
+
+          <div class="lobby-section">
+            <span class="lobby-label">X / Twitter Icon</span>
+            <div class="toggle-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ss-x" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-desc">Show the X / Twitter icon on the home screen.</span>
+            </div>
+          </div>
+
+          <div class="lobby-section">
+            <span class="lobby-label">Instagram Icon</span>
+            <div class="toggle-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ss-instagram" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-desc">Show the Instagram icon on the home screen.</span>
+            </div>
+          </div>
+
+          <div class="lobby-section">
+            <span class="lobby-label">Email Icon</span>
+            <div class="toggle-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ss-email" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-desc">Show the email icon on the home screen.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- CHANGE PASSWORD PANEL -->
       <!-- HELP & GUIDE PANEL -->
       <div id="admin-panel-admin-help" class="admin-panel hidden">
@@ -740,21 +948,35 @@
           <h4>Questions</h4>
           <p>The full question bank. Every question in the game lives here.</p>
           <ul>
+            <li><strong>Question ID:</strong> Each card shows its question ID (#123) in the top-left in small italic text. Handy for cross-referencing with disputes, exports, or community ratings.</li>
             <li><strong>Search &amp; Filter:</strong> Narrow down by keyword, category, or difficulty. The count updates in real time.</li>
-            <li><strong>Edit:</strong> Opens the question editor where you can change the question text, answer, category, difficulty, and tags. Edits to built-in questions are stored as overrides - the original is preserved underneath.</li>
-            <li><strong>Disable/Enable:</strong> Disabling a question hides it from gameplay without deleting it. Useful for pulling a bad question while you fix it.</li>
+            <li><strong>Edit:</strong> Opens the question editor where you can change the question text, answer, category, difficulty, and tags. Edits to built-in questions are stored as overrides - the original is preserved underneath and the card gets an "EDITED" badge.</li>
+            <li><strong>Disable/Enable:</strong> Disabling a question hides it from gameplay without removing it. Useful for pulling a bad question while you fix it. Reversible at any time.</li>
+            <li><strong>Revert:</strong> Appears on edited built-in questions. Strips your edit overlay and restores the original question text. Your edits will be lost.</li>
+            <li><strong>Delete:</strong> Permanently removes the question from gameplay and the admin panel. Custom questions are fully erased; built-in questions are added to a separate "deleted" list (since they're baked into the game's source). Either way, this cannot be undone from the UI.</li>
             <li><strong>Add New Question:</strong> Creates a custom question that gets added to the pool. Custom questions are tagged with a "CUSTOM" badge so you can tell them apart from the built-in set.</li>
             <li><strong>Tags:</strong> Optional labels on questions (like character names or episode references). Players can filter by character in the lobby, and tags power that filtering.</li>
           </ul>
         </div>
 
         <div class="admin-help-section">
-          <h4>Disputes &amp; Feedback</h4>
-          <p>Two sections in one panel:</p>
+          <h4>Suggested Questions</h4>
+          <p>Questions submitted by players through the Suggestion Box. Each suggestion shows the full question, answer options, category, and difficulty.</p>
           <ul>
-            <li><strong>Flagged Questions:</strong> When a player thinks a question or answer is wrong, they can file a dispute during gameplay. Each dispute shows the question, the player's comment, and when it was filed. You can mark them as <em>Approved</em> (the dispute is valid and you'll fix it) or <em>Dismissed</em> (the question is fine as-is). These status changes are just labels for your tracking - they don't automatically modify the question.</li>
-            <li><strong>Submitted Feedback:</strong> Messages from the Suggestion Box on the home screen. Players can submit general feedback, bug reports, question ideas, or suggestions. These are view-only.</li>
+            <li><strong>Review &amp; Revise:</strong> Opens the suggestion in the question editor so you can review the full text and make any edits (grammar, capitalization, distractor tweaks) before approving. The suggestion is only added to the question bank when you click "Add to Question Bank" inside the editor. Closing or canceling leaves it pending.</li>
+            <li><strong>Review Later:</strong> Marks the suggestion as deferred so you can come back to it.</li>
+            <li><strong>Delete:</strong> Permanently marks the suggestion as rejected.</li>
           </ul>
+        </div>
+
+        <div class="admin-help-section">
+          <h4>Flagged Questions</h4>
+          <p>When a player submits "Question Feedback / Dispute" during gameplay, the entry shows up here. Each card shows the question, the player's comment, and when it was filed. You can mark them as <em>Approved</em> (the dispute is valid and you'll fix it) or <em>Dismissed</em> (the question is fine as-is). These status changes are just labels for your tracking - they don't automatically modify the question. Use the "Edit Question" shortcut on the card to jump straight into the question editor.</p>
+        </div>
+
+        <div class="admin-help-section">
+          <h4>Submitted Feedback</h4>
+          <p>General messages submitted through the Suggestion Box on the home screen (general feedback, feature ideas, bug reports, etc.). These are view-only. Player-submitted trivia questions have their own dedicated "Suggested Questions" tab.</p>
         </div>
 
         <div class="admin-help-section">
@@ -769,8 +991,13 @@
         </div>
 
         <div class="admin-help-section">
+          <h4>Leaderboard</h4>
+          <p>Lists every entry on the global Employee Records leaderboard. Each row shows the player's name, score, accuracy percentage, difficulty, category, and date. Use the <strong>Remove</strong> button to delete entries with inappropriate usernames or fraudulent scores. Removals are permanent.</p>
+        </div>
+
+        <div class="admin-help-section">
           <h4>Export</h4>
-          <p>Download the full question bank as a CSV file. You pick which columns to include (question, answer, category, difficulty, tags, etc.). Handy for backups, sharing with collaborators, or importing into a spreadsheet for bulk review.</p>
+          <p>Download the full question bank as a CSV file. You pick which columns to include (question, answer, category, difficulty, tags, type, enabled status, community ratings, etc.). Handy for backups, sharing with collaborators, or importing into a spreadsheet for bulk review. Deleted questions are excluded; disabled questions appear with their status marked.</p>
         </div>
 
         <div class="admin-help-section">
@@ -892,6 +1119,9 @@
       <button class="btn-icon modal-close" id="btn-feedback-close" aria-label="Close">&times;</button>
     </div>
     <p class="modal-desc">Got something to say? Drop it in the box. Ryan Howard reads every message. Probably.</p>
+    <div class="suggest-question-link">
+      Got a trivia question the world needs to hear? <button type="button" class="btn-link" id="btn-suggest-question">Submit it here &rarr;</button>
+    </div>
     <form id="feedback-form" class="feedback-form" novalidate>
 
       <!-- Honeypot: hidden from real users, bots fill it in -->
@@ -937,6 +1167,81 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════
+     SUGGEST QUESTION MODAL — Public submission
+════════════════════════════════════════════════ -->
+<div id="suggest-question-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="suggest-question-modal-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="suggest-question-modal-title">Submit a Question</h2>
+      <button class="btn-icon modal-close" id="btn-suggest-close" aria-label="Close">&times;</button>
+    </div>
+    <p class="modal-desc">Think you've got a stumper? Fill out the form below and we'll review it for the official question bank.</p>
+    <form id="suggest-question-form" class="feedback-form" novalidate>
+
+      <input type="text" id="sq-honeypot" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" class="fb-honeypot">
+
+      <div class="form-group">
+        <label for="sq-submitter">Your Name <span class="field-optional">(optional)</span></label>
+        <input type="text" id="sq-submitter" class="input-field" placeholder="e.g. Michael Scott" maxlength="60" autocomplete="off">
+      </div>
+
+      <div class="form-group form-group-full">
+        <label for="sq-question">Question Text <span class="field-required">*</span></label>
+        <textarea id="sq-question" class="input-field qe-textarea" placeholder="Enter the trivia question..." maxlength="500" required></textarea>
+      </div>
+
+      <div class="form-group form-group-full">
+        <label for="sq-answer">Correct Answer <span class="field-required">*</span></label>
+        <input type="text" id="sq-answer" class="input-field" placeholder="The correct answer" maxlength="200" required>
+      </div>
+
+      <div class="form-group form-group-full">
+        <label for="sq-d1">Wrong Answer 1 <span class="field-required">*</span></label>
+        <input type="text" id="sq-d1" class="input-field" placeholder="Wrong answer option 1" maxlength="200" required>
+      </div>
+      <div class="form-group form-group-full">
+        <label for="sq-d2">Wrong Answer 2 <span class="field-required">*</span></label>
+        <input type="text" id="sq-d2" class="input-field" placeholder="Wrong answer option 2" maxlength="200" required>
+      </div>
+      <div class="form-group form-group-full">
+        <label for="sq-d3">Wrong Answer 3 <span class="field-required">*</span></label>
+        <input type="text" id="sq-d3" class="input-field" placeholder="Wrong answer option 3" maxlength="200" required>
+      </div>
+
+      <div class="qe-row-pair">
+        <div class="form-group form-group-full">
+          <label for="sq-category">Category <span class="field-required">*</span></label>
+          <select id="sq-category" class="select-field" required></select>
+        </div>
+        <div class="form-group form-group-full">
+          <label for="sq-difficulty">Difficulty <span class="field-required">*</span></label>
+          <select id="sq-difficulty" class="select-field" required>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group form-group-full">
+        <label for="sq-context">Answer Context <span class="field-optional">(why is this the correct answer?)</span></label>
+        <textarea id="sq-context" class="input-field qe-context-textarea" placeholder="Optional context explaining why this is the correct answer..." maxlength="1000"></textarea>
+        <div class="char-counter"><span id="sq-context-count">0</span> / 1,000</div>
+      </div>
+
+      <p id="sq-error" class="error-msg hidden"></p>
+      <p id="sq-success" class="feedback-success hidden">Question submitted for review! Thanks for contributing.</p>
+
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary" id="btn-sq-submit">Submit Question</button>
+        <button type="button" class="btn btn-secondary" id="btn-sq-cancel">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
      DONATE MODAL — Party Planning Committee
 ════════════════════════════════════════════════ -->
 <div id="donate-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="donate-modal-title">
@@ -971,6 +1276,7 @@
 <script src="js/party.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/feedback.js"></script>
+<script src="js/suggestions.js"></script>
 <script src="js/donate.js"></script>
 <script src="js/app.js"></script>
 <script>

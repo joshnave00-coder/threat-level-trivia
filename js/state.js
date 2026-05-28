@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   questionEdits:     'tlt_question_edits',
   customQuestions:   'tlt_custom_questions',
   disabledQuestions: 'tlt_disabled_questions',
+  deletedQuestions:  'tlt_deleted_questions',
 };
 
 // Current game state — reset at the start of each game
@@ -397,6 +398,13 @@ function saveQuestionEdit(id, data) {
   _persistToFile('/api/question-edits', edits);
 }
 
+function revertQuestionEdit(id) {
+  const edits = getQuestionEdits();
+  delete edits[id];
+  localStorage.setItem(STORAGE_KEYS.questionEdits, JSON.stringify(edits));
+  _persistToFile('/api/question-edits', edits);
+}
+
 function getCustomQuestions() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.customQuestions)) || []; }
   catch { return []; }
@@ -417,6 +425,41 @@ function updateCustomQuestion(id, data) {
   const custom = getCustomQuestions();
   const idx = custom.findIndex(q => q.id === id);
   if (idx >= 0) { Object.assign(custom[idx], data); saveCustomQuestions(custom); }
+}
+
+function deleteCustomQuestion(id) {
+  const custom = getCustomQuestions().filter(q => q.id !== id);
+  saveCustomQuestions(custom);
+  setQuestionDisabled(id, false);
+}
+
+function getDeletedQuestions() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.deletedQuestions)) || []; }
+  catch { return []; }
+}
+
+function markQuestionDeleted(id) {
+  const baseIds = new Set(QUESTIONS.map(q => q.id));
+  if (!baseIds.has(id)) {
+    // Custom question — remove it outright
+    deleteCustomQuestion(id);
+  } else {
+    // Base question — add to deleted list so it's excluded everywhere
+    const list = getDeletedQuestions();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem(STORAGE_KEYS.deletedQuestions, JSON.stringify(list));
+      _persistToFile('/api/deleted-questions', list);
+    }
+    setQuestionDisabled(id, false);
+  }
+}
+
+function loadDeletedQuestionsFromFile() {
+  fetch('/api/deleted-questions').then(r => r.json()).then(data => {
+    if (!Array.isArray(data) || !data.length) return;
+    localStorage.setItem(STORAGE_KEYS.deletedQuestions, JSON.stringify(data));
+  }).catch(() => {});
 }
 
 function getNextQuestionId() {

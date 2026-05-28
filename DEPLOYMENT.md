@@ -113,7 +113,9 @@ ingress:
     feedback.json
     custom-questions.json
     disabled-questions.json
+    deleted-questions.json
     question-edits.json
+    question-suggestions.json
     tags.json
     votes.json
   .env                           - admin password (gitignored, must be set manually)
@@ -187,6 +189,19 @@ systemctl start tlt-server
    ```
 
 No tunnel restart needed for code changes - only restart `tlt-tunnel` if you change `/root/.cloudflared/config.yml`.
+
+---
+
+## Uptime Monitoring
+
+Monitored via **UptimeRobot** (free tier).
+
+| Property | Value |
+|---|---|
+| Public status page | https://stats.uptimerobot.com/pdpjLtIqze |
+| What it monitors | threatleveltrivia.com availability |
+
+The status page shows current uptime, response time history, and incident log. UptimeRobot pings the site at regular intervals and sends an alert if it goes down.
 
 ---
 

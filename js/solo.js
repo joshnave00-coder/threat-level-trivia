@@ -104,7 +104,7 @@ function renderQuestionScreen() {
   document.getElementById('q-hc-score').classList.add('hidden');
   document.getElementById('q-dispute-form').classList.add('hidden');
   document.getElementById('dispute-text').value = '';
-  document.getElementById('btn-dispute-open').textContent = 'File a Dispute';
+  document.getElementById('btn-dispute-open').textContent = 'Question Feedback / Dispute';
   document.getElementById('btn-dispute-open').disabled = false;
 
   // Vote reset

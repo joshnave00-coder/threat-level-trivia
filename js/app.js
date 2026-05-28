@@ -15,9 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
   loadQuestionEditsFromFile();
   loadCustomQuestionsFromFile();
   loadDisabledQuestionsFromFile();
+  loadDeletedQuestionsFromFile();
+
+  // Apply site-wide settings (e.g. donate link visibility)
+  applySiteSettings();
 
   // ── FEEDBACK ──────────────────────────────────────────────────────
   initFeedback();
+
+  // ── QUESTION SUGGESTIONS ──────────────────────────────────────────
+  initSuggestions();
 
   // ── DONATE ────────────────────────────────────────────────────────
   initDonate();
@@ -275,5 +282,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   _bind('btn-chpw-save', 'click', changeAdminPassword);
+
+  // Site settings toggles
+  _SITE_TOGGLES.forEach(({ key, toggleId }) => {
+    _bind(toggleId, 'change', () => handleSiteToggle(key));
+  });
 
 });

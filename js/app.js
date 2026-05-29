@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Entry Point
+   THREAT LEVEL TRIVIA - Entry Point
    Event binding and screen routing
    ================================================================ */
 
@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initPartyNames();
     showScreen('screen-party-names');
   });
+  document.getElementById('btn-challenge').addEventListener('click', () => challengeOpenSetup());
   document.getElementById('btn-leaderboard').addEventListener('click', () => {
     renderLeaderboard();
     showScreen('screen-leaderboard');
@@ -99,7 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-hc-wrong').addEventListener('click', () => handleHCScore(false));
 
   document.getElementById('btn-next-question').addEventListener('click', () => {
-    if (GameState.mode === 'solo') soloNextQ();
+    if (GameState.mode === 'challenge') challengeNextQ();
+    else if (GameState.mode === 'solo') soloNextQ();
     else if (GameState.isWagerRound) {
       // Save wager result and advance to next tied player
       const player = GameState.players[GameState.currentPlayerIdx];
@@ -234,12 +236,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Leaderboard qualifier status — also updates on question count and hardcore changes
+  // Leaderboard qualifier status - also updates on question count and hardcore changes
   document.querySelectorAll('input[name="solo-count"]').forEach(radio => {
     radio.addEventListener('change', updateSoloLbStatus);
   });
   _bind('solo-hardcore', 'change', updateSoloLbStatus);
   updateSoloLbStatus();
+
+  // "Deep tracks only" - Andy Bernard quip when Hard is selected
+  // (Roller skating party: "Just play Dave Matthews Band. Deep tracks only.")
+  document.querySelectorAll('input[name="solo-diff"], input[name="party-diff"], input[name="challenge-diff"]').forEach(radio => {
+    radio.addEventListener('change', e => {
+      if (e.target.checked && e.target.value === 'Hard') {
+        showToast('Sweet. Deep tracks only.');
+      }
+    });
+  });
+
+  // Dwight quip when Hardcore Mode toggles ON
+  const hcToggle = document.getElementById('solo-hardcore');
+  if (hcToggle) {
+    hcToggle.addEventListener('change', e => {
+      if (e.target.checked) {
+        showToast('Question: What kind of bear is best? Black bear. Hardcore.');
+      }
+    });
+  }
+
+  // Identity theft detector - watches name inputs for cast names.
+  // Also assigns a rotating Office cast placeholder to each name input.
+  // (Dynamically added party name fields are handled inside partyBuildNameInputs.)
+  ['solo-name-input', 'challenge-name-input', 'challenge-joiner-name'].forEach(id => {
+    const el = document.getElementById(id);
+    attachIdentityTheftWatch(el);
+    applyRotatingPlaceholder(el);
+  });
 
   _bind('aq-search', 'input', e => { adminQFilter.search = e.target.value; renderAdminQuestions(); });
   _bind('aq-filter-category', 'change', e => { adminQFilter.category = e.target.value; renderAdminQuestions(); });
@@ -281,11 +312,171 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  _bind('btn-chpw-save', 'click', changeAdminPassword);
-
   // Site settings toggles
   _SITE_TOGGLES.forEach(({ key, toggleId }) => {
     _bind(toggleId, 'change', () => handleSiteToggle(key));
   });
+
+  // ── CHALLENGE MODE ──────────────────────────────────────────────
+  _bind('btn-challenge-create',           'click', challengeCreate);
+  _bind('btn-challenge-copy',             'click', challengeCopyLink);
+  _bind('btn-challenge-start-creator',    'click', () => challengeStartPlay());
+  _bind('btn-challenge-new',              'click', challengeStartNew);
+  _bind('btn-challenge-accept',           'click', () => challengeStartPlay());
+  _bind('btn-challenge-decline',          'click', () => showScreen('screen-home'));
+  _bind('btn-challenge-reshare',          'click', challengeReshare);
+  _bind('btn-challenge-new-from-results', 'click', challengeStartNew);
+  _bind('btn-challenge-home',             'click', challengeBackToHome);
+
+  // Challenge lobby: pool count live updates
+  ['challenge-category', 'challenge-character'].forEach(id => {
+    _bind(id, 'change', () => updateLobbyPoolCount('challenge'));
+  });
+  document.querySelectorAll('input[name="challenge-diff"]').forEach(radio => {
+    radio.addEventListener('change', () => updateLobbyPoolCount('challenge'));
+  });
+  document.querySelectorAll('input[name="challenge-count"]').forEach(radio => {
+    radio.addEventListener('change', () => updateLobbyPoolCount('challenge'));
+  });
+
+  // Enter key on challenge name input
+  const challengeNameInput = document.getElementById('challenge-name-input');
+  if (challengeNameInput) {
+    challengeNameInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') challengeCreate();
+    });
+  }
+  const challengeJoinerInput = document.getElementById('challenge-joiner-name');
+  if (challengeJoinerInput) {
+    challengeJoinerInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') challengeStartPlay();
+    });
+  }
+
+  // Check for ?c=XXXXXX challenge link on page load
+  challengeBootstrapFromUrl();
+
+  // /nave routes directly to the Settings (admin login) screen.
+  // Matches /nave, /nave/, and any /nave?query=... variations.
+  (function routeNave() {
+    const path = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+    if (path === '/nave') {
+      showScreen('screen-settings');
+      // Focus the password input so the user can just start typing.
+      const pwInput = document.getElementById('admin-password-input');
+      if (pwInput) setTimeout(() => pwInput.focus(), 50);
+    }
+  })();
+
+  // ── SCROLL-TO-TOP BUTTON ─────────────────────────────────────────
+  const scrollTopBtn = document.getElementById('btn-scroll-top');
+  if (scrollTopBtn) {
+    let _scrollTicking = false;
+    window.addEventListener('scroll', () => {
+      if (!_scrollTicking) {
+        window.requestAnimationFrame(() => {
+          scrollTopBtn.classList.toggle('visible', window.scrollY > 300);
+          _scrollTicking = false;
+        });
+        _scrollTicking = true;
+      }
+    });
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ── EASTER EGGS: secret-keyword triggers ─────────────────────────
+  // Rolling keystroke buffer. Each trigger has its own quip pool and
+  // fires a screen flash + toast. Ignores typing inside form fields.
+  // Cooldown prevents back-to-back spam.
+  (function () {
+    // Trigger -> array of possible quips. Random pick on each fire.
+    const TRIGGER_MAP = {
+      'false': [
+        'FALSE. Black bears are the most predatory of the bear family. They will eat both fish and honey.',
+        'FALSE. Black bear. That\'s correct.',
+        'FALSE. A peacock cannot fly with a full belly. Anyone who has half a brain knows that.'
+      ],
+      'schrute': [
+        'Identity theft is not a joke, Jim! Millions of families suffer every year!',
+        'Through concentration, I can raise and lower my cholesterol at will.',
+        'Whenever I\'m about to do something, I think: would an idiot do that? And if they would, I do not do that thing.'
+      ],
+      'bears': [
+        'Bears. Beets. Battlestar Galactica.',
+        'Question: what kind of bear is best? Black bear.',
+        'Fact. Bears eat beets.'
+      ],
+      'boomroasted': [
+        'BOOM. ROASTED.',
+        'Boom. Roasted. Toby, you\'re Spider-Man.',
+        'Pam, you failed art school. Boom. Roasted.'
+      ],
+      'mose': [
+        'WELCOME, MOSE. The beets are this way.',
+        'When products melt the snow off our roads, it\'s a beautiful sight.',
+        'It is your birthday.'
+      ],
+      'bankruptcy': [
+        'I... DECLARE... BANKRUPTCY!',
+        'I didn\'t say it. I declared it.',
+        'You have to actually file the paperwork, Michael.'
+      ],
+      'pretzel': [
+        'Best day of the year.',
+        'Cinnamon sugar. Chocolate. Powdered sugar. Sweet glaze. Maple syrup. Caramel dip. Mint chip. M&Ms. Cotton candy bits. Toffee nuts. Marshmallows. Chocolate-covered raisins. Nestle Quik. And chocolate sprinkles. Wow.',
+        'Stanley waits all year for this.'
+      ],
+      'parkour': [
+        'PARKOUR!',
+        'Parkour! Parkour! PARKOUR!',
+        'Get to the chopper!'
+      ],
+      'prison': [
+        'Sup, gangstas. I\'m Prison Mike.',
+        'The worst thing about prison was... the dementors.',
+        'You don\'t want to go to prison.'
+      ],
+      'scarn': [
+        'Threat Level: Midnight.',
+        'I\'m gonna make this whole place... DISAPPEAR.',
+        'Cherry. Cherry. Boom. Boom.'
+      ]
+    };
+
+    const TRIGGERS = Object.keys(TRIGGER_MAP);
+    const MAX_LEN = Math.max(...TRIGGERS.map(t => t.length)) + 1;
+    let buf = '';
+    let cooldownUntil = 0;
+
+    function fireEgg(trigger) {
+      const flash = document.createElement('div');
+      flash.className = 'schrute-flash';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 700);
+      const pool = TRIGGER_MAP[trigger];
+      const quip = pool[Math.floor(Math.random() * pool.length)];
+      showToast(quip, 4000);
+      cooldownUntil = Date.now() + 6000;
+    }
+
+    document.addEventListener('keydown', e => {
+      const t = e.target;
+      const tag = t && t.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (t && t.isContentEditable) return;
+      if (e.key.length !== 1) { buf = ''; return; }
+      if (Date.now() < cooldownUntil) return;
+      buf = (buf + e.key.toLowerCase()).slice(-MAX_LEN);
+      for (const trig of TRIGGERS) {
+        if (buf.endsWith(trig)) {
+          fireEgg(trig);
+          buf = '';
+          return;
+        }
+      }
+    });
+  })();
 
 });

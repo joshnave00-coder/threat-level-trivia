@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-Threat Level Trivia — Local Dev Server
+Threat Level Trivia - Local Dev Server
 Serves static files AND persists dispute feedback to data/disputes.json
 so flagged questions are captured in the project folder for review.
 """
 
 import json
 import os
+import random
 import re
 import secrets
+import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 
 BASE_DIR         = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR         = os.path.join(BASE_DIR, 'data')
@@ -25,6 +28,11 @@ VOTES_FILE              = os.path.join(DATA_DIR, 'votes.json')
 SUGGESTIONS_FILE        = os.path.join(DATA_DIR, 'question-suggestions.json')
 DELETED_QUESTIONS_FILE  = os.path.join(DATA_DIR, 'deleted-questions.json')
 SITE_SETTINGS_FILE      = os.path.join(DATA_DIR, 'site-settings.json')
+CHALLENGES_FILE         = os.path.join(DATA_DIR, 'challenges.json')
+CHALLENGE_SCORES_FILE   = os.path.join(DATA_DIR, 'challenge-scores.json')
+
+_CHALLENGE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+_CHALLENGE_CODE_LEN   = 6
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -110,7 +118,8 @@ _NOT_FOUND_PAGE = """<!DOCTYPE html>
 class TLTHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
-        p = self.path.split('?')[0]
+        parsed = urlparse(self.path)
+        p = parsed.path
         if p == '/api/disputes':
             self._serve_file(DISPUTES_FILE)
         elif p == '/api/ratings':
@@ -135,7 +144,11 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._serve_file(DELETED_QUESTIONS_FILE)
         elif p == '/api/site-settings':
             self._serve_file(SITE_SETTINGS_FILE)
-        elif p in ('/admin', '/admin/'):
+        elif p == '/api/challenges':
+            self._serve_challenge(parse_qs(parsed.query))
+        elif p == '/api/challenge-scores':
+            self._serve_challenge_scores(parse_qs(parsed.query))
+        elif p in ('/nave', '/nave/'):
             self._serve_index()
         else:
             super().do_GET()
@@ -147,8 +160,6 @@ class TLTHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/api/admin/login':
             self._handle_admin_login()
-        elif self.path == '/api/admin/change-password':
-            self._handle_change_password()
         elif self.path == '/api/feedback':
             self._save_feedback()
         elif self.path == '/api/question-suggestions':
@@ -156,8 +167,12 @@ class TLTHandler(SimpleHTTPRequestHandler):
                 self._save_file(SUGGESTIONS_FILE)
             else:
                 self._save_question_suggestion()
+        elif self.path == '/api/challenges':
+            self._create_challenge()
+        elif self.path == '/api/challenge-scores':
+            self._submit_challenge_score()
         elif self.path in ('/api/votes', '/api/disputes', '/api/ratings'):
-            # Player-submitted data — no admin token required
+            # Player-submitted data - no admin token required
             file_map = {
                 '/api/votes':    VOTES_FILE,
                 '/api/disputes': DISPUTES_FILE,
@@ -252,37 +267,6 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._send_json(200, {'ok': True, 'token': token})
         else:
             self._send_json(401, {'ok': False})
-
-    def _handle_change_password(self):
-        global ADMIN_PASSWORD
-        if not self._check_admin_token():
-            return
-        try:
-            length = int(self.headers.get('Content-Length', 0))
-            raw = self.rfile.read(length)
-            data = json.loads(raw)
-        except (json.JSONDecodeError, ValueError):
-            self.send_error(400, 'Invalid JSON')
-            return
-
-        current = data.get('current', '')
-        new_pw  = str(data.get('new', '')).strip()
-
-        if current != ADMIN_PASSWORD:
-            self._send_json(400, {'ok': False, 'error': 'Current password is incorrect'})
-            return
-        if len(new_pw) < 4:
-            self._send_json(400, {'ok': False, 'error': 'New password must be at least 4 characters'})
-            return
-
-        env_path = os.path.join(BASE_DIR, '.env')
-        with open(env_path, 'w') as f:
-            f.write(f'ADMIN_PASSWORD={new_pw}\n')
-
-        ADMIN_PASSWORD = new_pw
-        _active_tokens.clear()
-
-        self._send_json(200, {'ok': True})
 
     def _serve_file(self, path):
         try:
@@ -510,6 +494,169 @@ class TLTHandler(SimpleHTTPRequestHandler):
                 json.dump(existing, f, indent=2, ensure_ascii=False)
 
             self._send_json(200, {'ok': True})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    # -- CHALLENGE HELPERS (async multiplayer) -------------------------
+
+    @staticmethod
+    def _load_challenges():
+        if not os.path.exists(CHALLENGES_FILE):
+            return {}
+        try:
+            with open(CHALLENGES_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            return {}
+
+    @staticmethod
+    def _save_challenges(data):
+        with open(CHALLENGES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+    @staticmethod
+    def _load_challenge_scores():
+        if not os.path.exists(CHALLENGE_SCORES_FILE):
+            return []
+        try:
+            with open(CHALLENGE_SCORES_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            return []
+
+    @staticmethod
+    def _save_challenge_scores(data):
+        with open(CHALLENGE_SCORES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+    @staticmethod
+    def _gen_code(existing_codes):
+        for _ in range(20):
+            code = ''.join(random.choice(_CHALLENGE_CODE_CHARS) for _ in range(_CHALLENGE_CODE_LEN))
+            if code not in existing_codes:
+                return code
+        # Fallback: 7-char code if collisions happen
+        return ''.join(random.choice(_CHALLENGE_CODE_CHARS) for _ in range(_CHALLENGE_CODE_LEN + 1))
+
+    def _create_challenge(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            if length > 16384:
+                self.send_error(413, 'Payload too large')
+                return
+            raw  = self.rfile.read(min(length, 16384))
+            data = json.loads(raw)
+
+            creator_name = str(data.get('creatorName') or '').strip()[:30]
+            config       = data.get('config', {})
+            question_ids = data.get('questionIds', [])
+
+            if not creator_name:
+                self._send_json(400, {'ok': False, 'error': 'Name required'})
+                return
+            if not isinstance(question_ids, list) or not question_ids:
+                self._send_json(400, {'ok': False, 'error': 'No questions provided'})
+                return
+            if len(question_ids) > 50:
+                question_ids = question_ids[:50]
+
+            # Sanitize config
+            safe_config = {}
+            for k in ('category', 'difficulty', 'character', 'count', 'speedRound', 'speedSecs'):
+                if k in config:
+                    safe_config[k] = config[k]
+
+            challenges = self._load_challenges()
+            code = self._gen_code(set(challenges.keys()))
+
+            entry = {
+                'code':         code,
+                'creatorName':  creator_name,
+                'config':       safe_config,
+                'questionIds':  [int(q) for q in question_ids],
+                'createdAt':    time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            }
+
+            challenges[code] = entry
+            self._save_challenges(challenges)
+            self._send_json(200, {'ok': True, 'code': code, 'challenge': entry})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def _serve_challenge(self, query):
+        codes = query.get('code', [])
+        code = codes[0].strip().upper() if codes else ''
+        if not code:
+            self._send_json(400, {'error': 'code parameter required'})
+            return
+        try:
+            challenges = self._load_challenges()
+            entry = challenges.get(code)
+            if not entry:
+                self._send_json(404, {'error': 'Challenge not found'})
+                return
+            self._send_json(200, entry)
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def _submit_challenge_score(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            if length > 16384:
+                self.send_error(413, 'Payload too large')
+                return
+            raw  = self.rfile.read(min(length, 16384))
+            data = json.loads(raw)
+
+            code         = str(data.get('code') or '').strip().upper()
+            name         = str(data.get('name') or '').strip()[:30]
+            score        = data.get('score', 0)
+            total        = data.get('total', 0)
+            correct_count = data.get('correctCount', 0)
+            is_creator   = bool(data.get('isCreator', False))
+
+            if not code or not name:
+                self._send_json(400, {'ok': False, 'error': 'code and name required'})
+                return
+
+            challenges = self._load_challenges()
+            if code not in challenges:
+                self._send_json(404, {'ok': False, 'error': 'Challenge not found'})
+                return
+
+            entry = {
+                'code':         code,
+                'name':         name,
+                'score':        int(score),
+                'total':        int(total),
+                'correctCount': int(correct_count),
+                'isCreator':    is_creator,
+                'submittedAt':  time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            }
+
+            scores = self._load_challenge_scores()
+            scores.append(entry)
+
+            # Cap at 500 entries per challenge to keep files bounded.
+            code_entries = [s for s in scores if s.get('code') == code]
+            if len(code_entries) > 500:
+                scores = [s for s in scores if s.get('code') != code] + code_entries[-500:]
+
+            self._save_challenge_scores(scores)
+            self._send_json(200, {'ok': True})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def _serve_challenge_scores(self, query):
+        codes = query.get('code', [])
+        code = codes[0].strip().upper() if codes else ''
+        if not code:
+            self._send_json(400, {'error': 'code parameter required'})
+            return
+        try:
+            scores = self._load_challenge_scores()
+            matching = [s for s in scores if s.get('code') == code]
+            self._send_json(200, {'scores': matching})
         except Exception as e:
             self.send_error(500, str(e))
 

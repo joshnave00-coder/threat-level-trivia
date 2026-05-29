@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Feedback / Suggestion Box
+   THREAT LEVEL TRIVIA - Feedback / Suggestion Box
    Modal lifecycle, form validation, API submission
    ================================================================ */
 
@@ -51,7 +51,7 @@ function _onMessageInput() {
 // ── VALIDATION ────────────────────────────────────────────────────
 
 function _validateFeedback() {
-  // Honeypot — bots fill this, humans don't see it
+  // Honeypot - bots fill this, humans don't see it
   if (document.getElementById('fb-honeypot').value) return 'Submission rejected.';
 
   const name    = document.getElementById('fb-name').value.trim();

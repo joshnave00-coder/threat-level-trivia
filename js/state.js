@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — State & Storage
+   THREAT LEVEL TRIVIA - State & Storage
    Global game state and all localStorage operations
    ================================================================ */
 
@@ -16,7 +16,7 @@ const STORAGE_KEYS = {
   deletedQuestions:  'tlt_deleted_questions',
 };
 
-// Current game state — reset at the start of each game
+// Current game state - reset at the start of each game
 const GameState = {
   mode: null,           // 'solo' | 'party'
   players: [],          // [{ id, name, score, answers }]
@@ -188,7 +188,7 @@ function loadDisputesFromFile() {
       const merged = [...fileDisputes, ...local.filter(d => !fileIds.has(d.id))];
       localStorage.setItem(STORAGE_KEYS.disputes, JSON.stringify(merged));
     })
-    .catch(() => {}); // server not running — use localStorage only
+    .catch(() => {}); // server not running - use localStorage only
 }
 
 function addDispute(question, disputeText, playerName, difficultyRating) {
@@ -441,10 +441,10 @@ function getDeletedQuestions() {
 function markQuestionDeleted(id) {
   const baseIds = new Set(QUESTIONS.map(q => q.id));
   if (!baseIds.has(id)) {
-    // Custom question — remove it outright
+    // Custom question - remove it outright
     deleteCustomQuestion(id);
   } else {
-    // Base question — add to deleted list so it's excluded everywhere
+    // Base question - add to deleted list so it's excluded everywhere
     const list = getDeletedQuestions();
     if (!list.includes(id)) {
       list.push(id);

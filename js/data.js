@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Static Data
+   THREAT LEVEL TRIVIA - Static Data
    Questions, quote reactions, categories, tag suggestions
    ================================================================ */
 
@@ -1361,6 +1361,37 @@ const CHARACTER_TAGS = [
   { tag: 'Karen',             label: 'Karen Filippelli',   patterns: ['Karen Filippelli', 'Karen'] },
   { tag: 'Todd Packer',       label: 'Todd Packer',        patterns: ['Todd Packer'] },
 ];
+
+// ── WRONG-ANSWER PUNCHY TOAST QUIPS ──────────────────────────────
+// Short, snappy reactions fired the instant a wrong MC button is clicked.
+// Distinct from the longer in-line QUOTES.incorrect callout that follows.
+// Picker avoids repeating the last quip.
+const WRONG_ANSWER_QUIPS = [
+  'FALSE.',
+  'NO! GOD! NO! GOD PLEASE NO!',
+  'Did I stutter?',
+  'Why are you the way that you are?',
+  'Boy, have you lost your mind?',
+  'You failed this office.',
+  'I am not to be trifled with.',
+  'NOPE. Rabies.',
+  'That is patently false.',
+  'How dare you.',
+  'I knew it. I knew you didn\'t know that.',
+  'Catastrophe. Catastrophe.',
+  'Oh no. The chili.',
+  'You couldn\'t have done that more wrong if you tried.',
+  'No. No no no no no.'
+];
+let _lastWrongQuipIdx = -1;
+function pickWrongAnswerQuip() {
+  if (WRONG_ANSWER_QUIPS.length < 2) return WRONG_ANSWER_QUIPS[0];
+  let idx;
+  do { idx = Math.floor(Math.random() * WRONG_ANSWER_QUIPS.length); }
+  while (idx === _lastWrongQuipIdx);
+  _lastWrongQuipIdx = idx;
+  return WRONG_ANSWER_QUIPS[idx];
+}
 
 // ── PAUSE QUOTES ──────────────────────────────────────────────────
 // Shown on the pause overlay during a party game.

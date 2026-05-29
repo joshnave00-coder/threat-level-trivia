@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Admin & Settings
+   THREAT LEVEL TRIVIA - Admin & Settings
    Password gate, question management, dispute/feedback review
    ================================================================ */
 
@@ -42,60 +42,12 @@ async function adminLogin() {
   }
 }
 
-async function changeAdminPassword() {
-  const currentEl = document.getElementById('chpw-current');
-  const newEl     = document.getElementById('chpw-new');
-  const confirmEl = document.getElementById('chpw-confirm');
-  const errorEl   = document.getElementById('chpw-error');
-
-  const current = currentEl.value;
-  const newPw   = newEl.value;
-  const confirm = confirmEl.value;
-
-  errorEl.classList.add('hidden');
-
-  if (newPw !== confirm) {
-    errorEl.textContent = 'New passwords do not match.';
-    errorEl.classList.remove('hidden');
-    return;
-  }
-  if (newPw.length < 4) {
-    errorEl.textContent = 'New password must be at least 4 characters.';
-    errorEl.classList.remove('hidden');
-    return;
-  }
-
-  try {
-    const res  = await fetch('/api/admin/change-password', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': _adminToken || '' },
-      body:    JSON.stringify({ current, new: newPw }),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      _adminToken = null;
-      sessionStorage.removeItem('tlt_admin_token');
-      currentEl.value = '';
-      newEl.value     = '';
-      confirmEl.value = '';
-      showToast('Password changed. Please log in again.');
-      showScreen('screen-settings');
-    } else {
-      errorEl.textContent = data.error || 'Failed to change password.';
-      errorEl.classList.remove('hidden');
-    }
-  } catch {
-    errorEl.textContent = 'Could not reach the server.';
-    errorEl.classList.remove('hidden');
-  }
-}
-
 // ── NAV PANELS ────────────────────────────────────────────────────
 function switchAdminPanel(panel) {
   activeAdminTab = panel;
   document.querySelectorAll('.admin-nav-item').forEach(el =>
     el.classList.toggle('active', el.dataset.panel === panel));
-  ['questions', 'suggestions', 'disputes', 'feedback', 'community-ratings', 'leaderboard', 'export', 'site-settings', 'password', 'version-history', 'admin-help'].forEach(name => {
+  ['questions', 'suggestions', 'disputes', 'feedback', 'community-ratings', 'leaderboard', 'export', 'site-settings', 'version-history', 'admin-help'].forEach(name => {
     const el = document.getElementById(`admin-panel-${name}`);
     if (el) el.classList.toggle('hidden', panel !== name);
   });
@@ -205,7 +157,7 @@ function populateCategoryDropdowns() {
 }
 
 function populateCharacterDropdowns() {
-  ['solo-character', 'party-character'].forEach(id => {
+  ['solo-character', 'party-character', 'challenge-character'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
     // Clear existing options past the "Any Character" default
@@ -499,7 +451,7 @@ function loadAndRenderAdminLeaderboard() {
   const list  = document.getElementById('admin-lb-list');
   const empty = document.getElementById('admin-lb-empty');
   if (!list) return;
-  list.innerHTML = '<p class="admin-empty">Loading...</p>';
+  list.innerHTML = '<p class="admin-empty">' + escHtml(pickLoadingQuip()) + '</p>';
 
   fetch('/api/leaderboard')
     .then(r => r.json())

@@ -4,6 +4,34 @@ All notable changes to Threat Level Trivia are documented here.
 
 ---
 
+## v1.5.0 - 2026-05-28
+
+### Features
+- **Challenge Mode ("Send a Fax to Friends")** - Async multiplayer via shareable "memo" links. The creator picks settings (category, difficulty, character, count, speed round), hits Create, and the server generates a unique 6-character memo code with a copy-ready shareable link. Anyone who opens the link plays the exact same questions in the exact same order with the same answer options. After finishing, every score lands on a shared per-memo leaderboard so everyone can see where they stack up. Memos can be reshared as many times as you want, or a fresh one can be created at any time.
+- **Inter-Office Memo Card** - Joiners see a serif-styled memo as the Challenge Mode intro screen, including FROM, body, question count, CC line (Michael Scarn, Catherine Zeta-Jones, Goldenface), and a rotated red "AUTHORIZED BY: Michael Scarn, Secret Agent" stamp.
+- **Floating Scroll-to-Top Button** - Fixed-position button appears after 300px of scroll on any screen. Smooth-scrolls back to the top. Sized down on mobile.
+- **Score-Based Quote Reactions** - The results screen (solo and challenge) now shows a tier-based Office quote in a sticky-note callout under your grade. Seven score tiers with three rotating quotes each so replays stay fresh (100% = "I am Beyonce, always." / 30-49% = "I DECLARE BANKRUPTCY!" / 0-9% = "You couldn't handle my undivided attention.").
+- **Streak-Aware Cast Detection on Name Inputs** - If a player types an Office cast member's name (50+ first names, last names, and full names recognized), Dwight immediately interrupts with "Identity theft is not a joke, Jim!" Fires once per matched name per input.
+- **Rotating Name-Input Placeholders** - Name fields cycle through a pool of cast and alter-egos on page load: Bill Buttlicker, Michael Scarn, Date Mike, Prison Mike, Mose Schrute, Andy "Boner Champ" Bernard, Goldenface, The Scranton Strangler, Big Tuna, and more.
+- **Randomized Loading Messages** - "Loading..." replaced everywhere with a randomized pool: "Stanley is doing the crossword...", "Calling David Wallace...", "Toby is sighing...", "Phyllis is sorting...", "Cooling the printers...", "Faxing Corporate...", and others.
+- **Wrong-Answer Punchy Toast Reactions** - The instant you click a wrong multiple-choice button, a short Office reaction fires in the corner ("FALSE.", "NOPE. Rabies.", "Did I stutter?", "Boy, have you lost your mind?", etc.). Pool of 15, never repeats consecutively. Works in both solo and party modes.
+- **Leaderboard Rank Tooltips** - Hover any rank number to see a Dunder Mifflin corporate title: 1 = Regional Manager, 2 = Assistant Regional Manager, 3 = Assistant *to* the Regional Manager, 4-10 = Sales, 11-25 = Quality Assurance, 26+ = Temp, last place = Toby. Applies to both the global leaderboard and per-memo Challenge leaderboards.
+- **Hard Difficulty Quip** - Selecting "Hard" in any lobby fires a toast: "Sweet. Deep tracks only." (Andy Bernard, roller-skating party).
+- **Hardcore Mode Quip** - Enabling Hardcore Mode fires a toast quoting Dwight: "Question: What kind of bear is best? Black bear. Hardcore." The toggle also now displays a serif italic Dwight subquote underneath ("Whenever I'm about to do something, I think, 'Would an idiot do that?'").
+- **Hidden Keyword Easter Eggs** - Type any of `false`, `schrute`, `bears`, `boomroasted`, `mose`, `bankruptcy`, `pretzel`, `parkour`, `prison`, or `scarn` anywhere on the page (outside form fields) to trigger a yellow full-screen flash and a themed character quote. Each trigger has its own rotating quip pool. Six-second cooldown prevents back-to-back spam.
+
+### Changes
+- "How to Play" rules screen rewritten with a dedicated step-by-step Challenge Mode section and a new "This Is a Community-Driven Question Bank" highlight section (sticky-note styled) emphasizing votes, ratings, disputes, and question submissions.
+- Em-dash sweep: every em dash in the codebase (UI text, comments, data, docs, gitignore) replaced with a regular hyphen for tone consistency.
+
+### Infrastructure
+- New server endpoints: `GET /api/challenges?code=XXXXXX`, `POST /api/challenges` (memo creation), `GET /api/challenge-scores?code=XXXXXX`, `POST /api/challenge-scores` (score submission).
+- New JS module: `js/challenge.js` (Challenge Mode flow, URL helpers, memo code generation, monkey-patched seeded shuffle for deterministic question order across players).
+- New data files: `data/challenges.json`, `data/challenge-scores.json`.
+- Seeded RNG (Mulberry32 with string hash) ensures every player on the same memo sees identical questions in identical order with identical distractor positions.
+
+---
+
 ## v1.4.0 - 2026-05-28
 
 ### Features

@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Donate / Party Planning Committee Modal
+   THREAT LEVEL TRIVIA - Donate / Party Planning Committee Modal
    ================================================================ */
 
 const DONATE_QUOTES = [

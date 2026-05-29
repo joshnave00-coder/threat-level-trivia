@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Question Logic
+   THREAT LEVEL TRIVIA - Question Logic
    Filtering, shuffling, multiple-choice generation
    ================================================================ */
 

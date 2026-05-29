@@ -118,6 +118,8 @@ ingress:
     question-suggestions.json
     tags.json
     votes.json
+    challenges.json
+    challenge-scores.json
   .env                           - admin password (gitignored, must be set manually)
 
 /root/.cloudflared/

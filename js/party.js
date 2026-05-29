@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Party Mode
+   THREAT LEVEL TRIVIA - Party Mode
    Multi-player game flow, speed round, wager tiebreaker
    ================================================================ */
 
@@ -18,6 +18,9 @@ function partyBuildNameInputs() {
       ${idx > 2 ? '<button class="btn-icon remove-player" title="Remove">✕</button>' : ''}
     </div>`;
   container.appendChild(row);
+  const field = row.querySelector('.party-name-field');
+  attachIdentityTheftWatch(field);
+  applyRotatingPlaceholder(field);
   row.querySelector('.remove-player')?.addEventListener('click', () => {
     row.remove();
     rebuildPlayerLabels();

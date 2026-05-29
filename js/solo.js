@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Solo Mode
+   THREAT LEVEL TRIVIA - Solo Mode
    Game flow for single-player sessions
    ================================================================ */
 
@@ -125,8 +125,8 @@ function renderQuestionScreen() {
   rateVal.classList.add('rate-null-val');
   soloRatingSubmitted = false;
 
-  // Solo-only post-answer panel
-  document.getElementById('q-solo-actions').classList.toggle('hidden', GameState.mode !== 'solo');
+  // Solo/challenge post-answer panel (ratings, votes, disputes)
+  document.getElementById('q-solo-actions').classList.toggle('hidden', GameState.mode !== 'solo' && GameState.mode !== 'challenge');
 
   // Pause button: party-only
   const pauseBtn = document.getElementById('btn-pause-game');
@@ -190,6 +190,9 @@ function handleMCAnswer(btn, q) {
     else if (b === btn && !wasRight) b.classList.add('mc-wrong');
   });
 
+  // Snappy wrong-answer reaction (separate from the inline quote callout).
+  if (!wasRight) showToast(pickWrongAnswerQuip(), 1800);
+
   revealAnswer(q, wasRight);
 }
 
@@ -208,7 +211,7 @@ function revealAnswer(q, wasRight) {
   }
 
   if (GameState.config.hardcore) {
-    // Don't show correct/incorrect yet — player will self-score
+    // Don't show correct/incorrect yet - player will self-score
     resultEl.textContent = 'The answer is:';
     resultEl.className = 'reveal-result';
     document.getElementById('q-hc-score').classList.remove('hidden');

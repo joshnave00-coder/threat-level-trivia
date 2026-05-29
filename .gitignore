@@ -1,10 +1,10 @@
-# Runtime data — generated at play time, do not commit
+# Runtime data - generated at play time, do not commit
 data/
 
-# Environment variables — never commit secrets
+# Environment variables - never commit secrets
 .env
 
-# Claude Code IDE files — local machine config only
+# Claude Code IDE files - local machine config only
 .claude/
 memory/
 
@@ -16,3 +16,6 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Personal scratchpad / project notes (contains private contact info, IPs, etc.)
+Office Trivia - NOTES.md

@@ -1,6 +1,6 @@
 'use strict';
 /* ================================================================
-   THREAT LEVEL TRIVIA — Question Suggestions
+   THREAT LEVEL TRIVIA - Question Suggestions
    Public submission form + admin review queue
    ================================================================ */
 
@@ -147,7 +147,7 @@ async function loadAndRenderAdminSuggestions() {
   const list  = document.getElementById('admin-suggestions-list');
   const empty = document.getElementById('admin-no-suggestions');
   if (!list) return;
-  list.innerHTML = '<p class="admin-empty">Loading...</p>';
+  list.innerHTML = '<p class="admin-empty">' + escHtml(pickLoadingQuip()) + '</p>';
 
   try {
     const res = await fetch('/api/question-suggestions');

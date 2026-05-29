@@ -19,6 +19,7 @@ A browser-based trivia game for fans of *The Office* (US). Test your knowledge o
   - Equal question distribution (every player always gets the same number of turns)
   - Wager Round for tied players with a 45-second countdown timer
   - Host pause button that hides the question behind a random Office quote
+- **Challenge Mode ("Send a Fax to Friends")** - Async multiplayer for friends in different places. Pick your settings, hit Create, and you get a shareable "memo" link with a unique 6-character code. Everyone who opens the link plays the exact same questions in the exact same order, with the same answer options. After finishing, every score lands on a shared per-memo leaderboard so you can see exactly how you stack up. Great for group chats, office competitions, and settling debates about who really knows the show.
 - **Leaderboard** - Top solo scores are saved locally as Employee Records.
 - **Quote Callouts** - Contextual character quotes appear after every answer (correct or not).
 
@@ -42,13 +43,14 @@ A browser-based trivia game for fans of *The Office* (US). Test your knowledge o
 - **Community Ratings Tab** - View community ratings per question, see which questions are overriding, reset ratings or votes.
 - **Leaderboard Tab** - Remove leaderboard entries with inappropriate usernames or fraudulent scores.
 - **Question Export** - Export the full question bank as CSV with selectable columns (ID, question, answer, distractors, category, difficulty, tags, type, status, community data).
-- **Change Password** - Update the server-side admin password.
 
 ### Polish
 - Custom themed 404 page
 - CSS fade-in transitions between screens
 - Privacy/storage notice banner (one-time dismiss)
 - Input sanitization on all free-form fields
+- Floating scroll-to-top button on long pages (appears after 300px of scroll)
+- Office-reference layer woven through the UI: cast-name detection on name inputs, score-based Michael Scott quotes on the results screen, randomized loading messages ("Stanley is doing the crossword..."), rotating Office-themed name-input placeholders, punchy wrong-answer reactions, leaderboard rank tooltips (1 = Regional Manager, last place = Toby), and a set of hidden keyword easter eggs for deep-fan moments
 
 ---
 
@@ -108,6 +110,7 @@ js/questions.js     Filtering, shuffle, MC option generation, grading
 js/ui.js            Screen routing, quote callout, results rendering, leaderboard
 js/solo.js          Solo game flow + shared renderQuestionScreen()
 js/party.js         Party flow, speed timer, wager, countdown, pause
+js/challenge.js     Challenge Mode (shareable memo links, deterministic question order, per-memo leaderboard)
 js/admin.js         Admin panel, question editor, export, dispute review, delete/revert
 js/feedback.js      Suggestion box form handling
 js/suggestions.js   Player question submission form + admin review queue
@@ -117,7 +120,8 @@ data/               Server-persisted JSON (gitignored, auto-created):
                       disputes.json, ratings.json, votes.json, tags.json,
                       leaderboard.json, feedback.json, question-edits.json,
                       custom-questions.json, disabled-questions.json,
-                      deleted-questions.json, question-suggestions.json
+                      deleted-questions.json, question-suggestions.json,
+                      challenges.json, challenge-scores.json
 ```
 
 ---

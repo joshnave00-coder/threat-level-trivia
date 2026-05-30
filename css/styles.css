@@ -253,6 +253,22 @@ body {
   margin-bottom: 1.5rem;
 }
 
+/* Visually-hidden text: present for crawlers and screen readers, clipped
+   from view. Used to give the <h1> a descriptive, keyword-relevant name
+   ("Trivia - The Office Trivia Game") without altering the visible design. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .home-buttons {
   display: flex;
   flex-direction: column;

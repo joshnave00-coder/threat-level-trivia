@@ -1465,6 +1465,30 @@ function pickEggQuote() {
   return EGG_QUOTES[Math.floor(Math.random() * EGG_QUOTES.length)];
 }
 
+// ── ABOUT PAGE 5-TAP EASTER EGG SAYINGS ──────────────────────────
+// Fired after 5 rapid clicks on the paper-airplane logo on the About screen.
+// Purely random pick each time.
+const ABOUT_EGG_SAYINGS = [
+  "You found a Schrute Buck. It's worth 1/100th of a cent.",
+  "Congratulations, you've been promoted to Assistant to the Assistant to the Regional Manager.",
+  "You just leveled up to Threat Level: Midnight.",
+  "Ryan started the fire. But you found the easter egg.",
+  "Stanley is impressed. And Stanley is never impressed.",
+  "You've been awarded the Bushiest Beaver Dundie.",
+  "Dwight would like you to know that you passed his test. Barely.",
+  "You've unlocked the Pretzel Day achievement. Best day of the year.",
+  "Kevin's famous chili recipe has been emailed to you. Just kidding. But you found this.",
+  "Congratulations. You are now a Level 4 Security Threat. Welcome to the club.",
+  "You've been Nard Dog'd. Rit dit dit di doo.",
+  "This hidden message was brought to you by Vance Refrigeration.",
+  "Prison Mike says: you would not survive in here. But nice find.",
+  "Creed has been notified of your discovery. He's very interested.",
+  "Bob Vance, Vance Refrigeration, would like to congratulate you on this find.",
+];
+function pickAboutEggSaying() {
+  return ABOUT_EGG_SAYINGS[Math.floor(Math.random() * ABOUT_EGG_SAYINGS.length)];
+}
+
 // ── TAG SUGGESTIONS FOR ADMIN ─────────────────────────────────────
 const TAG_SUGGESTIONS = [
   "Michael", "Dwight", "Jim", "Pam", "Ryan", "Kelly", "Angela",

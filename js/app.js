@@ -78,6 +78,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (q) showToast(`"${q.text}" - ${q.character}`, 4500);
     });
   }
+  // Easter egg: tap the paper-airplane logo on the About screen 5 times
+  // quickly (within 2 seconds) for a random Office-flavored saying.
+  const aboutLogoEgg = document.getElementById('about-logo-egg');
+  if (aboutLogoEgg) {
+    let _aboutTaps = 0;
+    let _aboutTapTimer = null;
+    aboutLogoEgg.addEventListener('click', () => {
+      _aboutTaps++;
+      if (_aboutTapTimer) clearTimeout(_aboutTapTimer);
+      if (_aboutTaps >= 5) {
+        _aboutTaps = 0;
+        showToast('Easter egg found! ' + pickAboutEggSaying(), 4500);
+      } else {
+        // Reset the counter after 2 seconds of no taps.
+        _aboutTapTimer = setTimeout(() => { _aboutTaps = 0; }, 2000);
+      }
+    });
+  }
+
   document.getElementById('btn-solo').addEventListener('click', () => showScreen('screen-solo-name'));
   document.getElementById('btn-party').addEventListener('click', () => {
     initPartyNames();

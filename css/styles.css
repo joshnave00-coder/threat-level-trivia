@@ -66,6 +66,18 @@ body {
   border-bottom: 3px solid var(--blue);
   flex-shrink: 0;
 }
+/* Paper-airplane logo in sub-screen headers (About, How to Play, etc.) */
+.screen-header-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
 .screen-header h2 {
   font-family: var(--font-serif);
   font-size: 1.2rem;

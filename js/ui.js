@@ -11,6 +11,16 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(id);
   if (target) { target.classList.add('active'); target.scrollTop = 0; }
+  if (id === 'screen-solo-name') renderSoloStickyNote();
+}
+
+// ── SOLO NAME-SCREEN STICKY NOTE ─────────────────────────────────
+// Drops a random community-contribution nudge on the Post-it.
+// Picker lives in data.js (pickStickyNote) and never repeats the
+// previously-shown note back-to-back.
+function renderSoloStickyNote() {
+  const el = document.getElementById('solo-sticky-text');
+  if (el) el.textContent = pickStickyNote();
 }
 
 // ── QUOTE CALLOUT ─────────────────────────────────────────────────
@@ -158,6 +168,10 @@ function renderSoloResults(player) {
 }
 
 // ── LEADERBOARD ───────────────────────────────────────────────────
+// Cached server response so the difficulty filter can re-render the list
+// without re-fetching. Refreshed every time the user enters the screen.
+let _cachedLeaderboard = null;
+
 function renderLeaderboard() {
   const el = document.getElementById('leaderboard-list');
   el.innerHTML = '<p class="empty-state">' + escHtml(pickLoadingQuip()) + '</p>';
@@ -165,27 +179,50 @@ function renderLeaderboard() {
   fetch('/api/leaderboard')
     .then(r => r.json())
     .then(entries => {
-      if (!Array.isArray(entries) || !entries.length) {
-        el.innerHTML = '<p class="empty-state">No records yet. Complete 25 Mixed questions to get on the board.</p>';
-        return;
-      }
-      const total = entries.length;
-      el.innerHTML = entries.map((e, i) => {
-        const rank = i + 1;
-        const title = getRankTitle(rank, total);
-        return `
-        <div class="lb-row ${rank === 1 ? 'lb-top' : ''}">
-          <span class="lb-rank" title="${escHtml(title)}">${rank}</span>
-          <span class="lb-name">${escHtml(e.name)}</span>
-          <span class="lb-score">${e.score}/25</span>
-          <span class="lb-pct">${e.accuracy}%</span>
-          <span class="lb-meta">${escHtml(e.difficulty)} &middot; ${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>
-        </div>`;
-      }).join('');
+      _cachedLeaderboard = Array.isArray(entries) ? entries : [];
+      renderLeaderboardList();
     })
     .catch(() => {
+      _cachedLeaderboard = null;
       el.innerHTML = '<p class="empty-state">Could not load records. Please try again.</p>';
     });
+}
+
+// Renders the cached list applying the current difficulty filter.
+// Called on initial load AND whenever the user changes the dropdown.
+function renderLeaderboardList() {
+  const el = document.getElementById('leaderboard-list');
+  if (!el || !_cachedLeaderboard) return;
+
+  const filterEl = document.getElementById('lb-filter-difficulty');
+  const filter = filterEl ? filterEl.value : 'all';
+
+  let entries = _cachedLeaderboard;
+  if (filter !== 'all') {
+    entries = entries.filter(e => e.difficulty === filter);
+  }
+
+  if (!entries.length) {
+    const msg = filter === 'all'
+      ? 'No records yet. Complete 25 Medium or Hard questions to get on the board.'
+      : `No ${filter} records yet. Be the first.`;
+    el.innerHTML = `<p class="empty-state">${msg}</p>`;
+    return;
+  }
+
+  const total = entries.length;
+  el.innerHTML = entries.map((e, i) => {
+    const rank = i + 1;
+    const title = getRankTitle(rank, total);
+    return `
+    <div class="lb-row ${rank === 1 ? 'lb-top' : ''}">
+      <span class="lb-rank" title="${escHtml(title)}">${rank}</span>
+      <span class="lb-name">${escHtml(e.name)}</span>
+      <span class="lb-score">${e.score}/25</span>
+      <span class="lb-pct">${e.accuracy}%</span>
+      <span class="lb-meta">${escHtml(e.difficulty)} &middot; ${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>
+    </div>`;
+  }).join('');
 }
 
 // ── PARTY PODIUM ──────────────────────────────────────────────────

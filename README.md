@@ -14,13 +14,13 @@ A browser-based trivia game for fans of *The Office* (US). Test your knowledge o
 ### Gameplay
 - **Solo Mode** - Play through a custom set of questions with category, difficulty, character, and question-count options. Optional Hardcore Mode hides multiple choice so you have to recall the answer yourself.
 - **Party Mode** - 2-8 players take turns answering questions on one screen. Includes:
-  - Optional Speed Round (15-second timer, faster answers earn more points)
-  - 3-2-1-GO countdown before each question so no one peeks early
+  - Optional Speed Round with selectable timer (30, 20, or 15 seconds; faster answers earn more points)
+  - 3-2-1-GO countdown before each question (only when a speed round is active, so no one peeks early)
   - Equal question distribution (every player always gets the same number of turns)
   - Wager Round for tied players with a 45-second countdown timer
   - Host pause button that hides the question behind a random Office quote
-- **Challenge Mode ("Send a Fax to Friends")** - Async multiplayer for friends in different places. Pick your settings, hit Create, and you get a shareable "memo" link with a unique 6-character code. Everyone who opens the link plays the exact same questions in the exact same order, with the same answer options. After finishing, every score lands on a shared per-memo leaderboard so you can see exactly how you stack up. Great for group chats, office competitions, and settling debates about who really knows the show.
-- **Leaderboard** - Top solo scores are saved locally as Employee Records.
+- **Challenge Mode ("Send a Fax to Friends")** - Async multiplayer for friends in different places. Pick your settings (including an optional speed round of 30, 15, or 10 seconds - 10 is "Ludicrous"), hit Create, and you get a shareable "memo" link with a unique 6-character code. Everyone who opens the link plays the exact same questions in the exact same order, with the same answer options. After finishing, every score lands on a shared per-memo leaderboard so you can see exactly how you stack up. Great for group chats, office competitions, and settling debates about who really knows the show.
+- **Leaderboard** - The global Employee Records leaderboard tracks top qualifying scores, with an All / Medium / Hard difficulty filter that recomputes ranks for the filtered view.
 - **Quote Callouts** - Contextual character quotes appear after every answer (correct or not).
 
 ### Filtering & Customization
@@ -36,10 +36,10 @@ A browser-based trivia game for fans of *The Office* (US). Test your knowledge o
 - **Submit a Trivia Question** - Players can pitch full trivia questions (question, correct answer, three wrong answers, category, difficulty, optional context) from inside the Suggestion Box. Submissions land in an admin review queue.
 
 ### Admin Panel (password-protected)
-- **Questions Tab** - Full question bank management. Add, edit, disable, revert, and permanently delete questions. Manage tags. Each card shows the question ID for cross-referencing.
-- **Suggested Questions Tab** - Review player-submitted trivia questions. Review & Revise opens each in the question editor for polishing before approval. Defer or delete as needed.
-- **Flagged Questions Tab** - Review player-submitted disputes with direct "Edit Question" shortcut. Approve or dismiss each flag.
-- **Submitted Feedback Tab** - Read general messages from the Suggestion Box (feedback, bug reports, feature ideas).
+- **Questions Tab** - Full question bank management. Add, edit, disable, revert, and permanently delete questions. Manage tags. Each card shows the question ID ("Question ID: 123") for cross-referencing, and the same ID appears in the editor modal, on ratings cards, and on dispute cards. The search box has a one-click clear (x) button.
+- **Suggested Questions Tab** - Review player-submitted trivia questions. Review & Revise opens each in the question editor for polishing before approval. Defer, reject, or permanently Remove as needed.
+- **Flagged Questions Tab** - Review player-submitted disputes with direct "Edit Question" shortcut. Approve or dismiss each flag, then permanently Remove resolved ones.
+- **Submitted Feedback Tab** - Read general messages from the Suggestion Box (feedback, bug reports, feature ideas). Each entry can be permanently removed.
 - **Community Ratings Tab** - View community ratings per question, see which questions are overriding, reset ratings or votes.
 - **Leaderboard Tab** - Remove leaderboard entries with inappropriate usernames or fraudulent scores.
 - **Question Export** - Export the full question bank as CSV with selectable columns (ID, question, answer, distractors, category, difficulty, tags, type, status, community data).
@@ -50,7 +50,8 @@ A browser-based trivia game for fans of *The Office* (US). Test your knowledge o
 - Privacy/storage notice banner (one-time dismiss)
 - Input sanitization on all free-form fields
 - Floating scroll-to-top button on long pages (appears after 300px of scroll)
-- Office-reference layer woven through the UI: cast-name detection on name inputs, score-based Michael Scott quotes on the results screen, randomized loading messages ("Stanley is doing the crossword..."), rotating Office-themed name-input placeholders, punchy wrong-answer reactions, leaderboard rank tooltips (1 = Regional Manager, last place = Toby), and a set of hidden keyword easter eggs for deep-fan moments
+- Office-reference layer woven through the UI: cast-name detection on name inputs, score-based Michael Scott quotes on the results screen, randomized loading messages ("Stanley is doing the crossword..."), rotating Office-themed name-input placeholders, punchy wrong-answer reactions, leaderboard rank tooltips (1 = Regional Manager, last place = Toby), a community-nudge sticky note on the solo name screen, a double-click-the-logo random-quote easter egg, and a set of hidden keyword easter eggs for deep-fan moments
+- Smart question rotation: an adaptive recent-question buffer (80% of the active bank) keeps solo sessions from repeating questions until you've worked through most of the bank, and auto-scales as the bank grows
 
 ---
 

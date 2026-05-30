@@ -4,6 +4,13 @@
    Event binding and screen routing
    ================================================================ */
 
+// Toggles the search-box "has text" state so the clear (x) button can
+// appear on hover/focus only when there's something to clear.
+function _toggleSearchClear(value) {
+  const wrap = document.querySelector('.aq-search-wrap');
+  if (wrap) wrap.classList.toggle('aq-has-text', !!value);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // Sync all persistent data from files into localStorage on every load
@@ -62,6 +69,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── HOME ────────────────────────────────────────────────────────
+  // Easter egg: double-click the paper-airplane logo for a random Office
+  // quote toast. Pure-random pick each time (pickEggQuote), no rotation.
+  const homeLogoEgg = document.getElementById('home-logo-egg');
+  if (homeLogoEgg) {
+    homeLogoEgg.addEventListener('dblclick', () => {
+      const q = pickEggQuote();
+      if (q) showToast(`"${q.text}" - ${q.character}`, 4500);
+    });
+  }
   document.getElementById('btn-solo').addEventListener('click', () => showScreen('screen-solo-name'));
   document.getElementById('btn-party').addEventListener('click', () => {
     initPartyNames();
@@ -72,6 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLeaderboard();
     showScreen('screen-leaderboard');
   });
+  // Re-render the leaderboard list when the difficulty filter changes.
+  // Uses the cached server response, so no extra API call per change.
+  const lbFilter = document.getElementById('lb-filter-difficulty');
+  if (lbFilter) lbFilter.addEventListener('change', renderLeaderboardList);
 
   // ── BACK BUTTONS ────────────────────────────────────────────────
   document.querySelectorAll('.btn-back[data-target]').forEach(btn => {
@@ -139,14 +159,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-pause-game').addEventListener('click', toggleGamePause);
   document.getElementById('btn-resume-game').addEventListener('click', toggleGamePause);
 
-  // Exit game
-  document.getElementById('btn-exit-game').addEventListener('click', () => {
+  // Exit game - shared by the text "← Leave" button (right side of the
+  // header) and the paper-airplane logo button (top-left of the header).
+  // Both trigger the same confirm dialog and routing.
+  const exitGameHandler = () => {
     const isParty = GameState.mode === 'party';
     const msg = isParty
       ? 'Leave this party game? The session will end for all players.\n\n(Ratings and disputes already submitted will be kept.)'
       : 'Leave this game? Your score won\'t be saved to the leaderboard.\n\n(Ratings and disputes already submitted will be kept.)';
     if (confirm(msg)) showScreen('screen-home');
-  });
+  };
+  document.getElementById('btn-exit-game').addEventListener('click', exitGameHandler);
+  const exitLogoBtn = document.getElementById('btn-exit-game-logo');
+  if (exitLogoBtn) exitLogoBtn.addEventListener('click', exitGameHandler);
 
   // Vote buttons
   document.getElementById('btn-vote-up').addEventListener('click', () => handleVote('up'));
@@ -272,7 +297,20 @@ document.addEventListener('DOMContentLoaded', () => {
     applyRotatingPlaceholder(el);
   });
 
-  _bind('aq-search', 'input', e => { adminQFilter.search = e.target.value; renderAdminQuestions(); });
+  _bind('aq-search', 'input', e => {
+    adminQFilter.search = e.target.value;
+    _toggleSearchClear(e.target.value);
+    renderAdminQuestions();
+  });
+  // Clear button (x) inside the search box: empties it and re-renders.
+  _bind('aq-search-clear', 'click', () => {
+    const input = document.getElementById('aq-search');
+    if (input) input.value = '';
+    adminQFilter.search = '';
+    _toggleSearchClear('');
+    renderAdminQuestions();
+    if (input) input.focus();
+  });
   _bind('aq-filter-category', 'change', e => { adminQFilter.category = e.target.value; renderAdminQuestions(); });
   _bind('aq-filter-difficulty', 'change', e => { adminQFilter.difficulty = e.target.value; renderAdminQuestions(); });
   _bind('btn-add-question', 'click', () => openQuestionEditor(null));
@@ -282,7 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
   _bind('btn-qe-add-tag', 'click', addModalTag);
   _bind('qe-tag-input', 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addModalTag(); } });
   _bind('qe-context', 'input', e => { document.getElementById('qe-context-count').textContent = e.target.value.length; });
-  _bind('question-modal', 'click', e => { if (e.target.id === 'question-modal') closeQuestionEditor(); });
+  // NOTE: Intentionally no backdrop-click-to-close. Admins were losing
+  // half-entered questions by clicking just outside the card. Close only
+  // via the X button (sticky in the header) or the Cancel button.
 
   // Community ratings tab controls
   _bind('cr-search',        'input',  e => { adminRatingsFilter.search = e.target.value; renderAdminRatings(); });

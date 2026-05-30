@@ -161,7 +161,12 @@ class TLTHandler(SimpleHTTPRequestHandler):
         if self.path == '/api/admin/login':
             self._handle_admin_login()
         elif self.path == '/api/feedback':
-            self._save_feedback()
+            # Admin token => full-array overwrite (used to remove entries).
+            # Otherwise it's a player submission (single append).
+            if self.headers.get('X-Admin-Token', '') in _active_tokens:
+                self._save_file(FEEDBACK_FILE)
+            else:
+                self._save_feedback()
         elif self.path == '/api/question-suggestions':
             if self.headers.get('X-Admin-Token', '') in _active_tokens:
                 self._save_file(SUGGESTIONS_FILE)

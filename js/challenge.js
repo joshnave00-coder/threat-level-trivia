@@ -353,7 +353,8 @@ function challengeStartPlay(playerNameOverride) {
   );
   if (GameState.config.speedRound) {
     const s = parseInt(GameState.config.speedSecs, 10);
-    GameState.speedMaxTime = (s === 5 || s === 15) ? s : 15;
+    // Valid speeds: 30, 15, 10 (Ludicrous). Anything else falls back to 15s.
+    GameState.speedMaxTime = [10, 15, 30].includes(s) ? s : 15;
   } else {
     GameState.speedMaxTime = 15;
   }

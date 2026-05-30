@@ -101,7 +101,7 @@ function renderAdminQuestions() {
     return `
       <div class="aq-card ${isDisabled ? 'aq-disabled' : ''}" data-qid="${q.id}">
         <div class="aq-main">
-          <div class="aq-id">#${q.id}</div>
+          <div class="aq-id">Question ID: ${q.id}</div>
           <div class="aq-text">${escHtml(q.question)}</div>
           <div class="aq-answer"><strong>A:</strong> ${escHtml(q.answer)}</div>
           <div class="aq-badges">
@@ -234,11 +234,13 @@ function openQuestionEditor(id) {
   errorEl.classList.add('hidden');
   form.reset();
 
+  const idBadge = document.getElementById('qe-id-badge');
   if (id != null) {
     const allQs = getAllManagedQuestions();
     const q = allQs.find(x => x.id === id);
     if (!q) return;
     title.textContent = 'Edit Question';
+    if (idBadge) idBadge.textContent = `Question ID: ${q.id}`;
     document.getElementById('qe-id').value = q.id;
     document.getElementById('qe-question').value = q.question;
     document.getElementById('qe-answer').value = q.answer;
@@ -252,6 +254,7 @@ function openQuestionEditor(id) {
     editingTagsFor = [...getEffectiveTags(q)];
   } else {
     title.textContent = 'Add New Question';
+    if (idBadge) idBadge.textContent = 'Question ID: New (assigned on save)';
     document.getElementById('qe-id').value = '';
     document.getElementById('qe-category').value = CATEGORIES[0];
     document.getElementById('qe-difficulty').value = 'Medium';
@@ -263,6 +266,12 @@ function openQuestionEditor(id) {
   renderModalTags();
   modal.classList.remove('hidden');
   document.body.classList.add('modal-open');
+
+  // Reset scroll to top each time the modal opens. Without this, the
+  // .modal-box scrollTop persists between opens, so reopening after a
+  // long-form submission would land mid-form on a blank card.
+  const box = modal.querySelector('.modal-box');
+  if (box) box.scrollTop = 0;
 }
 
 function closeQuestionEditor() {
@@ -415,6 +424,7 @@ function renderAdminDisputes() {
         <span class="dispute-when">${escHtml(d.timestamp)}</span>
         ${d.difficultyRating != null ? `<span class="dispute-rating">Rated: ${d.difficultyRating}/10</span>` : ''}
       </div>
+      ${d.questionId ? `<div class="aq-id">Question ID: ${d.questionId}</div>` : ''}
       <div class="dispute-q"><strong>Q:</strong> ${escHtml(d.question)}</div>
       <div class="dispute-a"><strong>A:</strong> ${escHtml(d.answer)}</div>
       <div class="dispute-text"><strong>Issue:</strong> ${escHtml(d.disputeText)}</div>
@@ -423,7 +433,9 @@ function renderAdminDisputes() {
         ${d.status === 'open' ? `
           <button class="btn btn-correct btn-sm" onclick="resolveDispute(${d.id},'approved')">Approve</button>
           <button class="btn btn-wrong btn-sm" onclick="resolveDispute(${d.id},'dismissed')">Dismiss</button>
-        ` : ''}
+        ` : `
+          <button class="btn btn-wrong btn-sm" onclick="removeDispute(${d.id})">Remove</button>
+        `}
       </div>
     </div>`).join('');
 }
@@ -432,6 +444,14 @@ function resolveDispute(id, status) {
   updateDisputeStatus(id, status);
   renderAdminDisputes();
   showToast(status === 'approved' ? 'Question approved for review.' : 'Dispute dismissed. Moving on.');
+}
+
+// Permanently removes a resolved dispute card from the list and the server file.
+function removeDispute(id) {
+  if (!confirm('Permanently remove this dispute from the list? This cannot be undone.')) return;
+  deleteDispute(id);
+  renderAdminDisputes();
+  showToast('Dispute removed from the list.');
 }
 
 function _adminHeaders() {
@@ -510,17 +530,24 @@ function loadAndRenderAdminFeedback() {
     .catch(() => showToast('Could not load feedback - is the server running?'));
 }
 
+// Cached full feedback array so the Remove action can splice by original
+// index and post the whole array back (feedback entries have no IDs).
+let _adminFeedbackCache = [];
+
 function renderAdminFeedback(entries) {
   const list  = document.getElementById('admin-feedback-list');
   const empty = document.getElementById('admin-no-feedback');
   if (!entries || !entries.length) {
+    _adminFeedbackCache = [];
     list.innerHTML = '';
     empty.classList.remove('hidden');
     return;
   }
+  _adminFeedbackCache = [...entries];
   empty.classList.add('hidden');
-  const sorted = [...entries].reverse();
-  list.innerHTML = sorted.map(fb => `
+  // Render newest-first while keeping each card's original-array index on
+  // its Remove button (build in array order, then reverse the HTML).
+  const cards = _adminFeedbackCache.map((fb, idx) => `
     <div class="feedback-card">
       <div class="feedback-card-meta">
         <span class="feedback-type-badge">${escHtml(_FB_TYPE_LABELS[fb.type] || fb.type)}</span>
@@ -529,7 +556,31 @@ function renderAdminFeedback(entries) {
         <span class="feedback-when">${fb.submittedAt ? escHtml(new Date(fb.submittedAt).toLocaleString()) : ''}</span>
       </div>
       <div class="feedback-msg">${escHtml(fb.message)}</div>
-    </div>`).join('');
+      <div class="feedback-actions">
+        <button class="btn btn-wrong btn-sm" onclick="removeFeedbackEntry(${idx})">Remove</button>
+      </div>
+    </div>`);
+  list.innerHTML = cards.reverse().join('');
+}
+
+// Permanently removes a feedback entry. Splices the cached array by index,
+// posts the full array back with the admin token, and re-renders.
+async function removeFeedbackEntry(idx) {
+  if (idx < 0 || idx >= _adminFeedbackCache.length) return;
+  if (!confirm('Permanently remove this feedback entry? This cannot be undone.')) return;
+  const updated = _adminFeedbackCache.filter((_, i) => i !== idx);
+  try {
+    const res = await fetch('/api/feedback', {
+      method:  'POST',
+      headers: _adminHeaders(),
+      body:    JSON.stringify(updated),
+    });
+    if (!res.ok) throw new Error(`Server ${res.status}`);
+    renderAdminFeedback(updated);
+    showToast('Feedback removed.');
+  } catch {
+    showToast('Could not remove feedback - is the server running?');
+  }
 }
 
 // ── COMMUNITY DIFFICULTY RATINGS ─────────────────────────────────
@@ -630,6 +681,7 @@ function renderAdminRatings() {
     return `
       <div class="cr-card ${!hasRatings && !hasVotes ? 'cr-no-ratings' : ''} ${isDisabled ? 'aq-disabled' : ''}" data-qid="${q.id}">
         <div class="cr-main">
+          <div class="aq-id">Question ID: ${q.id}</div>
           <div class="cr-question-text">${escHtml(q.question)}</div>
           <div class="cr-answer"><strong>A:</strong> ${escHtml(q.answer)}</div>
           <div class="cr-data-row">
@@ -653,11 +705,11 @@ function resetQuestionRatingsAdmin(questionId) {
   const q = allQs.find(x => x.id === questionId);
   const info = getCommunityDifficultyInfo(questionId);
   if (!info) return;
-  const label = q ? `"${q.question.slice(0, 40)}${q.question.length > 40 ? '...' : ''}"` : `question #${questionId}`;
+  const label = q ? `"${q.question.slice(0, 40)}${q.question.length > 40 ? '...' : ''}"` : `Question ID: ${questionId}`;
   if (!confirm(`Reset all ${info.count} community rating(s) for ${label}?\n\nThis cannot be undone.`)) return;
   resetQuestionRatings(questionId);
   renderAdminRatings();
-  showToast(`Community ratings cleared for question #${questionId}.`);
+  showToast(`Community ratings cleared for Question ID: ${questionId}.`);
 }
 
 function resetQuestionVotesAdmin(questionId) {
@@ -665,11 +717,11 @@ function resetQuestionVotesAdmin(questionId) {
   const q = allQs.find(x => x.id === questionId);
   const votes = getVoteSummary(questionId);
   if (!votes.total) return;
-  const label = q ? `"${q.question.slice(0, 40)}${q.question.length > 40 ? '...' : ''}"` : `question #${questionId}`;
+  const label = q ? `"${q.question.slice(0, 40)}${q.question.length > 40 ? '...' : ''}"` : `Question ID: ${questionId}`;
   if (!confirm(`Reset all ${votes.total} vote(s) for ${label}?\n\nThis cannot be undone.`)) return;
   resetQuestionVotes(questionId);
   renderAdminRatings();
-  showToast(`Votes cleared for question #${questionId}.`);
+  showToast(`Votes cleared for Question ID: ${questionId}.`);
 }
 
 // ── SITE SETTINGS ────────────────────────────────────────────────

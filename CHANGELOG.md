@@ -4,6 +4,34 @@ All notable changes to Threat Level Trivia are documented here.
 
 ---
 
+## v1.6.0 - 2026-05-29
+
+### Features
+- **Community Nudge Sticky Note** - The solo name-entry screen now shows a crooked yellow Post-it (handwritten Caveat font, slanted down-right) above the form. It cycles through a pool of 10 messages that encourage players to vote, rate, dispute, and submit questions ("The question bank grows beet by beet...", "Creed knows things no one else does. You probably do too...", etc.). A different note appears on each visit to the screen, never repeating back-to-back.
+- **Global Leaderboard Header & Difficulty Filter** - The Employee Records screen now carries a "Global Leaderboard" title and an All / Medium / Hard difficulty filter to the right. Ranks recompute for the filtered view, so a player can see whether they're #1 among Medium players or among Hard players specifically. Filtering re-renders from a cached server response (no extra fetch per toggle).
+- **Home Logo Easter Egg** - Double-clicking the paper-airplane logo on the home screen fires a random Office quote toast. The pool is built at load time from every in-game quote bank (correct callouts + incorrect callouts + pause-overlay quotes) plus a curated set of 33 bonus classic lines (70+ total), so it auto-grows whenever those banks grow. Pick is purely random each time (no rotation, no anti-repeat).
+- **In-Game Logo Exit Shortcut** - The paper-airplane logo now also appears at the top-left of the in-game header and acts as a second "Leave game" control, firing the same confirmation dialog as the existing text "Leave" button (which is unchanged).
+- **Party Speed-Round Time Options** - Party mode's Speed Round changed from a single 15-second checkbox to Off / 30 / 20 / 15 seconds. The 3-2-1-GO countdown now only runs when a speed round is active (no countdown for untimed party questions).
+- **Challenge Speed-Round Time Options** - Challenge Mode's Speed Round changed from Off / 15 / 5 to Off / 30 / 15 / 10 seconds. "Ludicrous" mode is now 10 seconds (was 5).
+- **Admin Search Clear Button** - The Questions search box shows a clear (x) button on hover/focus when it has text, clearing the field in one click.
+- **Permanent Removal of Resolved Items** - Resolved suggestions (approved/rejected), resolved disputes, and any submitted feedback entry can now be permanently removed from their respective admin lists via a Remove button. The existing grayed-out resolved state is retained; removal is a separate, permanent action.
+
+### Changes
+- **Question ID Format** - All question-ID references now read "Question ID: 123" instead of "#123". The ID now also appears at the top of the question editor modal, on Community Ratings cards, and on dispute cards (previously only on the question list cards). The reset-ratings/reset-votes confirmations and toasts were updated to match.
+- **Answer Reveal Layout** - The answer context now sits directly beneath the answer inside the same box (same background and left border). The correct answer is now bold regular text (previously italic), and the context below it is italic.
+- **Lobby Dropdown Sizing** - The Category and Character dropdowns in all three lobbies (solo, party, challenge) now size to their longest option instead of stretching across the full column width.
+- **Adaptive Recent-Question Buffer** - The buffer that prevents repeat questions across solo sessions is now 80% of the live active question bank (previously a fixed 100). It auto-scales as the bank grows or shrinks (disabled/deleted questions are excluded from the count).
+- **Edit Modal Hardening** - The question editor no longer closes on a backdrop (outside) click, its header is sticky so the close X is always reachable, and it always reopens scrolled to the top.
+
+### Infrastructure
+- `POST /api/feedback` now branches on the admin token: with a valid token it does a full-array overwrite (used to remove feedback entries), and without one it appends a single player submission as before. Mirrors the existing `/api/question-suggestions` pattern.
+- New globals in `js/data.js`: `STICKY_NOTES` + `pickStickyNote()`; `EGG_BONUS_QUOTES` + `buildEggQuotePool()` + `EGG_QUOTES` + `pickEggQuote()`.
+- New `deleteDispute(id)` in `js/state.js`. The leaderboard render in `js/ui.js` was split into `renderLeaderboard()` (fetch + cache) and `renderLeaderboardList()` (filtered render) so the difficulty filter re-renders without re-fetching.
+- Caveat handwriting font added via Google Fonts (with preconnect hints) for the sticky note.
+- Shared toast styling now wraps long messages within a capped width (so the long quote-easter-egg toasts display cleanly) while short system toasts still render as compact pills.
+
+---
+
 ## v1.5.0 - 2026-05-28
 
 ### Features

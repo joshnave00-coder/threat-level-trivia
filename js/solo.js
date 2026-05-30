@@ -151,13 +151,15 @@ function renderQuestionScreen() {
     renderMCOptions(q, soloCurrentOptions);
   }
 
-  // Party scoreboard + per-question countdown
+  // Party scoreboard + per-question countdown.
+  // The 3-2-1-GO countdown only fires when speed round is on - otherwise
+  // there's no time pressure to set up and the countdown is just friction.
   if (GameState.mode === 'party') {
     renderPartyScoreboard();
-    const player = GameState.players[GameState.currentPlayerIdx];
-    startPartyCountdown(player.name, () => {
-      if (GameState.config.speedRound) startSpeedTimer();
-    });
+    if (GameState.config.speedRound) {
+      const player = GameState.players[GameState.currentPlayerIdx];
+      startPartyCountdown(player.name, () => startSpeedTimer());
+    }
   }
 
   showScreen('screen-question');

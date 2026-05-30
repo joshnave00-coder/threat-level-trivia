@@ -217,6 +217,13 @@ function updateDisputeStatus(id, status) {
   _persistDisputesToFile(disputes);
 }
 
+// Permanently removes a dispute from both localStorage and the server file.
+function deleteDispute(id) {
+  const disputes = getDisputes().filter(x => x.id !== id);
+  localStorage.setItem(STORAGE_KEYS.disputes, JSON.stringify(disputes));
+  _persistDisputesToFile(disputes);
+}
+
 // ── RATINGS ───────────────────────────────────────────────────────
 function getRatings() {
   try { return JSON.parse(localStorage.getItem('tlt_ratings')) || []; }

@@ -58,7 +58,9 @@ function partyStart() {
   const character   = document.getElementById('party-character').value;
   const difficulty  = document.querySelector('input[name="party-diff"]:checked').value;
   const rawCount    = parseInt(document.querySelector('input[name="party-count"]:checked').value, 10);
-  const speedRound  = document.getElementById('party-speed').checked;
+  // Party speed: radio group with values 0 (Off), 15, 20, 30 (seconds).
+  const speedSecs   = parseInt(document.querySelector('input[name="party-speed"]:checked')?.value || '0', 10);
+  const speedRound  = speedSecs > 0;
 
   // Round down to the nearest multiple of player count so every player
   // gets the exact same number of questions (never one player short-changed).
@@ -74,7 +76,10 @@ function partyStart() {
 
   resetGameState();
   GameState.mode = 'party';
-  GameState.config = { category, difficulty, count, hardcore: false, speedRound, character };
+  GameState.config = { category, difficulty, count, hardcore: false, speedRound, speedSecs, character };
+  // Pin the per-question time so startSpeedTimer() picks it up. Valid
+  // values are 15/20/30; anything else falls back to 15s as a guardrail.
+  GameState.speedMaxTime = (speedRound && [15, 20, 30].includes(speedSecs)) ? speedSecs : 15;
   GameState.questions = qs;
   GameState.players = names.map((name, i) => ({ id: i + 1, name, score: 0, answers: [] }));
   GameState.currentPlayerIdx = 0;

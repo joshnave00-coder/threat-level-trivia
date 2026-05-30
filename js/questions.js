@@ -39,7 +39,17 @@ function selectQuestions(category, difficulty, count, character) {
   const pool = filterQuestions(category, difficulty, character);
   if (!pool.length) return [];
 
-  const recentIds = getRecentlySeenIds(100);
+  // Recent-question buffer is 80% of the currently active question bank.
+  // Auto-scales as the bank grows: add questions, the buffer grows with it.
+  // Net effect: a player won't see a repeat until they've worked through
+  // roughly 80% of the active bank. For narrow filters where the filtered
+  // pool itself is smaller than the buffer, repeats are mathematically
+  // unavoidable and the shuffle just keeps the order varied.
+  const disabled = getDisabledQuestions();
+  const activeCount = getAllManagedQuestions().filter(q => !disabled.includes(q.id)).length;
+  const limit = Math.floor(activeCount * 0.8);
+
+  const recentIds = getRecentlySeenIds(limit);
   const fresh = shuffle(pool.filter(q => !recentIds.has(q.id)));
   const stale = shuffle(pool.filter(q =>  recentIds.has(q.id)));
   return [...fresh, ...stale].slice(0, Math.min(count, pool.length));

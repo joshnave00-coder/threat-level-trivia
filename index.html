@@ -20,6 +20,9 @@
   <meta name="twitter:description" content="Hundreds of questions about The Office. Solo play, party mode, and a leaderboard. How well do you really know Dunder Mifflin?">
 
   <link rel="icon" type="image/png" href="/favicon.PNG">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -37,7 +40,7 @@
 ════════════════════════════════════════════════ -->
 <div id="screen-home" class="screen active">
   <header class="dm-header">
-    <img src="/favicon.PNG" alt="Threat Level Trivia Logo" class="dm-logo-img">
+    <img src="/favicon.PNG" alt="Threat Level Trivia Logo" class="dm-logo-img" id="home-logo-egg">
     <div class="dm-logo-placeholder">
       <span class="dm-logo-text">Dunder Mifflin</span>
       <span class="dm-logo-sub">Paper Company, Inc. - Scranton Branch</span>
@@ -168,11 +171,12 @@
       <section class="rules-section">
         <h3>Employee Records (Global Leaderboard)</h3>
         <p>The global leaderboard tracks the best scores across all players. To qualify, you must complete <strong>25 questions</strong> on <strong>Medium or Hard difficulty</strong>. Easy questions and Mixed difficulty do not qualify. This keeps the rankings honest - no cherry-picking easy questions or stopping at 5 to lock in a perfect score.</p>
+        <p>Use the <strong>Difficulty filter</strong> at the top of the leaderboard to view All, Medium only, or Hard only. Ranks recompute for the filtered view, so you can see exactly where you stand against just the Medium field or just the Hard field.</p>
       </section>
 
       <section class="rules-section">
         <h3>Party Mode - "Call a Meeting"</h3>
-        <p>Grab 2-8 players for a group showdown. Everyone takes turns answering questions on the same screen. Enable <strong>Speed Round</strong> to add a timer for bonus points. If there's a tie at the end, a sudden-death wager round settles it.</p>
+        <p>Grab 2-8 players for a group showdown. Everyone takes turns answering questions on the same screen. Pick a <strong>Speed Round</strong> timer (30, 20, or 15 seconds) to play for bonus points, or leave it Off for a relaxed pace. When a speed round is on, a 3-2-1-GO countdown runs before each question so no one peeks early; with speed off, there's no countdown. If there's a tie at the end, a sudden-death wager round settles it.</p>
       </section>
 
       <section class="rules-section">
@@ -180,7 +184,7 @@
         <p>Not everyone can make it to the conference room. Challenge Mode lets you compete with friends, coworkers, or strangers anywhere in the world without being in the same place at the same time.</p>
         <p><strong>How it works:</strong></p>
         <ul>
-          <li>Pick your settings (category, difficulty, question count, speed round) and hit <strong>"Create &amp; Copy Memo Link."</strong></li>
+          <li>Pick your settings (category, difficulty, question count, and an optional speed round of 30, 15, or 10 seconds - 10 is "Ludicrous") and hit <strong>"Create &amp; Copy Memo Link."</strong></li>
           <li>The game locks in a specific set of questions and generates a shareable link with a unique memo code.</li>
           <li>Send that link to anyone - text it, email it, post it in a group chat, whatever works.</li>
           <li>Every person who opens the link plays the <strong>exact same questions in the exact same order</strong> with the same answer options. No randomness, no advantage. A level playing field.</li>
@@ -253,6 +257,11 @@
       <input type="text" id="solo-name-input" class="input-field" placeholder="e.g. Michael Scott" maxlength="24" autocomplete="off">
     </div>
     <button class="btn btn-primary" id="btn-solo-name-continue" style="max-width:380px;width:100%">Proceed to Briefing →</button>
+    <!-- Community-contribution nudge. Text is set by renderSoloStickyNote()
+         (ui.js) from the STICKY_NOTES pool each time this screen is shown. -->
+    <div class="solo-sticky-note" id="solo-sticky-note" aria-hidden="true">
+      <p class="solo-sticky-text" id="solo-sticky-text"></p>
+    </div>
   </div>
 </div>
 
@@ -335,6 +344,11 @@
 <div id="screen-question" class="screen">
 
   <div class="question-header">
+    <!-- Paper-airplane logo doubles as a "Leave game" control (same handler
+         as the text Leave button below). Kept first so it sits top-left. -->
+    <button id="btn-exit-game-logo" class="btn-exit-logo" title="Leave game" aria-label="Leave game">
+      <img src="/favicon.PNG" alt="" class="exit-logo-img">
+    </button>
     <div class="question-meta">
       <span id="q-player-label" class="q-player-label"></span>
       <span id="q-progress" class="q-progress"></span>
@@ -377,11 +391,15 @@
     <!-- Answer reveal panel -->
     <div id="q-reveal" class="answer-reveal hidden">
       <div id="q-reveal-result" class="reveal-result"></div>
+      <!-- Answer and its optional context share one box: bold answer on the
+           first line, italic context directly beneath it (when present). -->
       <div class="reveal-answer-box">
-        <span class="reveal-label">Correct Answer:</span>
-        <span id="q-reveal-answer" class="reveal-answer-text"></span>
+        <div class="reveal-answer-line">
+          <span class="reveal-label">Correct Answer:</span>
+          <span id="q-reveal-answer" class="reveal-answer-text"></span>
+        </div>
+        <div id="q-reveal-context" class="reveal-context hidden"></div>
       </div>
-      <div id="q-reveal-context" class="reveal-context hidden"></div>
 
       <!-- Hardcore self-scoring -->
       <div id="q-hc-score" class="hc-score-panel hidden">
@@ -490,6 +508,17 @@
     <h2>Employee Records: Top Performers</h2>
   </div>
   <div class="screen-body">
+    <div class="lb-header-bar">
+      <h3 class="lb-section-title">Global Leaderboard</h3>
+      <div class="lb-filter-wrap">
+        <label for="lb-filter-difficulty" class="lb-filter-label">Difficulty:</label>
+        <select id="lb-filter-difficulty" class="select-field lb-filter-select">
+          <option value="all">All</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+    </div>
     <p class="lb-qualifier-note">Global rankings. Qualify by completing 25 questions on Medium or Hard difficulty.</p>
     <div id="leaderboard-list" class="leaderboard-list"></div>
   </div>
@@ -567,13 +596,13 @@
 
       <div class="lobby-section">
         <span class="lobby-label">Speed Round</span>
-        <div class="toggle-row">
-          <label class="toggle-switch">
-            <input type="checkbox" id="party-speed">
-            <span class="toggle-slider"></span>
-          </label>
-          <span class="toggle-desc">Faster answers earn more points (15-second timer)</span>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="party-speed" value="0" checked> Off</label>
+          <label class="radio-label"><input type="radio" name="party-speed" value="30"> 30 sec</label>
+          <label class="radio-label"><input type="radio" name="party-speed" value="20"> 20 sec</label>
+          <label class="radio-label"><input type="radio" name="party-speed" value="15"> 15 sec</label>
         </div>
+        <span class="toggle-desc">Faster answers earn more points. Off skips the 3-2-1 countdown.</span>
       </div>
 
     </div>
@@ -688,8 +717,9 @@
         <span class="lobby-label">Speed Round</span>
         <div class="radio-group">
           <label class="radio-label"><input type="radio" name="challenge-speed" value="0" checked> Off</label>
+          <label class="radio-label"><input type="radio" name="challenge-speed" value="30"> 30 sec</label>
           <label class="radio-label"><input type="radio" name="challenge-speed" value="15"> 15 sec</label>
-          <label class="radio-label"><input type="radio" name="challenge-speed" value="5"> 5 sec (Ludicrous)</label>
+          <label class="radio-label"><input type="radio" name="challenge-speed" value="10"> 10 sec (Ludicrous)</label>
         </div>
       </div>
     </div>
@@ -838,7 +868,10 @@
       <!-- QUESTIONS PANEL -->
       <div id="admin-panel-questions" class="admin-panel">
         <div class="aq-toolbar">
-          <input type="text" id="aq-search" class="input-field" placeholder="Search questions or answers...">
+          <div class="aq-search-wrap">
+            <input type="text" id="aq-search" class="input-field" placeholder="Search questions or answers...">
+            <button type="button" id="aq-search-clear" class="aq-search-clear" aria-label="Clear search" title="Clear search">&times;</button>
+          </div>
           <select id="aq-filter-category" class="select-field aq-filter-select">
             <option value="all">All Categories</option>
           </select>
@@ -940,6 +973,45 @@
       <div id="admin-panel-version-history" class="admin-panel hidden">
         <h3 class="admin-help-title">Version History</h3>
         <p class="admin-help-intro">A running log of every release, what landed in it, and when it shipped. Most recent at the top.</p>
+
+        <div class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v1.6.0</span>
+            <span class="version-date">2026-05-29</span>
+          </div>
+          <div class="version-section">
+            <h5>Features</h5>
+            <ul>
+              <li><strong>Community Nudge Sticky Note:</strong> The solo name-entry screen now shows a crooked yellow Post-it (handwritten Caveat font) above a rotating pool of 10 messages encouraging players to vote, rate, dispute, and submit questions. A different note shows on each visit, never repeating back-to-back.</li>
+              <li><strong>Global Leaderboard Header &amp; Difficulty Filter:</strong> The Employee Records screen now has a "Global Leaderboard" title and an All / Medium / Hard difficulty filter. Ranks recompute per filter, so a player can see where they stand against just the Medium or just the Hard field. Filtering re-renders from a cached response (no extra server call).</li>
+              <li><strong>Home Logo Easter Egg:</strong> Double-clicking the paper-airplane logo on the home screen fires a random Office quote toast. The pool aggregates every in-game quote bank (correct, incorrect, pause quotes) plus 33 curated bonus lines (70+ total) and auto-grows as those banks grow. Purely random pick each time.</li>
+              <li><strong>In-Game Logo Exit Shortcut:</strong> The paper-airplane logo now appears in the top-left of the in-game header and acts as a second "Leave game" button (same confirm dialog as the text Leave button, which stays put).</li>
+              <li><strong>Party Speed-Round Time Options:</strong> Party mode's Speed Round is now Off / 30 / 20 / 15 seconds (was a single 15s checkbox). The 3-2-1-GO countdown now only runs when a speed round is active, since there's no time pressure to prep for otherwise.</li>
+              <li><strong>Challenge Speed-Round Time Options:</strong> Challenge Mode's Speed Round is now Off / 30 / 15 / 10 seconds. Ludicrous mode is now 10 seconds (previously 5).</li>
+              <li><strong>Search Box Clear Button:</strong> The admin Questions search box shows a clear (x) button on hover/focus when it contains text, so you can empty it in one click instead of selecting and deleting.</li>
+              <li><strong>Remove Resolved Items:</strong> Resolved suggestions (approved/rejected), resolved disputes, and any submitted feedback entry can now be permanently removed from their lists via a Remove button, in addition to the existing grayed-out state.</li>
+            </ul>
+          </div>
+          <div class="version-section">
+            <h5>Changes</h5>
+            <ul>
+              <li><strong>Question ID Format:</strong> Every question-ID reference now reads "Question ID: 123" instead of "#123". The ID now also appears in the question editor modal, on Community Ratings cards, and on dispute cards, in addition to the question list cards.</li>
+              <li><strong>Answer Reveal Layout:</strong> The answer context now sits directly beneath the answer inside the same box. The correct answer is bold (no longer italic) and the context below it is italic.</li>
+              <li><strong>Lobby Dropdown Sizing:</strong> The Category and Character dropdowns in all three lobbies (solo, party, challenge) now size to their longest option instead of stretching the full width.</li>
+              <li><strong>Recent-Question Buffer Is Now Adaptive:</strong> The "don't repeat recent questions" buffer is now 80% of the live active question bank (was a fixed 100), so it auto-scales as the bank grows.</li>
+              <li><strong>Edit Modal Hardening:</strong> The question editor no longer closes on an outside (backdrop) click, its header is sticky so the X is always reachable, and it always reopens scrolled to the top.</li>
+            </ul>
+          </div>
+          <div class="version-section">
+            <h5>Infrastructure</h5>
+            <ul>
+              <li><code>POST /api/feedback</code> now accepts an admin-token full-array overwrite (used to remove feedback entries); player submissions still append as before.</li>
+              <li>New globals in <code>js/data.js</code>: <code>STICKY_NOTES</code> + <code>pickStickyNote()</code>, and <code>EGG_BONUS_QUOTES</code> + <code>buildEggQuotePool()</code> + <code>EGG_QUOTES</code> + <code>pickEggQuote()</code>.</li>
+              <li>New <code>deleteDispute()</code> in <code>js/state.js</code>; leaderboard render now caches its response so the difficulty filter can re-render without re-fetching.</li>
+              <li>Caveat handwriting font added via Google Fonts (preconnected) for the sticky note.</li>
+            </ul>
+          </div>
+        </div>
 
         <div class="version-entry">
           <div class="version-header">
@@ -1171,8 +1243,8 @@
           <h4>Questions</h4>
           <p>The full question bank. Every question in the game lives here.</p>
           <ul>
-            <li><strong>Question ID:</strong> Each card shows its question ID (#123) in the top-left in small italic text. Handy for cross-referencing with disputes, exports, or community ratings.</li>
-            <li><strong>Search &amp; Filter:</strong> Narrow down by keyword, category, or difficulty. The count updates in real time.</li>
+            <li><strong>Question ID:</strong> Each card shows its question ID ("Question ID: 123") in the top-left in small italic text. The same ID also appears at the top of the question editor when you open a card, on Community Ratings cards, and on dispute cards. Handy for cross-referencing across disputes, exports, and ratings.</li>
+            <li><strong>Search &amp; Filter:</strong> Narrow down by keyword, category, or difficulty. The count updates in real time. When the search box has text, hover (or focus) it to reveal a clear (x) button that empties it in one click.</li>
             <li><strong>Edit:</strong> Opens the question editor where you can change the question text, answer, category, difficulty, and tags. Edits to built-in questions are stored as overrides - the original is preserved underneath and the card gets an "EDITED" badge.</li>
             <li><strong>Disable/Enable:</strong> Disabling a question hides it from gameplay without removing it. Useful for pulling a bad question while you fix it. Reversible at any time.</li>
             <li><strong>Revert:</strong> Appears on edited built-in questions. Strips your edit overlay and restores the original question text. Your edits will be lost.</li>
@@ -1188,18 +1260,19 @@
           <ul>
             <li><strong>Review &amp; Revise:</strong> Opens the suggestion in the question editor so you can review the full text and make any edits (grammar, capitalization, distractor tweaks) before approving. The suggestion is only added to the question bank when you click "Add to Question Bank" inside the editor. Closing or canceling leaves it pending.</li>
             <li><strong>Review Later:</strong> Marks the suggestion as deferred so you can come back to it.</li>
-            <li><strong>Delete:</strong> Permanently marks the suggestion as rejected.</li>
+            <li><strong>Delete:</strong> Marks the suggestion as rejected. It stays in the list but grays out.</li>
+            <li><strong>Remove:</strong> Appears on resolved (approved or rejected) cards. Permanently deletes the suggestion from the list entirely. This cannot be undone.</li>
           </ul>
         </div>
 
         <div class="admin-help-section">
           <h4>Flagged Questions</h4>
-          <p>When a player submits "Question Feedback / Dispute" during gameplay, the entry shows up here. Each card shows the question, the player's comment, and when it was filed. You can mark them as <em>Approved</em> (the dispute is valid and you'll fix it) or <em>Dismissed</em> (the question is fine as-is). These status changes are just labels for your tracking - they don't automatically modify the question. Use the "Edit Question" shortcut on the card to jump straight into the question editor.</p>
+          <p>When a player submits "Question Feedback / Dispute" during gameplay, the entry shows up here. Each card shows the question, the question ID, the player's comment, and when it was filed. You can mark them as <em>Approved</em> (the dispute is valid and you'll fix it) or <em>Dismissed</em> (the question is fine as-is). These status changes are just labels for your tracking - they don't automatically modify the question. Use the "Edit Question" shortcut on the card to jump straight into the question editor. Once a dispute is resolved (approved or dismissed) it grays out, and a <strong>Remove</strong> button appears to permanently delete it from the list.</p>
         </div>
 
         <div class="admin-help-section">
           <h4>Submitted Feedback</h4>
-          <p>General messages submitted through the Suggestion Box on the home screen (general feedback, feature ideas, bug reports, etc.). These are view-only. Player-submitted trivia questions have their own dedicated "Suggested Questions" tab.</p>
+          <p>General messages submitted through the Suggestion Box on the home screen (general feedback, feature ideas, bug reports, etc.). Each card has a <strong>Remove</strong> button to permanently delete that entry. Player-submitted trivia questions have their own dedicated "Suggested Questions" tab.</p>
         </div>
 
         <div class="admin-help-section">
@@ -1246,6 +1319,7 @@
       <h2 id="question-modal-title">Edit Question</h2>
       <button class="btn-icon modal-close" id="btn-question-modal-close" aria-label="Close">&times;</button>
     </div>
+    <div id="qe-id-badge" class="aq-id qe-id-badge"></div>
     <form id="question-form" class="feedback-form" novalidate>
 
       <div class="form-group form-group-full">

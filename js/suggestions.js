@@ -197,7 +197,10 @@ function _renderSuggestionCards(entries, container) {
         <button class="btn btn-primary btn-sm" onclick="reviewAndReviseSuggestion(${i})">Review &amp; Revise</button>
         <button class="btn btn-secondary btn-sm" onclick="deferSuggestion(${i})">Review Later</button>
         <button class="btn btn-wrong btn-sm" onclick="rejectSuggestion(${i})">Delete</button>
-      </div>` : ''}
+      </div>` : `
+      <div class="suggestion-actions">
+        <button class="btn btn-wrong btn-sm" onclick="removeSuggestion(${i})">Remove</button>
+      </div>`}
     </div>`;
   }).join('');
 }
@@ -287,12 +290,24 @@ async function deferSuggestion(idx) {
 }
 
 async function rejectSuggestion(idx) {
-  if (!confirm('Delete this suggestion? This cannot be undone.')) return;
+  if (!confirm('Reject this suggestion? It will be grayed out but kept in the list.')) return;
   const entries = await _loadSuggestionsCache();
   if (!entries[idx]) return;
   entries[idx].status = 'rejected';
   await _saveSuggestions(entries);
-  showToast('Suggestion removed.');
+  showToast('Suggestion rejected.');
+  loadAndRenderAdminSuggestions();
+}
+
+// Permanently deletes a resolved (approved/rejected) suggestion from the
+// list entirely - not a status change. This is the "make it disappear" action.
+async function removeSuggestion(idx) {
+  if (!confirm('Permanently remove this suggestion from the list? This cannot be undone.')) return;
+  const entries = await _loadSuggestionsCache();
+  if (!entries[idx]) return;
+  entries.splice(idx, 1);
+  await _saveSuggestions(entries);
+  showToast('Suggestion removed from the list.');
   loadAndRenderAdminSuggestions();
 }
 

@@ -1408,6 +1408,63 @@ const PAUSE_QUOTES = [
   { text: "If I had a gun with two bullets and I was in a room with Hitler, bin Laden, and someone interrupting my break... I'd just wait.", character: "Dwight Schrute" },
 ];
 
+// ── HOME LOGO EASTER EGG QUOTES ───────────────────────────────────
+// Double-clicking the paper-airplane logo on the home screen fires a
+// random Office quote toast. The pool aggregates the in-game quote banks
+// (correct + incorrect answer callouts + pause-overlay quotes) so we never
+// duplicate text that already lives elsewhere, then layers on a curated
+// bonus set of classic lines to make the collection as deep as possible.
+// Picking is purely random on every fire (no anti-repeat, no rotation).
+const EGG_BONUS_QUOTES = [
+  { text: "Sometimes I'll start a sentence and I don't even know where it's going. I just hope I find it along the way.", character: "Michael Scott" },
+  { text: "I knew exactly what to do. But in a much more real sense, I had no idea what to do.", character: "Michael Scott" },
+  { text: "You miss 100% of the shots you don't take. - Wayne Gretzky", character: "Michael Scott" },
+  { text: "Wikipedia is the best thing ever. Anyone in the world can write anything they want about any subject, so you know you are getting the best possible information.", character: "Michael Scott" },
+  { text: "I am running away from my responsibilities. And it feels good.", character: "Michael Scott" },
+  { text: "I'm an early bird and I'm a night owl. So I'm wise and I have huge breasts.", character: "Michael Scott" },
+  { text: "Do I need to be liked? Absolutely not. I like to be liked. I enjoy being liked. I have to be liked. But it's not like a compulsive need to be liked.", character: "Michael Scott" },
+  { text: "I love inside jokes. I'd love to be a part of one someday.", character: "Michael Scott" },
+  { text: "Make friends first, make sales second, make love third. In no particular order.", character: "Michael Scott" },
+  { text: "Fool me once, strike one. Fool me twice... strike three.", character: "Michael Scott" },
+  { text: "An office is for not dying. An office is a place where dreams come true.", character: "Michael Scott" },
+  { text: "Would I rather be feared or loved? Easy. Both. I want people to be afraid of how much they love me.", character: "Michael Scott" },
+  { text: "Just tell him to call me ASAP as possible.", character: "Michael Scott" },
+  { text: "There are too many people on this earth. We need a new plague.", character: "Dwight Schrute" },
+  { text: "I am fast. To give you a reference point, I am somewhere between a snake and a mongoose. And a panther.", character: "Dwight Schrute" },
+  { text: "R is among the most menacing of sounds. That's why they call it murder, not mukduk.", character: "Dwight Schrute" },
+  { text: "How would I describe myself? Three words: hard-working, alpha male, jackhammer. Merciless. Insatiable.", character: "Dwight Schrute" },
+  { text: "Before I do anything, I ask myself: would an idiot do that? And if the answer is yes, I do not do that thing.", character: "Dwight Schrute" },
+  { text: "In the wild, there is no health care. Health care is 'Oh, I broke my leg.' A lion comes and eats you, you're dead. Well, I'm not dead. I'm the lion.", character: "Dwight Schrute" },
+  { text: "I am better than you have ever been or ever will be.", character: "Dwight Schrute" },
+  { text: "The only difference between me and a homeless man is this job. I will do whatever it takes to survive.", character: "Creed Bratton" },
+  { text: "I've been involved in a number of cults, both as a leader and a follower. You have more fun as a follower, but you make more money as a leader.", character: "Creed Bratton" },
+  { text: "Nobody steals from Creed Bratton and gets away with it. The last person to do this disappeared. His name? Creed Bratton.", character: "Creed Bratton" },
+  { text: "I talk a lot, so I've learned to just tune myself out.", character: "Kelly Kapoor" },
+  { text: "Andy Bernard does not lose contests. He wins them, or he quits them because they are unfair.", character: "Andy Bernard" },
+  { text: "I sorta keep my ear to the street.", character: "Andy Bernard" },
+  { text: "I feel God in this Chili's tonight.", character: "Pam Beesly" },
+  { text: "I don't hate it. I just don't like it at all, and it's terrible.", character: "Stanley Hudson" },
+  { text: "I am not interested in your problem-solving... I have my own.", character: "Stanley Hudson" },
+  { text: "I'm not usually the butt of the joke, but when I am, it's because I have such a big butt.", character: "Phyllis Vance" },
+  { text: "Boom. Roasted.", character: "Michael Scott" },
+  { text: "Today, smoking is going to save lives.", character: "Dwight Schrute" },
+  { text: "Where are the turtles?!", character: "Michael Scott" },
+];
+function buildEggQuotePool() {
+  const pool = [];
+  if (typeof QUOTES === 'object' && QUOTES) {
+    if (Array.isArray(QUOTES.correct))   pool.push(...QUOTES.correct);
+    if (Array.isArray(QUOTES.incorrect)) pool.push(...QUOTES.incorrect);
+  }
+  if (Array.isArray(PAUSE_QUOTES)) pool.push(...PAUSE_QUOTES);
+  pool.push(...EGG_BONUS_QUOTES);
+  return pool;
+}
+const EGG_QUOTES = buildEggQuotePool();
+function pickEggQuote() {
+  return EGG_QUOTES[Math.floor(Math.random() * EGG_QUOTES.length)];
+}
+
 // ── TAG SUGGESTIONS FOR ADMIN ─────────────────────────────────────
 const TAG_SUGGESTIONS = [
   "Michael", "Dwight", "Jim", "Pam", "Ryan", "Kelly", "Angela",
@@ -1421,3 +1478,29 @@ const TAG_SUGGESTIONS = [
   "Behind the Scenes", "Schrute Farms", "Benihana", "Stamford",
   "Fan Favorite", "Running Gag", "Improvised"
 ];
+
+// ── SOLO NAME-SCREEN STICKY NOTES ─────────────────────────────────
+// Rotating Post-it nudges shown above the name input on screen-solo-name.
+// All ten encourage some flavor of community contribution (rate, dispute,
+// vote, submit). No fabricated character quotes - references only.
+const STICKY_NOTES = [
+  "Got a trivia question of your own? The Suggestion Box is right on the home screen. Unlike a certain regional manager's suggestion box, this one actually gets read.",
+  "See an answer that's just plain wrong? File a dispute. Every single one lands on a real desk. Not Toby's. A real one.",
+  "After each question, you can rate how hard it actually was. Those numbers move the difficulty tiers. Think of it as a performance review, but this time the question is the one getting reviewed.",
+  "This isn't a top-down trivia operation. Vote, rate, dispute, submit. Most of the best questions in here came from players who thought they could do better. They were right.",
+  "The question bank grows beet by beet. Rate one. Dispute one. Submit one. Schrute Farms wasn't built in a day.",
+  "Conference Room. Five minutes. Bring a dispute, a better-worded answer, or a brand new question. Whatever you've got, someone's actually reading it.",
+  "Threat Level Midnight took years of rewrites. Your trivia question won't. Drop it in the Suggestion Box and we'll handle the rest.",
+  "Rating questions and submitting new ones won't win you a Dundie. Probably. But the bank gets sharper every time someone bothers. So bother.",
+  "If a bad answer is bothering you more than Stanley getting interrupted mid-crossword, file a dispute. We'll fix it. You can go back to your crossword.",
+  "Creed knows things no one else does. You probably do too. If there's a deep-cut question only the real fans would get, the Suggestion Box wants it."
+];
+let _lastStickyNoteIdx = -1;
+function pickStickyNote() {
+  if (STICKY_NOTES.length < 2) return STICKY_NOTES[0];
+  let idx;
+  do { idx = Math.floor(Math.random() * STICKY_NOTES.length); }
+  while (idx === _lastStickyNoteIdx);
+  _lastStickyNoteIdx = idx;
+  return STICKY_NOTES[idx];
+}

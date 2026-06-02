@@ -463,8 +463,10 @@ function markQuestionDeleted(id) {
 }
 
 function loadDeletedQuestionsFromFile() {
+  // Server is the source of truth. Overwrite local state entirely so that
+  // questions un-deleted in the admin portal reappear for all visitors.
   fetch('/api/deleted-questions').then(r => r.json()).then(data => {
-    if (!Array.isArray(data) || !data.length) return;
+    if (!Array.isArray(data)) return;
     localStorage.setItem(STORAGE_KEYS.deletedQuestions, JSON.stringify(data));
   }).catch(() => {});
 }
@@ -514,29 +516,28 @@ function _persistToFile(endpoint, data) {
 }
 
 function loadQuestionEditsFromFile() {
+  // Server is the source of truth. Overwrite local state entirely so that
+  // edits removed in the admin portal are reflected for all visitors.
   fetch('/api/question-edits').then(r => r.json()).then(data => {
-    if (!data || typeof data !== 'object' || !Object.keys(data).length) return;
-    const local = getQuestionEdits();
-    const merged = Object.assign({}, data, local);
-    localStorage.setItem(STORAGE_KEYS.questionEdits, JSON.stringify(merged));
+    if (!data || typeof data !== 'object') return;
+    localStorage.setItem(STORAGE_KEYS.questionEdits, JSON.stringify(data));
   }).catch(() => {});
 }
 
 function loadCustomQuestionsFromFile() {
+  // Server is the source of truth. Overwrite local state entirely so that
+  // custom questions removed in the admin portal disappear for all visitors.
   fetch('/api/custom-questions').then(r => r.json()).then(data => {
-    if (!Array.isArray(data) || !data.length) return;
-    const local = getCustomQuestions();
-    const localIds = new Set(local.map(q => q.id));
-    const merged = [...local, ...data.filter(q => !localIds.has(q.id))];
-    localStorage.setItem(STORAGE_KEYS.customQuestions, JSON.stringify(merged));
+    if (!Array.isArray(data)) return;
+    localStorage.setItem(STORAGE_KEYS.customQuestions, JSON.stringify(data));
   }).catch(() => {});
 }
 
 function loadDisabledQuestionsFromFile() {
+  // Server is the source of truth. Overwrite local state entirely so that
+  // questions re-enabled in the admin portal re-appear for all visitors.
   fetch('/api/disabled-questions').then(r => r.json()).then(data => {
-    if (!Array.isArray(data) || !data.length) return;
-    const local = getDisabledQuestions();
-    const merged = [...new Set([...data, ...local])];
-    localStorage.setItem(STORAGE_KEYS.disabledQuestions, JSON.stringify(merged));
+    if (!Array.isArray(data)) return;
+    localStorage.setItem(STORAGE_KEYS.disabledQuestions, JSON.stringify(data));
   }).catch(() => {});
 }

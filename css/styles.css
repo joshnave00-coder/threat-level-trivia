@@ -265,6 +265,41 @@ body {
   margin-bottom: 1.5rem;
 }
 
+/* "On This Day in Scranton" anniversary banner. Hidden unless an
+   episode aired on today's calendar date (see js/episodes.js). */
+.on-this-day {
+  max-width: 30rem;
+  margin: 0 auto 1.5rem;
+  padding: 0.7rem 1rem;
+  background: var(--blue-faint);
+  border: 1px solid var(--blue-light);
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+.on-this-day .otd-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin-bottom: 0.35rem;
+}
+.on-this-day .otd-ep {
+  display: block;
+}
+.on-this-day .otd-ep + .otd-ep {
+  margin-top: 0.3rem;
+}
+.on-this-day .otd-sxe {
+  color: var(--gray);
+  font-size: 0.85em;
+}
+
 /* Visually-hidden text: present for crawlers and screen readers, clipped
    from view. Used to give the <h1> a descriptive, keyword-relevant name
    ("Trivia - The Office Trivia Game") without altering the visible design. */
@@ -2097,8 +2132,8 @@ body.modal-open { overflow: hidden; }
 }
 .privacy-banner.hidden { display: none; }
 .privacy-text { flex: 1; }
-.privacy-ok-btn { flex-shrink: 0; white-space: nowrap; color: #fff; border-color: rgba(255,255,255,0.35); }
-.privacy-ok-btn:hover { border-color: #fff; color: #fff; background: rgba(255,255,255,0.1); }
+.privacy-ok-btn { flex-shrink: 0; white-space: nowrap; color: #000; border-color: rgba(255,255,255,0.35); }
+.privacy-ok-btn:hover { border-color: #fff; color: #000; background: rgba(255,255,255,0.1); }
 @keyframes slideUpIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* Lobby pool count hint */

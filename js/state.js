@@ -494,11 +494,23 @@ function isQuestionDisabled(id) {
 }
 
 function _persistToFile(endpoint, data) {
+  // Admin endpoints (question-edits, custom-questions, disabled-questions,
+  // deleted-questions, etc.) require X-Admin-Token. Reading from sessionStorage
+  // keeps this file decoupled from admin.js. Without the token, the server
+  // rejects with 401 — which used to be swallowed silently and is the reason
+  // admin deletes never reached production. See state.js commit history.
+  const token = sessionStorage.getItem('tlt_admin_token') || '';
   fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
     body: JSON.stringify(data),
-  }).catch(() => {});
+  }).then(r => {
+    if (!r.ok) {
+      console.warn(`[persist] POST ${endpoint} failed: ${r.status} ${r.statusText}`);
+    }
+  }).catch(err => {
+    console.warn(`[persist] POST ${endpoint} network error:`, err);
+  });
 }
 
 function loadQuestionEditsFromFile() {

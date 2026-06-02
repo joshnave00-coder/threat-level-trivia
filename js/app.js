@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── DONATE ────────────────────────────────────────────────────────
   initDonate();
 
+  // ── "ON THIS DAY" HOME BANNER ─────────────────────────────────────
+  initOnThisDay();
+
   // ── HAMBURGER MENU ───────────────────────────────────────────────
   const hamburgerBtn = document.getElementById('btn-hamburger');
   const hamburgerMenu = document.getElementById('hamburger-menu');

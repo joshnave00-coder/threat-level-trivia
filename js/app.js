@@ -195,6 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const exitLogoBtn = document.getElementById('btn-exit-game-logo');
   if (exitLogoBtn) exitLogoBtn.addEventListener('click', exitGameHandler);
 
+  // Start Over (solo only - button stays hidden in party/challenge).
+  const restartBtn = document.getElementById('btn-restart-game');
+  if (restartBtn) restartBtn.addEventListener('click', soloStartOver);
+
   // Vote buttons
   document.getElementById('btn-vote-up').addEventListener('click', () => handleVote('up'));
   document.getElementById('btn-vote-down').addEventListener('click', () => handleVote('down'));

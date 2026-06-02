@@ -55,6 +55,37 @@ function soloStart() {
   soloNextQuestion();
 }
 
+/* Restart the current solo quiz from question 1 with the same settings.
+   Same category/difficulty/count, but a freshly-shuffled question pool so
+   the player doesn't just see the same order again. Used by the in-game
+   "↻ Start Over" button - hidden in party (would wipe others' scores)
+   and challenge (uses a fixed share-code question list). */
+function soloStartOver() {
+  if (GameState.mode !== 'solo') return;
+  if (!confirm('Start over from question 1?\n\nYour current progress will be lost. Same category, difficulty, and count - questions will be re-shuffled.')) return;
+
+  const { category, difficulty, count, hardcore, speedRound, character } = GameState.config;
+  const playerName = (GameState.players[0] && GameState.players[0].name) || 'Player';
+
+  const qs = selectQuestions(category, difficulty, count, character);
+  if (!qs.length) {
+    showToast('Could not start over - no matching questions available.');
+    return;
+  }
+
+  if (pendingQuoteTimer) { clearTimeout(pendingQuoteTimer); pendingQuoteTimer = null; }
+  dismissQuote();
+
+  resetGameState();
+  GameState.mode = 'solo';
+  GameState.config = { category, difficulty, count, hardcore, speedRound, character };
+  GameState.questions = qs;
+  GameState.players = [{ id: 1, name: playerName, score: 0, answers: [] }];
+  GameState.currentPlayerIdx = 0;
+
+  soloNextQuestion();
+}
+
 function soloNextQuestion() {
   if (pendingQuoteTimer) { clearTimeout(pendingQuoteTimer); pendingQuoteTimer = null; }
   dismissQuote();
@@ -133,6 +164,12 @@ function renderQuestionScreen() {
   pauseBtn.classList.toggle('hidden', GameState.mode !== 'party');
   pauseBtn.textContent = '⏸ Pause';
   pauseBtn.title = 'Pause game';
+
+  // Start Over button: solo-only. Party would wipe everyone's score, and
+  // challenge mode uses a fixed share-code question list (restarting there
+  // would need a different code path).
+  const restartBtn = document.getElementById('btn-restart-game');
+  if (restartBtn) restartBtn.classList.toggle('hidden', GameState.mode !== 'solo');
 
   // Ensure pause overlay is cleared between questions
   document.getElementById('pause-overlay').classList.add('hidden');

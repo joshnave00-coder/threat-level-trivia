@@ -740,6 +740,28 @@ body {
 }
 .btn-exit-game:hover { color: #fff; background: rgba(255,255,255,0.12); }
 
+/* "Start Over" sits left of "Leave" in solo mode; matches its quiet styling
+   so neither competes with the question itself for attention. Hidden in
+   party mode (would wipe everyone's score) and not shown for challenges
+   either, where the question list is fixed by the share code. */
+.btn-restart-game {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius);
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-restart-game:hover { color: #fff; background: rgba(255,255,255,0.12); }
+.btn-restart-game.hidden { display: none; }
+/* When Start Over is visible, Leave no longer needs auto-margin. */
+.btn-restart-game:not(.hidden) + .btn-exit-game { margin-left: 0; }
+
 /* Paper-airplane logo at the top-left of the in-game header. Mirrors the
    exit action of .btn-exit-game (same handler, same confirm dialog). */
 .btn-exit-logo {
@@ -1623,6 +1645,7 @@ body {
   /* Touch-friendly tap targets (min 44px) */
   .btn-back { padding: 0.4rem 0.6rem; font-size: 0.82rem; min-height: 44px; display: inline-flex; align-items: center; }
   .btn-exit-game { padding: 0.35rem 0.6rem; min-height: 40px; display: inline-flex; align-items: center; }
+  .btn-restart-game { padding: 0.35rem 0.6rem; min-height: 40px; display: inline-flex; align-items: center; }
   .exit-logo-img { width: 28px; height: 28px; }
   .btn-link { padding: 0.35rem 0.5rem; }
   .hamburger-btn { padding: 0.6rem; }

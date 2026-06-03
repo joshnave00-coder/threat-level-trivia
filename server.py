@@ -11,7 +11,7 @@ import random
 import re
 import secrets
 import time
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 BASE_DIR         = os.path.dirname(os.path.abspath(__file__))
@@ -689,7 +689,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     os.chdir(BASE_DIR)   # serve files relative to project root
-    server = HTTPServer(('', 3000), TLTHandler)
+    server = ThreadingHTTPServer(('', 3000), TLTHandler)
     print('Threat Level Trivia running at http://localhost:3000')
     print('Dispute feedback will be saved to data/disputes.json')
     server.serve_forever()

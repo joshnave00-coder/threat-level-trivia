@@ -465,10 +465,16 @@ function markQuestionDeleted(id) {
 function loadDeletedQuestionsFromFile() {
   // Server is the source of truth. Overwrite local state entirely so that
   // questions un-deleted in the admin portal reappear for all visitors.
-  fetch('/api/deleted-questions').then(r => r.json()).then(data => {
-    if (!Array.isArray(data)) return;
-    localStorage.setItem(STORAGE_KEYS.deletedQuestions, JSON.stringify(data));
-  }).catch(() => {});
+  // Returns a promise so callers (e.g. game-start) can await a fresh sync
+  // and avoid serving a question that was deleted hours ago in another tab.
+  // cache: 'no-store' defeats any heuristic browser caching of the response.
+  return fetch('/api/deleted-questions', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(data => {
+      if (!Array.isArray(data)) return;
+      localStorage.setItem(STORAGE_KEYS.deletedQuestions, JSON.stringify(data));
+    })
+    .catch(() => {});
 }
 
 function getNextQuestionId() {
@@ -518,26 +524,49 @@ function _persistToFile(endpoint, data) {
 function loadQuestionEditsFromFile() {
   // Server is the source of truth. Overwrite local state entirely so that
   // edits removed in the admin portal are reflected for all visitors.
-  fetch('/api/question-edits').then(r => r.json()).then(data => {
-    if (!data || typeof data !== 'object') return;
-    localStorage.setItem(STORAGE_KEYS.questionEdits, JSON.stringify(data));
-  }).catch(() => {});
+  return fetch('/api/question-edits', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(data => {
+      if (!data || typeof data !== 'object') return;
+      localStorage.setItem(STORAGE_KEYS.questionEdits, JSON.stringify(data));
+    })
+    .catch(() => {});
 }
 
 function loadCustomQuestionsFromFile() {
   // Server is the source of truth. Overwrite local state entirely so that
   // custom questions removed in the admin portal disappear for all visitors.
-  fetch('/api/custom-questions').then(r => r.json()).then(data => {
-    if (!Array.isArray(data)) return;
-    localStorage.setItem(STORAGE_KEYS.customQuestions, JSON.stringify(data));
-  }).catch(() => {});
+  return fetch('/api/custom-questions', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(data => {
+      if (!Array.isArray(data)) return;
+      localStorage.setItem(STORAGE_KEYS.customQuestions, JSON.stringify(data));
+    })
+    .catch(() => {});
 }
 
 function loadDisabledQuestionsFromFile() {
   // Server is the source of truth. Overwrite local state entirely so that
   // questions re-enabled in the admin portal re-appear for all visitors.
-  fetch('/api/disabled-questions').then(r => r.json()).then(data => {
-    if (!Array.isArray(data)) return;
-    localStorage.setItem(STORAGE_KEYS.disabledQuestions, JSON.stringify(data));
-  }).catch(() => {});
+  // Returns a promise (see loadDeletedQuestionsFromFile for rationale).
+  return fetch('/api/disabled-questions', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(data => {
+      if (!Array.isArray(data)) return;
+      localStorage.setItem(STORAGE_KEYS.disabledQuestions, JSON.stringify(data));
+    })
+    .catch(() => {});
+}
+
+// Re-syncs the admin-managed lists that affect which questions are eligible
+// for play. Call (and await) this before starting any game so a question
+// deleted/disabled in the admin portal can never be served from a stale
+// localStorage snapshot - even in tabs that have been open for hours.
+function syncAdminListsBeforeGame() {
+  return Promise.all([
+    loadDeletedQuestionsFromFile(),
+    loadDisabledQuestionsFromFile(),
+    loadQuestionEditsFromFile(),
+    loadCustomQuestionsFromFile(),
+  ]);
 }

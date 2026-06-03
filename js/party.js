@@ -50,7 +50,7 @@ function partyStartLobby() {
   showScreen('screen-party-lobby');
 }
 
-function partyStart() {
+async function partyStart() {
   const names = GameState.partyNames;
   if (!names || names.length < 2) { showScreen('screen-party-names'); return; }
 
@@ -70,6 +70,9 @@ function partyStart() {
   if (count !== rawCount) {
     showToast(`Using ${count} questions so each player gets ${count / playerCount} turn${count / playerCount !== 1 ? 's' : ''}.`);
   }
+
+  // Re-sync admin-managed lists before building the pool (see soloStart).
+  await syncAdminListsBeforeGame();
 
   const qs = selectQuestions(category, difficulty, count, character);
   if (!qs.length) { showToast('Not enough questions for that combo. Try different settings.'); return; }

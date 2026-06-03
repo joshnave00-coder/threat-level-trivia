@@ -326,7 +326,7 @@ function _hydrateChallengeQuestions() {
   return out;
 }
 
-function challengeStartPlay(playerNameOverride) {
+async function challengeStartPlay(playerNameOverride) {
   const isCreator = ChallengeState.isCreator;
   const name = sanitizeName(
     playerNameOverride
@@ -335,6 +335,10 @@ function challengeStartPlay(playerNameOverride) {
         : document.getElementById('challenge-joiner-name').value)
   );
   if (!name) { showToast('Please enter your name first.'); return; }
+
+  // Re-sync admin-managed lists before hydrating the challenge's questions
+  // so a question deleted in the admin portal is not served to a joiner.
+  await syncAdminListsBeforeGame();
 
   const qs = _hydrateChallengeQuestions();
   if (!qs.length) {

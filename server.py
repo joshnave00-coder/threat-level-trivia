@@ -284,6 +284,10 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(body)))
+            # Admin-managed lists (deleted/disabled/edits) MUST never be cached
+            # by browsers or Cloudflare. Without these headers, an admin deletion
+            # can take hours to reach players whose tabs cached the prior list.
+            self._set_no_cache()
             self._set_cors()
             self.end_headers()
             self.wfile.write(body)

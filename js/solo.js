@@ -32,7 +32,7 @@ function updateSoloLbStatus() {
   }
 }
 
-function soloStart() {
+async function soloStart() {
   const name  = sanitizeName(document.getElementById('solo-name-input').value);
   if (!name) { showToast('Please enter your name first.'); return; }
 
@@ -41,6 +41,11 @@ function soloStart() {
   const difficulty = document.querySelector('input[name="solo-diff"]:checked').value;
   const count      = parseInt(document.querySelector('input[name="solo-count"]:checked').value, 10);
   const hardcore   = document.getElementById('solo-hardcore').checked;
+
+  // Re-sync admin-managed lists (deleted/disabled/edits/custom) before
+  // building the question pool. This prevents a stale localStorage from
+  // serving a question that was deleted via the admin portal hours ago.
+  await syncAdminListsBeforeGame();
 
   const qs = selectQuestions(category, difficulty, count, character);
   if (!qs.length) { showToast('Not enough questions for that combo. Try different settings.'); return; }
@@ -60,12 +65,15 @@ function soloStart() {
    the player doesn't just see the same order again. Used by the in-game
    "↻ Start Over" button - hidden in party (would wipe others' scores)
    and challenge (uses a fixed share-code question list). */
-function soloStartOver() {
+async function soloStartOver() {
   if (GameState.mode !== 'solo') return;
   if (!confirm('Start over from question 1?\n\nYour current progress will be lost. Same category, difficulty, and count - questions will be re-shuffled.')) return;
 
   const { category, difficulty, count, hardcore, speedRound, character } = GameState.config;
   const playerName = (GameState.players[0] && GameState.players[0].name) || 'Player';
+
+  // Re-sync admin-managed lists before re-shuffling (see soloStart).
+  await syncAdminListsBeforeGame();
 
   const qs = selectQuestions(category, difficulty, count, character);
   if (!qs.length) {

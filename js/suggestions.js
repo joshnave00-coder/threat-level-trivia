@@ -13,7 +13,6 @@ function openSuggestQuestionModal() {
   const modal = document.getElementById('suggest-question-modal');
   modal.classList.remove('hidden');
   document.body.classList.add('modal-open');
-  _populateSuggestCategoryDropdown();
   setTimeout(() => document.getElementById('sq-question').focus(), 50);
 }
 
@@ -57,17 +56,12 @@ function _validateSuggestion() {
 
   const question = document.getElementById('sq-question').value.trim();
   const answer   = document.getElementById('sq-answer').value.trim();
-  const d1       = document.getElementById('sq-d1').value.trim();
-  const d2       = document.getElementById('sq-d2').value.trim();
-  const d3       = document.getElementById('sq-d3').value.trim();
 
   if (!question) return 'Please enter a question.';
   if (question.length < 10) return 'Question must be at least 10 characters.';
   if (question.length > 500) return 'Question must be 500 characters or fewer.';
   if (!answer)  return 'Please enter the correct answer.';
   if (answer.length > 200) return 'Answer must be 200 characters or fewer.';
-  if (!d1 || !d2 || !d3) return 'All three wrong answers are required.';
-  if (d1.length > 200 || d2.length > 200 || d3.length > 200) return 'Wrong answers must be 200 characters or fewer.';
 
   const context = document.getElementById('sq-context').value.trim();
   if (context.length > 1000) return 'Answer context must be 1,000 characters or fewer.';
@@ -103,13 +97,9 @@ async function _submitSuggestion(e) {
     submitter:   document.getElementById('sq-submitter').value.trim() || null,
     question:    document.getElementById('sq-question').value.trim(),
     answer:      document.getElementById('sq-answer').value.trim(),
-    distractors: [
-      document.getElementById('sq-d1').value.trim(),
-      document.getElementById('sq-d2').value.trim(),
-      document.getElementById('sq-d3').value.trim(),
-    ],
-    category:    document.getElementById('sq-category').value,
-    difficulty:  document.getElementById('sq-difficulty').value,
+    distractors: [],
+    category:    null,
+    difficulty:  null,
     context:     document.getElementById('sq-context').value.trim() || null,
     status:      'pending',
     submittedAt: new Date().toISOString(),
@@ -188,8 +178,8 @@ function _renderSuggestionCards(entries, container) {
       <div class="suggestion-body">
         <div class="suggestion-field"><strong>Q:</strong> ${escHtml(s.question)}</div>
         <div class="suggestion-field"><strong>Correct:</strong> ${escHtml(s.answer)}</div>
-        <div class="suggestion-field"><strong>Wrong:</strong> ${escHtml((s.distractors || []).join(' / '))}</div>
-        <div class="suggestion-field"><strong>Category:</strong> ${escHtml(s.category)} &middot; <strong>Difficulty:</strong> ${escHtml(s.difficulty)}</div>
+        ${s.distractors && s.distractors.length ? `<div class="suggestion-field"><strong>Wrong:</strong> ${escHtml(s.distractors.join(' / '))}</div>` : ''}
+        ${s.category || s.difficulty ? `<div class="suggestion-field">${s.category ? '<strong>Category:</strong> ' + escHtml(s.category) : ''}${s.category && s.difficulty ? ' &middot; ' : ''}${s.difficulty ? '<strong>Difficulty:</strong> ' + escHtml(s.difficulty) : ''}</div>` : ''}
         ${s.context ? `<div class="suggestion-field"><strong>Context:</strong> ${escHtml(s.context)}</div>` : ''}
       </div>
       ${!resolved ? `
@@ -242,8 +232,8 @@ async function reviewAndReviseSuggestion(idx) {
   document.getElementById('qe-d1').value = (s.distractors || [])[0] || '';
   document.getElementById('qe-d2').value = (s.distractors || [])[1] || '';
   document.getElementById('qe-d3').value = (s.distractors || [])[2] || '';
-  document.getElementById('qe-category').value = s.category;
-  document.getElementById('qe-difficulty').value = s.difficulty;
+  document.getElementById('qe-category').value = s.category || 'Characters';
+  document.getElementById('qe-difficulty').value = s.difficulty || 'Medium';
   document.getElementById('qe-context').value = s.context || '';
   document.getElementById('qe-context-count').textContent = (s.context || '').length;
 

@@ -91,7 +91,9 @@ function renderAdminQuestions() {
   const container = document.getElementById('admin-questions-list');
   if (!countEl || !container) return;
 
-  countEl.textContent = `${filtered.length} of ${allQs.length} question${allQs.length !== 1 ? 's' : ''}`;
+  const activeCount = allQs.filter(q => !disabled.includes(q.id)).length;
+  const disabledCount = allQs.filter(q => disabled.includes(q.id)).length;
+  countEl.textContent = `${filtered.length} of ${allQs.length} question${allQs.length !== 1 ? 's' : ''} (${activeCount} active, ${disabledCount} disabled)`;
 
   if (!filtered.length) {
     container.innerHTML = '<p class="admin-empty">No questions match your filters.</p>';
@@ -802,6 +804,9 @@ function renderAnswerStats() {
 
   let rows = allQs.map(q => ({ q, isDisabled: disabled.includes(q.id), stats: _statsForQuestion(q.id) }));
 
+  const includeDisabled = document.getElementById('as-include-disabled')?.checked;
+  if (!includeDisabled) rows = rows.filter(r => !r.isDisabled);
+
   if (f.category !== 'all')   rows = rows.filter(r => r.q.category === f.category);
   if (f.difficulty !== 'all') rows = rows.filter(r => r.q.difficulty === f.difficulty);
   if (f.search) {
@@ -905,15 +910,26 @@ function resetAnswerStatsAdmin(questionId) {
 }
 
 function resetAllAnswerStatsAdmin() {
-  if (!confirm('Reset answer counters for EVERY question to zero?\n\nThis wipes all correct/wrong tallies across the whole bank. This cannot be undone.')) return;
-  fetch('/api/admin/answer-stats/reset', {
+  const pw = prompt('This will reset answer counters for EVERY question to zero.\n\nThis cannot be undone. Re-enter the admin password to confirm:');
+  if (pw === null) return;
+  fetch('/api/admin/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': _adminToken || '' },
-    body: JSON.stringify({ all: true }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pw }),
   })
-    .then(r => { if (!r.ok) throw new Error('reset failed'); return r.json(); })
-    .then(() => { _answerStatsCache = {}; renderAnswerStats(); showToast('All answer stats reset to zero.'); })
-    .catch(() => showToast('Could not reset answer stats. Try again.'));
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) { showToast('Incorrect password. Reset cancelled.'); return; }
+      fetch('/api/admin/answer-stats/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': _adminToken || '' },
+        body: JSON.stringify({ all: true }),
+      })
+        .then(r => { if (!r.ok) throw new Error('reset failed'); return r.json(); })
+        .then(() => { _answerStatsCache = {}; renderAnswerStats(); showToast('All answer stats reset to zero.'); })
+        .catch(() => showToast('Could not reset answer stats. Try again.'));
+    })
+    .catch(() => showToast('Could not verify password. Try again.'));
 }
 
 // ── SITE SETTINGS ────────────────────────────────────────────────

@@ -169,6 +169,21 @@ document.addEventListener('DOMContentLoaded', () => {
       rateSlider.classList.remove('rate-untouched');
       rateValueEl.classList.remove('rate-null-val');
       rateValueEl.textContent = rateSlider.value;
+      _showCommunityRating();
+    }
+  }
+  function _showCommunityRating() {
+    const el = document.getElementById('q-rate-community');
+    if (!el) return;
+    const q = GameState.questions[GameState.currentQIdx];
+    if (!q) return;
+    const info = getCommunityDifficultyInfo(q.id);
+    if (info && info.count >= 1) {
+      el.textContent = 'Community avg: ' + info.avg.toFixed(1) + '/10 (' + info.count + ' rating' + (info.count !== 1 ? 's' : '') + ')';
+      el.classList.remove('hidden');
+    } else {
+      el.textContent = 'You\'re the first to rate this one!';
+      el.classList.remove('hidden');
     }
   }
   rateSlider.addEventListener('pointerdown', activateRatingSlider);
@@ -226,6 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
     showScreen('screen-solo-lobby');
   });
   document.getElementById('btn-home-from-results').addEventListener('click', () => showScreen('screen-home'));
+  const suggestFromResults = document.getElementById('btn-suggest-from-results');
+  if (suggestFromResults) suggestFromResults.addEventListener('click', openSuggestQuestionModal);
 
   // ── LEADERBOARD ──────────────────────────────────────────────────
 
@@ -372,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
   _bind('as-filter-category',   'change', e => { adminAnswerStatsFilter.category = e.target.value; renderAnswerStats(); });
   _bind('as-filter-difficulty', 'change', e => { adminAnswerStatsFilter.difficulty = e.target.value; renderAnswerStats(); });
   _bind('as-sort',              'change', e => { adminAnswerStatsFilter.sort = e.target.value; renderAnswerStats(); });
+  _bind('as-include-disabled',   'change', () => renderAnswerStats());
   _bind('btn-as-refresh',       'click',  loadAndRenderAnswerStats);
   _bind('btn-as-reset-all',     'click',  resetAllAnswerStatsAdmin);
 
@@ -460,17 +478,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const scrollTopBtn = document.getElementById('btn-scroll-top');
   if (scrollTopBtn) {
     let _scrollTicking = false;
-    window.addEventListener('scroll', () => {
-      if (!_scrollTicking) {
-        window.requestAnimationFrame(() => {
-          scrollTopBtn.classList.toggle('visible', window.scrollY > 300);
-          _scrollTicking = false;
-        });
-        _scrollTicking = true;
-      }
-    });
+    const _checkScroll = () => {
+      if (_scrollTicking) return;
+      _scrollTicking = true;
+      window.requestAnimationFrame(() => {
+        const adminContent = document.querySelector('#screen-admin.active .admin-content');
+        const scrolled = adminContent ? adminContent.scrollTop > 300 : window.scrollY > 300;
+        scrollTopBtn.classList.toggle('visible', scrolled);
+        _scrollTicking = false;
+      });
+    };
+    window.addEventListener('scroll', _checkScroll);
+    const adminContentEl = document.querySelector('.admin-content');
+    if (adminContentEl) adminContentEl.addEventListener('scroll', _checkScroll);
     scrollTopBtn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const adminContent = document.querySelector('#screen-admin.active .admin-content');
+      if (adminContent) {
+        adminContent.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
   }
 

@@ -161,9 +161,11 @@ function renderQuestionScreen() {
   const rateVal = document.getElementById('q-rate-value');
   slider.value = 5;
   slider.classList.add('rate-untouched');
-  rateVal.textContent = '–';
+  rateVal.textContent = '-';
   rateVal.classList.add('rate-null-val');
   soloRatingSubmitted = false;
+  const communityEl = document.getElementById('q-rate-community');
+  if (communityEl) communityEl.classList.add('hidden');
 
   // Solo/challenge post-answer panel (ratings, votes, disputes)
   document.getElementById('q-solo-actions').classList.toggle('hidden', GameState.mode !== 'solo' && GameState.mode !== 'challenge');

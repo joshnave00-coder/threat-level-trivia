@@ -464,7 +464,7 @@
         <div class="rate-section">
           <div class="rate-top-row">
             <span class="rate-label" title="Help calibrate difficulty - your rating shapes what other players see">Rate difficulty (optional):</span>
-            <span id="q-rate-value" class="rate-value rate-null-val">–</span>
+            <span id="q-rate-value" class="rate-value rate-null-val">-</span>
           </div>
           <div class="rate-control">
             <input type="range" id="q-rate-slider" min="1" max="10" step="1" value="5" class="rate-slider rate-untouched" title="1 = very easy, 10 = extremely hard">
@@ -472,6 +472,7 @@
               <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
             </div>
           </div>
+          <div id="q-rate-community" class="rate-community hidden"></div>
         </div>
 
         <button class="btn-link dispute-link" id="btn-dispute-open" title="Report an issue with this question - wrong answer, unclear wording, or bad info">Question Feedback / Dispute</button>
@@ -524,6 +525,10 @@
     </div>
     <div id="results-global-status" class="results-global-status"></div>
     <div class="results-breakdown" id="results-breakdown"></div>
+    <div id="results-suggest-nudge" class="results-suggest-nudge hidden">
+      <p>Think you know a question we missed?</p>
+      <button class="btn btn-secondary btn-sm" id="btn-suggest-from-results">Drop it in the Suggestion Box</button>
+    </div>
     <div class="results-actions">
       <button class="btn btn-primary"    id="btn-view-leaderboard">Employee Records</button>
       <button class="btn btn-secondary"  id="btn-play-again">Play Again</button>
@@ -999,6 +1004,9 @@
             <option value="highest-pct">Sort: Highest % Correct</option>
             <option value="id">Sort: Question ID</option>
           </select>
+          <label class="as-disabled-toggle" title="Show disabled questions in the list">
+            <input type="checkbox" id="as-include-disabled"> Include disabled
+          </label>
           <button class="btn btn-secondary btn-sm" id="btn-as-refresh" title="Reload the latest tallies from the server">↻ Refresh</button>
           <button class="btn btn-wrong btn-sm" id="btn-as-reset-all" title="Reset every question's counters to zero">Reset All</button>
         </div>
@@ -1589,34 +1597,6 @@
       <div class="form-group form-group-full">
         <label for="sq-answer">Correct Answer <span class="field-required">*</span></label>
         <input type="text" id="sq-answer" class="input-field" placeholder="The correct answer" maxlength="200" required>
-      </div>
-
-      <div class="form-group form-group-full">
-        <label for="sq-d1">Wrong Answer 1 <span class="field-required">*</span></label>
-        <input type="text" id="sq-d1" class="input-field" placeholder="Wrong answer option 1" maxlength="200" required>
-      </div>
-      <div class="form-group form-group-full">
-        <label for="sq-d2">Wrong Answer 2 <span class="field-required">*</span></label>
-        <input type="text" id="sq-d2" class="input-field" placeholder="Wrong answer option 2" maxlength="200" required>
-      </div>
-      <div class="form-group form-group-full">
-        <label for="sq-d3">Wrong Answer 3 <span class="field-required">*</span></label>
-        <input type="text" id="sq-d3" class="input-field" placeholder="Wrong answer option 3" maxlength="200" required>
-      </div>
-
-      <div class="qe-row-pair">
-        <div class="form-group form-group-full">
-          <label for="sq-category">Category <span class="field-required">*</span></label>
-          <select id="sq-category" class="select-field" required></select>
-        </div>
-        <div class="form-group form-group-full">
-          <label for="sq-difficulty">Difficulty <span class="field-required">*</span></label>
-          <select id="sq-difficulty" class="select-field" required>
-            <option value="Easy">Easy</option>
-            <option value="Medium">Medium</option>
-            <option value="Hard">Hard</option>
-          </select>
-        </div>
       </div>
 
       <div class="form-group form-group-full">

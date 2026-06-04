@@ -584,9 +584,9 @@ class TLTHandler(SimpleHTTPRequestHandler):
             submitter   = str(data.get('submitter') or '').strip()[:60]
             question    = str(data.get('question') or '').strip()[:500]
             answer      = str(data.get('answer') or '').strip()[:200]
-            distractors = data.get('distractors', [])
-            category    = str(data.get('category') or '').strip()
-            difficulty  = str(data.get('difficulty') or '').strip()
+            distractors = data.get('distractors') or []
+            category    = data.get('category') or None
+            difficulty  = data.get('difficulty') or None
             context     = str(data.get('context') or '').strip()[:1000]
             sent_at     = str(data.get('submittedAt') or '').strip()[:32]
 
@@ -596,23 +596,23 @@ class TLTHandler(SimpleHTTPRequestHandler):
             if not answer:
                 self.send_error(400, 'Answer required')
                 return
-            if not isinstance(distractors, list) or len(distractors) != 3:
-                self.send_error(400, 'Exactly 3 distractors required')
-                return
-            distractors = [str(d).strip()[:200] for d in distractors]
-            if not all(distractors):
-                self.send_error(400, 'All distractors must be non-empty')
-                return
 
+            # Distractors are optional now; sanitize whatever was provided
+            if isinstance(distractors, list):
+                distractors = [str(d).strip()[:200] for d in distractors if str(d).strip()]
+            else:
+                distractors = []
+
+            # Category and difficulty are optional; validate if provided
             valid_categories = [
                 'Characters', 'Episodes & Events', 'Quotes', 'Behind the Scenes',
                 'Relationships & Romance', 'Music & Performances',
                 'Locations & Miscellaneous', 'Cold Opens & Running Gags',
             ]
-            if category not in valid_categories:
-                category = valid_categories[0]
-            if difficulty not in ('Easy', 'Medium', 'Hard'):
-                difficulty = 'Medium'
+            if category and str(category).strip() not in valid_categories:
+                category = None
+            if difficulty and str(difficulty).strip() not in ('Easy', 'Medium', 'Hard'):
+                difficulty = None
 
             if os.path.exists(SUGGESTIONS_FILE):
                 with open(SUGGESTIONS_FILE, 'r', encoding='utf-8') as f:
@@ -624,7 +624,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
                 'submitter':   submitter or None,
                 'question':    question,
                 'answer':      answer,
-                'distractors': distractors,
+                'distractors': distractors if distractors else None,
                 'category':    category,
                 'difficulty':  difficulty,
                 'context':     context or None,

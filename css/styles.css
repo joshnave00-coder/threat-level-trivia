@@ -1072,6 +1072,13 @@ body {
 }
 .rate-value { font-size: 0.9rem; font-weight: 700; color: var(--navy); min-width: 1.5rem; text-align: right; }
 .rate-value.rate-null-val { color: var(--gray-light); font-weight: 400; }
+.rate-community {
+  font-size: 0.75rem; color: var(--text-sub); text-align: center;
+  margin-top: 0.25rem; padding: 0.2rem 0.5rem;
+  background: var(--cream-dark); border-radius: var(--radius);
+  animation: fadeInSoft 0.3s ease;
+}
+@keyframes fadeInSoft { from { opacity: 0; } to { opacity: 1; } }
 
 /* Dispute Form */
 .dispute-form {
@@ -1209,6 +1216,14 @@ body {
 .breakdown-bar  { height: 100%; background: var(--navy); border-radius: 4px; transition: width 0.5s; }
 .breakdown-pct  { font-size: 0.78rem; color: var(--text-sub); text-align: right; }
 
+.results-suggest-nudge {
+  text-align: center; margin: 1rem 0 0.5rem; padding: 0.75rem 1rem;
+  background: var(--cream-dark); border-radius: var(--radius-lg);
+  border: 1px dashed var(--gray-border);
+}
+.results-suggest-nudge p {
+  margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--text-sub);
+}
 .results-actions { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; max-width: 320px; }
 
 /* ── LEADERBOARD ─────────────────────────────────────────────── */
@@ -1228,18 +1243,11 @@ body {
 .lb-rank   { font-weight: 700; color: var(--navy); cursor: help; border-bottom: 1px dotted transparent; transition: border-color 0.15s; }
 .lb-rank:hover { border-bottom-color: var(--navy); }
 .cl-rank { cursor: help; }
-.lb-name-wrap { display: flex; flex-direction: column; min-width: 0; }
+.lb-name-wrap { display: flex; min-width: 0; }
 .lb-name   { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Small italic tag under the player name when they excluded the Behind
-   the Scenes category. Keeps the leaderboard honest. */
-.lb-bts-note {
-  font-size: 0.7rem;
-  color: var(--gray);
-  font-style: italic;
-  line-height: 1.1;
-  margin-top: 0.1rem;
-  cursor: help;
-}
+/* Inline italic label inside the meta line (replaces the category text)
+   when a player excluded Behind the Scenes. Keeps the leaderboard honest. */
+.lb-bts-note { font-style: italic; cursor: help; }
 .lb-score  { font-weight: 700; color: var(--navy); }
 .lb-pct    { color: var(--gray); font-size: 0.8rem; }
 .lb-meta   { grid-column: 1/-1; font-size: 0.72rem; color: var(--gray); border-top: 1px solid var(--cream-dark); padding-top: 0.25rem; margin-top: 0.1rem; }
@@ -2092,6 +2100,10 @@ body.modal-open { overflow: hidden; }
 .as-pct-mid  { color: #9a6b00; }
 .as-pct-low  { color: var(--wrong); }
 .as-reset-btn { align-self: flex-end; margin-top: 0.1rem; }
+.as-disabled-toggle {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.85rem; color: var(--gray-dark); white-space: nowrap; cursor: pointer;
+}
 
 @media (max-width: 640px) {
   .as-card { flex-direction: column; }

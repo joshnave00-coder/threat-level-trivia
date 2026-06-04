@@ -12,6 +12,9 @@ function showScreen(id) {
   const target = document.getElementById(id);
   if (target) { target.classList.add('active'); target.scrollTop = 0; }
   if (id === 'screen-solo-name') renderSoloStickyNote();
+  if (window.location.pathname.replace(/\/+$/, '').toLowerCase() === '/nave' && id !== 'screen-admin') {
+    try { history.replaceState({}, '', '/'); } catch {}
+  }
 }
 
 // ── SOLO NAME-SCREEN STICKY NOTE ─────────────────────────────────
@@ -157,6 +160,10 @@ function renderSoloResults(player) {
     }
   }
 
+  // Suggestion nudge - show ~40% of the time to encourage question submissions
+  const nudgeEl = document.getElementById('results-suggest-nudge');
+  if (nudgeEl) nudgeEl.classList.toggle('hidden', Math.random() > 0.4);
+
   const breakdown = computeBreakdown(answers);
   const bdEl = document.getElementById('results-breakdown');
   if (!Object.keys(breakdown).length) { bdEl.innerHTML = ''; return; }
@@ -243,22 +250,21 @@ function renderLeaderboardList() {
   el.innerHTML = entries.map((e, i) => {
     const rank = i + 1;
     const title = getRankTitle(rank, total);
-    // Quiet note under the player's name when they opted out of the
-    // Behind the Scenes category - so the score isn't quietly assumed to
-    // have come from the full question bank.
-    const btsNote = e.excludeBts
+    // When a player excluded Behind the Scenes, show that in the meta line
+    // where the category normally sits (replaces "All Categories" etc.) so
+    // the score isn't assumed to have come from the full question bank.
+    const categoryLabel = e.excludeBts
       ? '<span class="lb-bts-note" title="This player excluded the Behind the Scenes category, so their score wasn\'t drawn from the full question bank.">Excluded Behind the Scenes</span>'
-      : '';
+      : escHtml(e.category);
     return `
     <div class="lb-row ${rank === 1 ? 'lb-top' : ''}">
       <span class="lb-rank" title="${escHtml(title)}">${rank}</span>
       <span class="lb-name-wrap">
         <span class="lb-name">${escHtml(e.name)}</span>
-        ${btsNote}
       </span>
       <span class="lb-score">${e.score}/25</span>
       <span class="lb-pct">${e.accuracy}%</span>
-      <span class="lb-meta">${escHtml(e.difficulty)} &middot; ${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>
+      <span class="lb-meta">${escHtml(e.difficulty)} &middot; ${categoryLabel} &middot; ${escHtml(e.date)}</span>
     </div>`;
   }).join('');
 }

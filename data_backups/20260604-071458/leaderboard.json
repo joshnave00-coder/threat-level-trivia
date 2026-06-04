@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1779997226432,
+    "name": "Sean",
+    "score": 23,
+    "total": 25,
+    "accuracy": 92,
+    "category": "All Categories",
+    "difficulty": "Hard",
+    "date": "May 28, 2026"
+  },
+  {
+    "id": 1780007794869,
+    "name": "Robert California",
+    "score": 23,
+    "total": 25,
+    "accuracy": 92,
+    "category": "All Categories",
+    "difficulty": "Medium",
+    "date": "May 28, 2026"
+  },
+  {
+    "id": 1780058500345,
+    "name": "Orvil tootnbocker",
+    "score": 23,
+    "total": 25,
+    "accuracy": 92,
+    "category": "All Categories",
+    "difficulty": "Medium",
+    "date": "May 29, 2026"
+  },
+  {
+    "id": 1780120443834,
+    "name": "Roberto ElVance",
+    "score": 23,
+    "total": 25,
+    "accuracy": 92,
+    "category": "All Categories",
+    "difficulty": "Medium",
+    "date": "May 29, 2026"
+  },
+  {
+    "id": 1779997546329,
+    "name": "Sean",
+    "score": 22,
+    "total": 25,
+    "accuracy": 88,
+    "category": "All Categories",
+    "difficulty": "Hard",
+    "date": "May 28, 2026"
+  },
+  {
+    "id": 1779981856981,
+    "name": "Michael Scarn",
+    "score": 20,
+    "total": 25,
+    "accuracy": 80,
+    "category": "All Categories",
+    "difficulty": "Medium",
+    "date": "May 28, 2026"
+  },
+  {
+    "id": 1779985557058,
+    "name": "Bob Vance",
+    "score": 19,
+    "total": 25,
+    "accuracy": 76,
+    "category": "All Categories",
+    "difficulty": "Hard",
+    "date": "May 28, 2026"
+  },
+  {
+    "id": 1779982218386,
+    "name": "Brad Pitt",
+    "score": 12,
+    "total": 25,
+    "accuracy": 48,
+    "category": "All Categories",
+    "difficulty": "Medium",
+    "date": "May 28, 2026"
+  },
+  {
+    "id": 1779983754037,
+    "name": "not Michael Scott",
+    "score": 12,
+    "total": 25,
+    "accuracy": 48,
+    "category": "Characters",
+    "difficulty": "Medium",
+    "date": "May 28, 2026"
+  }
+]

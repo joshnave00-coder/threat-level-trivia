@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1779936090350,
+    "questionId": 86,
+    "question": "Who was Michael's replacement as Regional Manager before he moved to Colorado?",
+    "answer": "Deangelo Vickers (played by Will Ferrell)",
+    "category": "Relationships & Romance",
+    "disputeText": "The answer with the explanations in the parenthesis give away the correct answer when there are no other questions with parenthesis.",
+    "player": "Lloyd Gross",
+    "difficultyRating": null,
+    "timestamp": "5/27/2026, 7:41:30 PM",
+    "status": "approved"
+  },
+  {
+    "id": 1779936236064,
+    "questionId": 125,
+    "question": "What is the name of the security guard at the front desk of the Scranton Business Park?",
+    "answer": "Hank Doyle",
+    "category": "Characters",
+    "disputeText": "Frank Didit did it",
+    "player": "Lloyd Gross",
+    "difficultyRating": null,
+    "timestamp": "5/27/2026, 7:43:56 PM",
+    "status": "dismissed"
+  },
+  {
+    "id": 1779943711920,
+    "questionId": 85,
+    "question": "Where do Jim and Pam get married?",
+    "answer": "Niagara Falls (on the ferry boat)",
+    "category": "Relationships & Romance",
+    "disputeText": "Should be where the \"officially\" get married.",
+    "player": "Michael Scott",
+    "difficultyRating": null,
+    "timestamp": "5/27/2026, 9:48:31 PM",
+    "status": "approved"
+  },
+  {
+    "id": 1779943903688,
+    "questionId": 162,
+    "question": "What does Dwight say a beet farmer must have knowledge of?",
+    "answer": "Bears, beets, and Battlestar Galactica",
+    "category": "Quotes",
+    "disputeText": "Delete question.",
+    "player": "Michael Scott",
+    "difficultyRating": null,
+    "timestamp": "5/27/2026, 9:51:43 PM",
+    "status": "approved"
+  },
+  {
+    "id": 1779993534108,
+    "questionId": 109,
+    "question": "How many Dunder Mifflin birthday parties are there throughout all seasons?",
+    "answer": "17",
+    "category": "Locations & Miscellaneous",
+    "disputeText": "Estimate is around 9 if you are talking birthday specific/",
+    "player": "Diangilo Vickers",
+    "difficultyRating": null,
+    "timestamp": "5/28/2026, 11:38:54 AM",
+    "status": "approved"
+  }
+]

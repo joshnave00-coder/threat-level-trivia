@@ -488,16 +488,43 @@ function loadAndRenderAdminLeaderboard() {
     .then(entries => {
       if (!Array.isArray(entries) || !entries.length) {
         list.innerHTML = '';
+        const summary = document.getElementById('admin-lb-summary');
+        if (summary) summary.textContent = '';
         empty.classList.remove('hidden');
         return;
       }
       empty.classList.add('hidden');
-      list.innerHTML = entries.map((e, i) => `
-        <div class="admin-lb-row">
+
+      // Rank each tier exactly like the public board (Hard block, then Medium),
+      // and flag everything beyond a tier's top 100 as "in reserve" - saved but
+      // not currently shown on the public leaderboard.
+      const DISPLAY_PER_TIER = 100;
+      const ranked = [];
+      ['Hard', 'Medium'].forEach(tier => {
+        entries.filter(e => e.difficulty === tier).sort(_lbRankCmp).forEach((e, idx) => {
+          ranked.push({ e, onBoard: idx < DISPLAY_PER_TIER, tierRank: idx + 1 });
+        });
+      });
+      // Safety net for any unexpected difficulty value: list it, flagged off-board.
+      entries.filter(e => e.difficulty !== 'Hard' && e.difficulty !== 'Medium')
+        .forEach(e => ranked.push({ e, onBoard: false, tierRank: null }));
+
+      const onBoardCount = ranked.filter(r => r.onBoard).length;
+      const reserveCount = ranked.length - onBoardCount;
+      const summary = document.getElementById('admin-lb-summary');
+      if (summary) {
+        summary.innerHTML =
+          `${ranked.length} saved (cap 300) &middot; ` +
+          `<span class="admin-lb-on">${onBoardCount} on the public board</span> &middot; ` +
+          `<span class="admin-lb-reserve">${reserveCount} in reserve</span>`;
+      }
+
+      list.innerHTML = ranked.map(({ e, onBoard, tierRank }, i) => `
+        <div class="admin-lb-row ${onBoard ? '' : 'admin-lb-offboard'}">
           <span class="admin-lb-rank">${i + 1}</span>
           <div class="admin-lb-info">
-            <span class="admin-lb-name">${escHtml(e.name)}</span>
-            <span class="admin-lb-detail">${e.score}/${e.total} &middot; ${e.accuracy}% &middot; ${escHtml(e.difficulty)} &middot; ${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>
+            <span class="admin-lb-name"><span class="admin-lb-name-text">${escHtml(e.name)}</span>${onBoard ? '' : '<span class="admin-lb-badge" title="Saved in reserve: this entry is past the top 100 for its difficulty, so it is not on the public leaderboard right now. It is kept (up to 300 total) so it can return if the display limit is raised.">In reserve &middot; not shown</span>'}</span>
+            <span class="admin-lb-detail">${e.score}/${e.total} &middot; ${e.accuracy}% &middot; ${escHtml(e.difficulty)}${tierRank ? ' #' + tierRank : ''} &middot; ${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>
           </div>
           <button class="btn btn-wrong btn-sm admin-lb-remove" onclick="removeLeaderboardEntry(${e.id ?? 'null'}, this)">Remove</button>
         </div>`).join('');

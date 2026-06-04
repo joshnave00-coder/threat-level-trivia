@@ -397,21 +397,43 @@ class TLTHandler(SimpleHTTPRequestHandler):
                 'date':       date_str,
             })
 
-            # Sort the combined list (best first). Then keep up to 100 per
-            # difficulty tier (Medium / Hard) instead of 100 overall, so a
-            # great Medium run is never bumped off the board by a Hard run.
-            # The "All" view on the client trims the combined view to 100,
-            # while the per-difficulty views can show up to 100 each.
-            entries.sort(key=lambda e: (-e.get('score', 0), -e.get('accuracy', 0)))
-            per_diff = {'Medium': [], 'Hard': []}
+            # Rank key (best first), used to decide which entries survive the
+            # per-tier cap and the on-disk order:
+            #   1. higher score first
+            #   2. full bank before Behind-the-Scenes-excluded
+            #   3. most recent first (id is a ms timestamp set at save time, so
+            #      a newer run outranks an older one on an otherwise-equal score)
+            def rank_key(e):
+                return (-e.get('score', 0),
+                        1 if e.get('excludeBts') else 0,
+                        -e.get('id', 0))
+
+            # Keep up to 100 per difficulty tier (Medium / Hard) instead of 100
+            # overall, so a strong Medium run is never bumped off by Hard runs.
+            # When a tier overflows, the lowest-ranked entries (lower score, then
+            # BTS-excluded, then oldest) are the ones dropped.
+            entries.sort(key=rank_key)
+            # Each difficulty tier DISPLAYS its top 100 (enforced client-side).
+            # Storage retains more than that: every displayed entry, plus the
+            # next-best overflow, up to an overall cap of 300 total. Overflow
+            # entries are saved but hidden from the public board (the admin view
+            # flags them "in reserve"); if the per-tier display limit is raised
+            # later, these older scores flow back in instead of being lost.
+            DISPLAY_PER_TIER = 100
+            STORAGE_CAP      = 300
+            tier_counts = {'Hard': 0, 'Medium': 0}
+            displayed, overflow = [], []
             for e in entries:
-                bucket = per_diff.get(e.get('difficulty'))
-                if bucket is not None and len(bucket) < 100:
-                    bucket.append(e)
-            entries = per_diff['Medium'] + per_diff['Hard']
-            # Re-sort the combined output so the file is in canonical
-            # best-first order (also matches what the client expects).
-            entries.sort(key=lambda e: (-e.get('score', 0), -e.get('accuracy', 0)))
+                d = e.get('difficulty')
+                if d in tier_counts and tier_counts[d] < DISPLAY_PER_TIER:
+                    tier_counts[d] += 1
+                    displayed.append(e)
+                else:
+                    overflow.append(e)
+            # Keep all displayed entries + as many of the best overflow as fit
+            # under the overall cap. `overflow` is already in rank order, so the
+            # slice takes the highest-ranked reserve entries and drops the rest.
+            entries = displayed + overflow[:max(0, STORAGE_CAP - len(displayed))]
 
             with open(LEADERBOARD_FILE, 'w', encoding='utf-8') as f:
                 json.dump(entries, f, indent=2, ensure_ascii=False)

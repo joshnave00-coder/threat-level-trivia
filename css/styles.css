@@ -2523,9 +2523,31 @@ body.modal-open { overflow: hidden; }
 }
 .admin-lb-rank   { flex-shrink: 0; font-weight: 700; color: var(--navy); min-width: 1.25rem; }
 .admin-lb-info   { flex: 1; display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
-.admin-lb-name   { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-lb-name   { font-weight: 600; display: flex; align-items: center; gap: 0.4rem; min-width: 0; }
+.admin-lb-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .admin-lb-detail { font-size: 0.74rem; color: var(--gray); }
 .admin-lb-remove { flex-shrink: 0; }
+
+/* "In reserve" entries: saved past the per-tier display limit, not on the
+   public board. Dimmed, with a small amber pill next to the name. */
+.admin-lb-offboard { opacity: 0.6; background: var(--cream); }
+.admin-lb-badge {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #f3d27a;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  white-space: nowrap;
+  cursor: help;
+}
+.admin-lb-summary { }  /* uses .aq-count base; colored spans below */
+.admin-lb-on      { color: var(--correct); font-weight: 600; }
+.admin-lb-reserve { color: #92400e; font-weight: 600; }
 .feedback-card {
   background: #fff;
   border: 1px solid var(--gray-border);

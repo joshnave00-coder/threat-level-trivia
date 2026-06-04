@@ -193,6 +193,21 @@ function renderLeaderboard() {
     });
 }
 
+// Within a single difficulty tier, rank by: higher score first, then full
+// bank before Behind-the-Scenes-excluded, then most recent (id is a ms
+// timestamp set server-side at save time, so newer runs win an otherwise-equal
+// tie - this rewards players who keep coming back).
+function _lbRankCmp(a, b) {
+  return ((b.score || 0) - (a.score || 0))
+      || ((a.excludeBts ? 1 : 0) - (b.excludeBts ? 1 : 0))
+      || ((b.id || 0) - (a.id || 0));
+}
+// Public board shows the top 100 of one difficulty tier, ranked.
+const LB_DISPLAY_PER_TIER = 100;
+function _lbTopOfTier(entries, tier) {
+  return entries.filter(e => e.difficulty === tier).sort(_lbRankCmp).slice(0, LB_DISPLAY_PER_TIER);
+}
+
 // Renders the cached list applying the current difficulty filter.
 // Called on initial load AND whenever the user changes the dropdown.
 function renderLeaderboardList() {
@@ -202,16 +217,18 @@ function renderLeaderboardList() {
   const filterEl = document.getElementById('lb-filter-difficulty');
   const filter = filterEl ? filterEl.value : 'all';
 
-  let entries = _cachedLeaderboard;
+  let entries;
   if (filter !== 'all') {
-    // Per-difficulty view: show up to 100 entries of the selected tier.
-    // (Server already caps each tier at 100 on submit.)
-    entries = entries.filter(e => e.difficulty === filter).slice(0, 100);
+    // Per-difficulty view: that tier only, ranked, top 100.
+    entries = _lbTopOfTier(_cachedLeaderboard, filter);
   } else {
-    // Combined "All" view stays capped at 100 so the headline board doesn't
-    // balloon to 200 when both tiers are full. The full per-tier rosters
-    // remain accessible via the Medium / Hard filter options.
-    entries = entries.slice(0, 100);
+    // Combined "All" view: Hard always ranks above Medium (separate ladders,
+    // not blended by score). Take the top 100 of EACH tier explicitly and
+    // stack Hard then Medium. Capping each tier (rather than slicing the whole
+    // list) keeps reserve entries - storage now holds up to 300 - off the
+    // public board even when a tier has more than 100 saved.
+    entries = [..._lbTopOfTier(_cachedLeaderboard, 'Hard'),
+               ..._lbTopOfTier(_cachedLeaderboard, 'Medium')];
   }
 
   if (!entries.length) {

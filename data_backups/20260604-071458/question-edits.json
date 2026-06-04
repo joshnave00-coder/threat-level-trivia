@@ -1,0 +1,684 @@
+{
+  "4": {
+    "question": "What is Dwight Schrute's official job title throughout most of the series?",
+    "answer": "Assistant to the Regional Manager",
+    "distractors": [
+      "Assistant Regional Manager",
+      "Sales Associate",
+      "Sales Director"
+    ],
+    "category": "Characters",
+    "difficulty": "Easy"
+  },
+  "12": {
+    "question": "What temp-turned-executive started his career at Dunder Mifflin at the bottom?",
+    "answer": "Ryan Howard",
+    "distractors": [
+      "Toby Flenderson",
+      "David Wallace",
+      "Andy Bernard"
+    ],
+    "category": "Characters",
+    "difficulty": "Easy"
+  },
+  "16": {
+    "question": "What is Angela Martin's middle name?",
+    "answer": "Noel",
+    "distractors": [
+      "Marie",
+      "Grace",
+      "Louise"
+    ],
+    "category": "Characters",
+    "difficulty": "Hard"
+  },
+  "32": {
+    "question": "What does Jim famously put Dwight's stapler in?",
+    "answer": "Jell-O",
+    "distractors": [
+      "The bathroom",
+      "A cake",
+      "A block of ice"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Easy"
+  },
+  "34": {
+    "question": "What is the name of the second episode of the first season?",
+    "answer": "Diversity Day",
+    "distractors": [
+      "Health Care",
+      "The Alliance",
+      "Hot Girl"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Medium"
+  },
+  "40": {
+    "question": "In the 'Product Recall' episode, who does Jim dress up as to prank Dwight?",
+    "answer": "Dwight Schrute",
+    "distractors": [
+      "Michael Scott",
+      "Stanley Hudson",
+      "Andy Bernard"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Medium"
+  },
+  "45": {
+    "question": "In which episode does Michael Scott pretend to fire Pam as a prank...the first time?",
+    "answer": "The Pilot",
+    "distractors": [
+      "Diversity Day",
+      "Hot Girl",
+      "The Alliance"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Easy"
+  },
+  "48": {
+    "question": "In what episode does Jim propose to Pam?",
+    "answer": "Weight Loss",
+    "distractors": [
+      "Goodbye, Toby",
+      "Niagara",
+      "The Proposal"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Medium"
+  },
+  "50": {
+    "question": "What does Stanley secretly tell his wife to buy over the phone after Michael announces $1,000 raises in the episode, 'Dwight's Speech'?",
+    "answer": "Wallpaper",
+    "distractors": [
+      "A new couch",
+      "Curtains",
+      "A flat screen TV"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Hard"
+  },
+  "52": {
+    "question": "In 'The Merger,' which Stamford branch employee is the first to quit?",
+    "answer": "Tony",
+    "distractors": [
+      "Devon",
+      "Hannah",
+      "Martin"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Hard"
+  },
+  "55": {
+    "question": "In 'Drug Testing,' who catches Jim by overhearing him do an impression while coming out of the bathroom?",
+    "answer": "Stanley",
+    "distractors": [
+      "Dwight",
+      "Ryan",
+      "Toby"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Hard"
+  },
+  "57": {
+    "question": "Which character says 'Bears, beets, Battlestar Galactica'?",
+    "answer": "Jim Halpert",
+    "distractors": [
+      "Dwight Schrute",
+      "Michael Scott",
+      "Andy Bernard"
+    ],
+    "category": "Quotes",
+    "difficulty": "Easy"
+  },
+  "59": {
+    "question": "Michael Scott says he is 'not superstitious, but...' How does he finish that sentence?",
+    "answer": "'I am a little stitious'",
+    "distractors": [
+      "'I am a little nervous'",
+      "'I am pretty cautious'",
+      "'I believe in coincidences'"
+    ],
+    "category": "Quotes",
+    "difficulty": "Medium"
+  },
+  "63": {
+    "question": "Which character says: 'I never really thought about death until Princess Diana died. That was the saddest funeral ever, that and my sister's.'?",
+    "answer": "Kelly Kapoor",
+    "distractors": [
+      "Michael Scott",
+      "Jan Levinson",
+      "Meredith Palmer"
+    ],
+    "category": "Quotes",
+    "difficulty": "Hard"
+  },
+  "64": {
+    "question": "Which character says 'You miss 100% of the shots you don't take - Wayne Gretzky' and is credited as having said it?",
+    "answer": "Michael Scott",
+    "distractors": [
+      "Dwight Schrute",
+      "Jim Halpert",
+      "Andy Bernard"
+    ],
+    "category": "Quotes",
+    "difficulty": "Hard"
+  },
+  "67": {
+    "question": "What was unique about the audition process for The Office?",
+    "answer": "Actors were interviewed in character rather than reading from scripts",
+    "distractors": [
+      "Actors had to improvise a full scene with no direction",
+      "Everyone auditioned with the same monologue from the British version",
+      "They used hidden cameras to see how actors behaved off-camera"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Medium"
+  },
+  "68": {
+    "question": "Who was the first actor to be cast in The Office?",
+    "answer": "B.J. Novak",
+    "distractors": [
+      "Steve Carell",
+      "Rainn Wilson",
+      "John Krasinski"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Hard"
+  },
+  "72": {
+    "question": "What actor played Andy's brother Walter Jr. in The Office?",
+    "answer": "Josh Groban",
+    "distractors": [
+      "Jim Carey",
+      "John Mayer",
+      "Ed Sheeran"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Medium"
+  },
+  "76": {
+    "question": "Because NBC executives weren't told Steve Carell would appear in the finale, who read Michael's lines at the table read?",
+    "answer": "Creed Bratton",
+    "distractors": [
+      "B.J. Novak",
+      "Greg Daniels",
+      "Ed Helms"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Hard"
+  },
+  "77": {
+    "question": "In season 4, which actress was pregnant in real life and had to hide her belly behind props?",
+    "answer": "Angela Kinsey",
+    "distractors": [
+      "Jenna Fischer",
+      "Mindy Kaling",
+      "Jan Levinson"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Hard"
+  },
+  "79": {
+    "question": "The set temperature had to be kept at 64°F, for which reason?",
+    "answer": "Steve Carell sweats easily",
+    "distractors": [
+      "The fluorescent lights generated too much heat",
+      "Rainn Wilson's Dwight was made of wool and very heavy",
+      "The camera equipment overheated at higher temperatures"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Hard"
+  },
+  "80": {
+    "question": "The proposal scene where Jim proposes to Pam was the most expensive shot in the show's history. How much did it cost?",
+    "answer": "$250,000",
+    "distractors": [
+      "$100,000",
+      "$500,000",
+      "$75,000"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Hard"
+  },
+  "81": {
+    "question": "Who was Pam Beesly engaged to before Jim Halpert?",
+    "answer": "Roy Anderson",
+    "distractors": [
+      "Danny Cordray",
+      "William M. Buttlicker",
+      "Toby Flenderson"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Easy"
+  },
+  "82": {
+    "question": "What are the names of Jim and Pam's children?",
+    "answer": "Cecelia (CeCe) and Phillip",
+    "distractors": [
+      "Emma and James (Jimmy)",
+      "Charlotte (Char) and Michael",
+      "Olivia and Ryan (Ry-Ry)"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Easy"
+  },
+  "84": {
+    "question": "How many serious girlfriends does Jim have over the course of the show?",
+    "answer": "Three - Katy, Karen, and Pam",
+    "distractors": [
+      "Two - Karen and Pam",
+      "Four - Katy, Karen, Pam, and Cathy",
+      "Two - Katy and Pam"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Medium"
+  },
+  "85": {
+    "question": "Where do Jim and Pam officially get married?",
+    "answer": "Niagara Falls (on the ferry boat)",
+    "distractors": [
+      "Scranton (at the Radisson)",
+      "A church in Pam's hometown",
+      "Schrute Farms"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Medium"
+  },
+  "86": {
+    "question": "Who was Michael's replacement as Regional Manager before he moved to Colorado?",
+    "answer": "Deangelo Vickers",
+    "distractors": [
+      "Andy Bernard",
+      "Dwight Schrute",
+      "Robert California"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Medium"
+  },
+  "88": {
+    "question": "Where did Michael and Jan share their first kiss?",
+    "answer": "Outside Chili's restaurant",
+    "distractors": [
+      "In the parking lot at Dunder Mifflin",
+      "At a hotel bar during a business trip",
+      "In the elevator at Dunder Mifflin"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Medium"
+  },
+  "90": {
+    "question": "What is the name of the exclusive that club Pam, Oscar, and Toby form in 'Branch Wars'?",
+    "answer": "The Finer Things Club",
+    "distractors": [
+      "The Book Club",
+      "The Philosopher's Circle",
+      "The Culture Committee"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Hard"
+  },
+  "101": {
+    "question": "Where did Michael Scott buy his 'World's Best Boss' mug?",
+    "answer": "Spencer's",
+    "distractors": [
+      "K-Mart",
+      "Hallmark",
+      "Sharper Image"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Easy"
+  },
+  "108": {
+    "question": "What fake client name does Michael use in the episode 'The Client'?",
+    "answer": "William M. Buttlicker",
+    "distractors": [
+      "Michael Scotch",
+      "Ben Dover",
+      "Richard Longbottom"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Hard"
+  },
+  "109": {
+    "question": "How many Dunder Mifflin birthday parties are there throughout all seasons?",
+    "answer": "17",
+    "distractors": [
+      "10",
+      "21",
+      "6"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Hard"
+  },
+  "112": {
+    "question": "Who is the receptionist at Dunder Mifflin at the start of the series?",
+    "answer": "Pam Beesly",
+    "distractors": [
+      "Erin Hannon",
+      "Kelly Kapoor",
+      "Ronnie"
+    ],
+    "category": "Characters",
+    "difficulty": "Easy"
+  },
+  "117": {
+    "question": "What is Stanley's wife's name?",
+    "answer": "Teri",
+    "distractors": [
+      "Sandra",
+      "Cynthia",
+      "Donna"
+    ],
+    "category": "Characters",
+    "difficulty": "Medium"
+  },
+  "118": {
+    "question": "What is the name of Stanley's mistress?",
+    "answer": "Cynthia",
+    "distractors": [
+      "Lydia",
+      "Melissa",
+      "Teri"
+    ],
+    "category": "Characters",
+    "difficulty": "Medium"
+  },
+  "120": {
+    "question": "What is the name of Holly's ex-boyfriend who works at Dunder Mifflin Nashua?",
+    "answer": "A.J.",
+    "distractors": [
+      "Brad",
+      "J.P.",
+      "Derek"
+    ],
+    "category": "Characters",
+    "difficulty": "Medium"
+  },
+  "126": {
+    "question": "Who did Robert California choose to be branch manager after taking the CEO role?",
+    "answer": "Andy Bernard",
+    "distractors": [
+      "Dwight Schrute",
+      "Jim Halpert",
+      "Darryl Philbin"
+    ],
+    "category": "Characters",
+    "difficulty": "Easy"
+  },
+  "128": {
+    "question": "What is Dwight's karate belt color?",
+    "answer": "Purple",
+    "distractors": [
+      "Yellow",
+      "Black",
+      "Orange"
+    ],
+    "category": "Characters",
+    "difficulty": "Hard"
+  },
+  "130": {
+    "question": "How many of the main cast members share the same first name as their character?",
+    "answer": "Four - Angela, Oscar, Phyllis, and Creed",
+    "distractors": [
+      "Three - Angela, Oscar, and Phyllis",
+      "Five - Angela, Oscar, Phyllis, Creed, and Kevin",
+      "Two - Angela and Oscar"
+    ],
+    "category": "Characters",
+    "difficulty": "Hard"
+  },
+  "138": {
+    "question": "What does Dwight do to the CPR dummy after it is pronounced dead?",
+    "answer": "He stabs it to harvest its organs",
+    "distractors": [
+      "He performs a tracheotomy with a pen",
+      "He gives it mouth-to-mouth",
+      "He throws it in the garbage"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Easy"
+  },
+  "148": {
+    "question": "Who does Oscar have an affair with in the later seasons?",
+    "answer": "Angela's husband, Senator Robert Lipton",
+    "distractors": [
+      "Gil, his ex-boyfriend",
+      "A Dunder Mifflin client",
+      "The warehouse manager"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Easy"
+  },
+  "150": {
+    "question": "What does Toby break when zip-lining in Costa Rica?",
+    "answer": "His neck",
+    "distractors": [
+      "His leg",
+      "His arm",
+      "His collarbone"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Hard"
+  },
+  "155": {
+    "question": "What percentage of Dunder Mifflin's revenue was at risk because of Michael's golden ticket idea?",
+    "answer": "50%",
+    "distractors": [
+      "25%",
+      "75%",
+      "33%"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Hard"
+  },
+  "156": {
+    "question": "What rumor does Michael make up about Angela to cover for Stanley's affair?",
+    "answer": "That she is dating an 81-year-old billionaire who owns a Quizno's franchise",
+    "distractors": [
+      "That she's married to a gay man",
+      "That she once won a beauty pageant in another state",
+      "That she had a secret twin sister"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Hard"
+  },
+  "158": {
+    "question": "What is the date that Ryan and Kelly officially hooked up for the first time?",
+    "answer": "February 13th",
+    "distractors": [
+      "February 14th",
+      "March 17th",
+      "December 24th"
+    ],
+    "category": "Episodes & Events",
+    "difficulty": "Hard"
+  },
+  "160": {
+    "question": "According to Kevin, what is the trick to making his famous chili?",
+    "answer": "Undercooking the onions",
+    "distractors": [
+      "Adding extra cumin",
+      "Using three types of beans",
+      "Slow-cooking it for 24 hours"
+    ],
+    "category": "Quotes",
+    "difficulty": "Medium"
+  },
+  "165": {
+    "question": "What resort do Michael and Jan stay at in Jamaica?",
+    "answer": "Sandals",
+    "distractors": [
+      "Beaches",
+      "Hedonism",
+      "Club Med"
+    ],
+    "category": "Quotes",
+    "difficulty": "Easy"
+  },
+  "169": {
+    "question": "Was the kiss between Oscar and Michael in 'Gay Witch Hunt' scripted?",
+    "answer": "No, Steve Carell improvised it, kissing Oscar on the mouth when Oscar leaned in for a cheek kiss",
+    "distractors": [
+      "Yes, it was in the original script from the beginning",
+      "Partially, the hug was scripted but the kiss was improvised",
+      "No, Oscar Nunez suggested it during rehearsal"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Easy"
+  },
+  "172": {
+    "question": "What book does Dwight read to Jim and Pam during their first stay at Schrute Farms?",
+    "answer": "Harry Potter and the Deathly Hallows",
+    "distractors": [
+      "Harry Potter and the Sorcerer's Stone",
+      "The Lord of the Rings",
+      "A Farmer's Almanac"
+    ],
+    "category": "Behind the Scenes",
+    "difficulty": "Hard"
+  },
+  "181": {
+    "question": "Who does Erin initially think might be her biological mother?",
+    "answer": "Phyllis",
+    "distractors": [
+      "Meredith",
+      "Helene",
+      "Nelly"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Easy"
+  },
+  "182": {
+    "question": "How many women does Michael Scott propose marriage to over the course of the show?",
+    "answer": "Two - Carol and Holly",
+    "distractors": [
+      "Three - Carol, Jan, and Holly",
+      "One - Holly",
+      "Two - Jan and Holly"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Medium"
+  },
+  "183": {
+    "question": "If Pam had married Roy, what would her full married name have been?",
+    "answer": "Pamela Anderson",
+    "distractors": [
+      "Pamela Anderson-Beesly",
+      "Patricia Anderson",
+      "Pamela Rogers"
+    ],
+    "category": "Relationships & Romance",
+    "difficulty": "Medium"
+  },
+  "191": {
+    "question": "What animal does Dwight catch in the office by trapping it on someone's head in a garbage bag?",
+    "answer": "A bat",
+    "distractors": [
+      "A bird",
+      "A raccoon",
+      "A squirrel"
+    ],
+    "category": "Cold Opens & Running Gags",
+    "difficulty": "Easy"
+  },
+  "197": {
+    "question": "Besides Jell-O, what other food does Jim put Dwight's stapler in at one point?",
+    "answer": "A giant meatball",
+    "distractors": [
+      "Blueberry Pie",
+      "A cake",
+      "Dog Food"
+    ],
+    "category": "Cold Opens & Running Gags",
+    "difficulty": "Medium"
+  },
+  "199": {
+    "question": "What does Jim do to make Dwight think he can move a coat rack with his mind?",
+    "answer": "Gets Pam to pull it back and forth using an umbrella hidden under her desk",
+    "distractors": [
+      "Jim ties fishing line to the coat rack from his desk",
+      "Gets Andy to push it from behind the wall on cue",
+      "Jim uses a remote-controlled device attached to the base"
+    ],
+    "category": "Cold Opens & Running Gags",
+    "difficulty": "Medium"
+  },
+  "206": {
+    "question": "What does Michael say to Pam about where to put the fax from corporate in the very first episode?",
+    "answer": "He tells her to put it in a special filing cabinet; which is the garbage can",
+    "distractors": [
+      "He tells her to fax it back with a funny note",
+      "He says to file it under 'important things I'll never read'",
+      "He tells her to shred it because he doesn't trust corporate"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Medium"
+  },
+  "207": {
+    "question": "Where does Roy work right after leaving Dunder Mifflin?",
+    "answer": "A vitamin store",
+    "distractors": [
+      "A gravel company",
+      "A sporting goods store",
+      "A car dealership"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Medium"
+  },
+  "210": {
+    "question": "What is the name of the person Michael and Jan meet at Chili's in 'The Client' episode?",
+    "answer": "Christian",
+    "distractors": [
+      "Darryl",
+      "Brad",
+      "Marcus"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Medium"
+  },
+  "217": {
+    "question": "What fruit does Dwight use to simulate childbirth to help Michael prepare for Jan's baby being born?",
+    "answer": "A watermelon",
+    "distractors": [
+      "A pumpkin",
+      "A cantaloupe",
+      "A bowling ball"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Medium"
+  },
+  "218": {
+    "question": "What does Stanley do to Michael's car after Michael tells Stanley's wife about his affair?",
+    "answer": "He smashes it with a tire iron",
+    "distractors": [
+      "He keys it in the parking lot",
+      "He slashes the tires",
+      "He smashes it with a golf club"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Hard"
+  },
+  "219": {
+    "question": "What was the name of the Asian actor who played 'Asian Jim' in the prank on Dwight? (his character's name was Steve)",
+    "answer": "Randall Park",
+    "distractors": [
+      "Steven Yeun",
+      "John Cho",
+      "Ken Jeong"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Hard"
+  },
+  "220": {
+    "question": "Which character is arrested and later revealed to have faked their own death in the series finale?",
+    "answer": "Creed Bratton",
+    "distractors": [
+      "Robert California",
+      "Meredith Palmer",
+      "Ryan Howard"
+    ],
+    "category": "Locations & Miscellaneous",
+    "difficulty": "Hard"
+  }
+}

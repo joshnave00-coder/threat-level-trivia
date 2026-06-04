@@ -1,0 +1,27 @@
+{
+  "FTBHJN": {
+    "code": "FTBHJN",
+    "creatorName": "test",
+    "config": {
+      "category": "all",
+      "difficulty": "Mixed",
+      "character": "all",
+      "count": 10,
+      "speedRound": false,
+      "speedSecs": 0
+    },
+    "questionIds": [
+      194,
+      239,
+      315,
+      135,
+      206,
+      228,
+      231,
+      40,
+      176,
+      31
+    ],
+    "createdAt": "2026-05-30T20:43:16Z"
+  }
+}

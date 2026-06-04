@@ -1011,7 +1011,8 @@
       <!-- LEADERBOARD PANEL -->
       <div id="admin-panel-leaderboard" class="admin-panel hidden">
         <h3 style="margin-bottom:0.5rem;color:var(--navy)">Global Leaderboard</h3>
-        <p class="settings-desc">Remove entries with inappropriate usernames. Deletions are permanent.</p>
+        <p class="settings-desc">Every saved score (up to 300 total). The public board shows the top 100 of each difficulty; anything past that is marked <strong>"In reserve &middot; not shown"</strong> - kept in storage so it returns if the display limit is raised, rather than dropped. Remove entries with inappropriate usernames. Deletions are permanent.</p>
+        <p id="admin-lb-summary" class="aq-count"></p>
         <div id="admin-lb-list" class="admin-lb-list"></div>
         <p id="admin-lb-empty" class="admin-empty hidden">No leaderboard entries yet.</p>
       </div>
@@ -1059,7 +1060,8 @@
             <h5>Features</h5>
             <ul>
               <li><strong>Exclude "Behind the Scenes" Questions:</strong> A checkbox under the Category dropdown in all three lobbies (solo, party, challenge) lets players leave out actor/production/cast-trivia questions and play only with knowledge you'd get from watching the show. The live pool count updates as you toggle it, and it's auto-ignored when you've explicitly picked the Behind the Scenes category.</li>
-              <li><strong>Leaderboard Shows Up to 100 Per Difficulty:</strong> The Medium and Hard leaderboard views now each hold up to 100 entries, instead of both fighting over a single shared top 100. The combined "All" view still caps at 100, so a strong Medium run is no longer bumped off the board by Hard runs.</li>
+              <li><strong>Leaderboard Ranking &amp; Per-Difficulty Storage:</strong> Hard and Medium are now separate ladders that each hold up to 100 entries (instead of both fighting over one shared top 100), so a strong Medium run is never bumped off by Hard runs. Within a ladder, entries rank by score (highest first), then full-bank runs above ones that excluded Behind the Scenes, then most recent - a newer run wins an otherwise-equal tie, rewarding players who keep coming back. Hard always ranks above Medium, never blended by raw score. The "All" view stacks the board Hard-first then Medium below (up to 200); the Medium / Hard tabs each show up to 100.</li>
+              <li><strong>Leaderboard Reserve (300-Score Retention):</strong> The public board shows the top 100 per difficulty, but storage now retains up to 300 scores total instead of dropping everything past the cut. Scores demoted below a tier's top 100 are kept "in reserve" (only the lowest-ranked drop once 300 is exceeded), so they flow back onto the board if the display limit is raised later. The admin Leaderboard tab lists every saved score and marks reserve ones with an amber "In reserve - not shown" pill plus a saved / on-board / in-reserve summary.</li>
               <li><strong>"Excluded Behind the Scenes" Leaderboard Note:</strong> When a player posts a qualifying score with Behind the Scenes excluded, a small italic note appears under their name on the global leaderboard (and on their own results card), so a score is never quietly assumed to have come from the full question bank.</li>
               <li><strong>Answer Stats (Admin):</strong> A new Answer Stats panel logs every answer across solo, party, and challenge play. Each question shows how many times it was answered correctly, how many times wrong, the total, and a percent-correct bar. Search, filter by category/difficulty, and sort by most/least answered or lowest/highest percent correct. Reset a single question's counters or all of them.</li>
             </ul>
@@ -1069,7 +1071,7 @@
             <ul>
               <li>New <code>data/answer-stats.json</code> store with <code>GET /api/answer-stats</code>, a player-facing <code>POST /api/answer-stats</code> that atomically increments a question's correct/wrong tally (thread-locked so concurrent players never lose a count), and an admin <code>POST /api/admin/answer-stats/reset</code> for one question or all.</li>
               <li><code>filterQuestions()</code> / <code>selectQuestions()</code> take an <code>excludeBts</code> flag; <code>recordAnswerStat()</code> in <code>js/state.js</code> fires from the shared <code>scoreAnswer()</code> chokepoint plus the party speed-round timeout.</li>
-              <li>Leaderboard submissions now carry an <code>excludeBts</code> flag; the server keeps up to 100 entries per difficulty tier instead of 100 overall.</li>
+              <li>Leaderboard submissions now carry an <code>excludeBts</code> flag. The server ranks entries by score &rarr; full-bank-before-excluded &rarr; most-recent (reusing each entry's millisecond <code>id</code> timestamp for recency, so no new field), and retains every displayed entry (top 100 per tier) plus the best overflow up to a 300-total cap. The client caps each tier at 100 on display (<code>_lbTopOfTier</code>) so reserve entries never leak to the public board; the admin Leaderboard view flags anything past a tier's top 100 as "in reserve."</li>
               <li>Fixed a latent server bug where the request logger crashed the connection on any error response (it assumed a log argument was the request path, but error logging passes a status code). Every API error path is now safe.</li>
             </ul>
           </div>
@@ -1401,7 +1403,7 @@
 
         <div class="admin-help-section">
           <h4>Leaderboard</h4>
-          <p>Lists every entry on the global Employee Records leaderboard. Each row shows the player's name, score, accuracy percentage, difficulty, category, and date. The Medium and Hard tiers each hold up to 100 entries (the combined "All" view still shows the top 100). A small "Excluded Behind the Scenes" note appears under a player's name when they posted that score with the Behind the Scenes category turned off. Use the <strong>Remove</strong> button to delete entries with inappropriate usernames or fraudulent scores. Removals are permanent.</p>
+          <p>Lists every entry on the global Employee Records leaderboard. Each row shows the player's name, score, accuracy percentage, difficulty, category, and date. Hard and Medium are separate ladders that each hold up to 100 entries. Within a ladder, entries are ranked by score first, then full-bank runs above ones that excluded Behind the Scenes, then most recent (a newer run wins an otherwise-equal tie). Hard always ranks above Medium - the "All" view stacks Hard first, then Medium below; the difficulty tabs drill into either ladder. A small "Excluded Behind the Scenes" note appears under a player's name when they posted that score with the Behind the Scenes category turned off. This admin tab lists <em>every</em> saved score - up to 300 total. Anything past a difficulty's top 100 is held in reserve: saved but not shown on the public board, marked with an amber "In reserve - not shown" pill (the summary line up top counts how many are on the board vs. in reserve). Reserve scores aren't lost - they flow back onto the board if the per-difficulty display limit is ever raised. Use the <strong>Remove</strong> button to delete entries with inappropriate usernames or fraudulent scores. Removals are permanent.</p>
         </div>
 
         <div class="admin-help-section">

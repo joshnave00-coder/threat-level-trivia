@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Lloyd Gross",
+    "email": "lloyd.gross@dundermifflin.com",
+    "type": "general",
+    "message": "I like that you hid the admin console.",
+    "submittedAt": "2026-05-28T02:43:08.396Z"
+  },
+  {
+    "name": "Michael Scott",
+    "email": null,
+    "type": "general",
+    "message": "This is a test general feedback message.",
+    "submittedAt": "2026-05-28T02:49:12.332Z"
+  }
+]

@@ -4,6 +4,25 @@ All notable changes to Threat Level Trivia are documented here.
 
 ---
 
+## v1.7.0 - 2026-06-03
+
+### Features
+- **Exclude "Behind the Scenes" Questions** - A checkbox under the Category dropdown in all three lobbies (solo, party, challenge) lets players leave out actor/production/cast-trivia questions and play only with knowledge you'd get from watching the show itself. The live pool count updates as the toggle changes, and the toggle is auto-ignored when the player has explicitly selected the "Behind the Scenes" category (which would otherwise empty the pool).
+- **Leaderboard Shows Up to 100 Per Difficulty** - The Medium and Hard leaderboard views now each hold up to 100 entries instead of both drawing from a single shared top 100. The combined "All" view still caps at 100, so a strong Medium run is no longer bumped off the board by Hard runs. The server now keeps up to 100 entries per difficulty tier on submit.
+- **"Excluded Behind the Scenes" Leaderboard Note** - When a player posts a qualifying score with Behind the Scenes excluded, a small italic note appears under their name on the global leaderboard and on their own solo results card, so a score is never quietly assumed to have been drawn from the full question bank.
+- **Answer Stats (Admin)** - A new Answer Stats panel in the admin console logs every answer across solo, party, and challenge play. Each question card shows total correct, total wrong, total answered, and a percent-correct bar. The panel supports search, category/difficulty filters, and sorting by most/least answered or lowest/highest percent correct, plus per-question reset and reset-all controls. Headline totals summarize how many questions have been answered and the overall correct rate.
+
+### Changes
+- **Behind the Scenes Audit (no data changes)** - Reviewed the question bank for "who plays X" / production-trivia questions currently filed outside the Behind the Scenes category; flagged 15 candidates for possible recategorization (left to the maintainer to apply).
+
+### Infrastructure
+- New `data/answer-stats.json` store. `GET /api/answer-stats` serves the aggregate; the player-facing `POST /api/answer-stats` atomically increments a question's correct/wrong tally under a thread lock (the server is threaded, so concurrent players would otherwise race and lose counts); admin `POST /api/admin/answer-stats/reset` clears one question (`{questionId}`) or all (`{all:true}`).
+- `filterQuestions()` and `selectQuestions()` in `js/questions.js` take a new `excludeBts` argument. `recordAnswerStat()` in `js/state.js` fires from the shared `scoreAnswer()` chokepoint (covers solo, party, challenge, and hardcore self-scoring) and from the party speed-round timeout path.
+- Leaderboard submissions (`submitGlobalLeaderboardEntry`) now carry an `excludeBts` flag, persisted on each entry and surfaced in the leaderboard render. `_save_leaderboard_entry` keeps up to 100 entries per difficulty tier instead of 100 overall; the client trims the combined "All" view to 100 and the per-difficulty views to 100 each.
+- Fixed a latent bug in the server's `log_message` override that crashed the handler thread on any `send_error()` call (it treated a log argument as the request path, but error logging passes the status code as an int). All API error paths (400/401/etc.) are now safe.
+
+---
+
 ## v1.6.0 - 2026-05-29
 
 ### Features

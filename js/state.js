@@ -90,7 +90,7 @@ function loadLeaderboardFromFile() {
   // Global leaderboard is fetched live from the server when the leaderboard screen opens.
 }
 
-async function submitGlobalLeaderboardEntry(name, score, total, category, difficulty) {
+async function submitGlobalLeaderboardEntry(name, score, total, category, difficulty, excludeBts) {
   try {
     const res = await fetch('/api/leaderboard/submit', {
       method: 'POST',
@@ -102,6 +102,7 @@ async function submitGlobalLeaderboardEntry(name, score, total, category, diffic
         accuracy: total > 0 ? Math.round((score / total) * 100) : 0,
         category: category === 'all' ? 'All Categories' : category,
         difficulty,
+        excludeBts: !!excludeBts,
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       }),
     });
@@ -348,6 +349,22 @@ function loadVotesFromFile() {
       localStorage.setItem(STORAGE_KEYS.votes, JSON.stringify(merged));
     })
     .catch(() => {});
+}
+
+// ── ANSWER STATS ──────────────────────────────────────────────────
+// Fire-and-forget: tell the server one more player answered this question
+// correctly or incorrectly. The server keeps an aggregate correct/wrong
+// tally per question (admin "Answer Stats" panel). Unlike votes/ratings,
+// this is NOT a client-held array we overwrite - the server increments its
+// own counter so concurrent players don't clobber each other's counts.
+function recordAnswerStat(questionId, wasCorrect) {
+  // Only base + custom questions have numeric IDs; guard against anything else.
+  if (typeof questionId !== 'number' || !isFinite(questionId)) return;
+  fetch('/api/answer-stats', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ questionId, correct: !!wasCorrect }),
+  }).catch(() => {});
 }
 
 // ── TAGS ──────────────────────────────────────────────────────────

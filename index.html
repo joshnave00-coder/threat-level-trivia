@@ -316,6 +316,10 @@
           <option value="Locations &amp; Miscellaneous">Locations &amp; Miscellaneous</option>
           <option value="Cold Opens &amp; Running Gags">Cold Opens &amp; Running Gags</option>
         </select>
+        <label class="exclude-bts-row">
+          <input type="checkbox" id="solo-exclude-bts">
+          <span class="exclude-bts-text">Exclude "Behind the Scenes" questions <span class="exclude-bts-hint">(actors, production, cast trivia you wouldn't learn from watching the show)</span></span>
+        </label>
       </div>
 
       <div class="lobby-section">
@@ -512,6 +516,7 @@
   <div class="screen-body centered">
     <div class="results-card">
       <div class="results-player-name" id="results-player-name"></div>
+      <div class="results-bts-note hidden" id="results-bts-note">Excluded Behind the Scenes</div>
       <div class="results-score-big" id="results-score-big"></div>
       <div class="results-accuracy"  id="results-accuracy"></div>
       <div class="results-grade"     id="results-grade"></div>
@@ -592,6 +597,10 @@
           <option value="Locations &amp; Miscellaneous">Locations &amp; Miscellaneous</option>
           <option value="Cold Opens &amp; Running Gags">Cold Opens &amp; Running Gags</option>
         </select>
+        <label class="exclude-bts-row">
+          <input type="checkbox" id="party-exclude-bts">
+          <span class="exclude-bts-text">Exclude "Behind the Scenes" questions <span class="exclude-bts-hint">(actors, production, cast trivia you wouldn't learn from watching the show)</span></span>
+        </label>
       </div>
 
       <div class="lobby-section">
@@ -711,6 +720,10 @@
           <option value="Locations &amp; Miscellaneous">Locations &amp; Miscellaneous</option>
           <option value="Cold Opens &amp; Running Gags">Cold Opens &amp; Running Gags</option>
         </select>
+        <label class="exclude-bts-row">
+          <input type="checkbox" id="challenge-exclude-bts">
+          <span class="exclude-bts-text">Exclude "Behind the Scenes" questions <span class="exclude-bts-hint">(actors, production, cast trivia you wouldn't learn from watching the show)</span></span>
+        </label>
       </div>
 
       <div class="lobby-section">
@@ -882,6 +895,7 @@
       <button class="admin-nav-item" data-panel="disputes">Flagged Questions</button>
       <button class="admin-nav-item" data-panel="feedback">Submitted Feedback</button>
       <button class="admin-nav-item" data-panel="community-ratings">Community Ratings</button>
+      <button class="admin-nav-item" data-panel="answer-stats">Answer Stats</button>
       <button class="admin-nav-item" data-panel="leaderboard">Leaderboard</button>
       <button class="admin-nav-item" data-panel="export">Export</button>
       <button class="admin-nav-item" data-panel="site-settings">Site Settings</button>
@@ -960,6 +974,40 @@
         <div id="admin-ratings-list" class="cr-list"></div>
       </div>
 
+      <!-- ANSWER STATS PANEL -->
+      <div id="admin-panel-answer-stats" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.25rem;color:var(--navy)">Answer Stats</h3>
+        <p class="settings-desc">Every time a player answers a question (in solo, party, or challenge mode) it's tallied here. See how many times each question has been answered, and how often players get it right.</p>
+        <div class="as-toolbar">
+          <div class="aq-search-wrap">
+            <input type="text" id="as-search" class="input-field" placeholder="Search questions or answers...">
+            <button type="button" id="as-search-clear" class="aq-search-clear" aria-label="Clear search" title="Clear search">&times;</button>
+          </div>
+          <select id="as-filter-category" class="select-field aq-filter-select">
+            <option value="all">All Categories</option>
+          </select>
+          <select id="as-filter-difficulty" class="select-field aq-filter-select">
+            <option value="all">All Difficulties</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+          <select id="as-sort" class="select-field aq-filter-select">
+            <option value="most-answered">Sort: Most Answered</option>
+            <option value="least-answered">Sort: Least Answered</option>
+            <option value="lowest-pct">Sort: Lowest % Correct</option>
+            <option value="highest-pct">Sort: Highest % Correct</option>
+            <option value="id">Sort: Question ID</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" id="btn-as-refresh" title="Reload the latest tallies from the server">↻ Refresh</button>
+          <button class="btn btn-wrong btn-sm" id="btn-as-reset-all" title="Reset every question's counters to zero">Reset All</button>
+        </div>
+        <div class="aq-count-row">
+          <span id="admin-as-count" class="aq-count"></span>
+        </div>
+        <div id="admin-as-list" class="as-list"></div>
+      </div>
+
       <!-- LEADERBOARD PANEL -->
       <div id="admin-panel-leaderboard" class="admin-panel hidden">
         <h3 style="margin-bottom:0.5rem;color:var(--navy)">Global Leaderboard</h3>
@@ -1001,6 +1049,31 @@
       <div id="admin-panel-version-history" class="admin-panel hidden">
         <h3 class="admin-help-title">Version History</h3>
         <p class="admin-help-intro">A running log of every release, what landed in it, and when it shipped. Most recent at the top.</p>
+
+        <div class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v1.7.0</span>
+            <span class="version-date">2026-06-03</span>
+          </div>
+          <div class="version-section">
+            <h5>Features</h5>
+            <ul>
+              <li><strong>Exclude "Behind the Scenes" Questions:</strong> A checkbox under the Category dropdown in all three lobbies (solo, party, challenge) lets players leave out actor/production/cast-trivia questions and play only with knowledge you'd get from watching the show. The live pool count updates as you toggle it, and it's auto-ignored when you've explicitly picked the Behind the Scenes category.</li>
+              <li><strong>Leaderboard Shows Up to 100 Per Difficulty:</strong> The Medium and Hard leaderboard views now each hold up to 100 entries, instead of both fighting over a single shared top 100. The combined "All" view still caps at 100, so a strong Medium run is no longer bumped off the board by Hard runs.</li>
+              <li><strong>"Excluded Behind the Scenes" Leaderboard Note:</strong> When a player posts a qualifying score with Behind the Scenes excluded, a small italic note appears under their name on the global leaderboard (and on their own results card), so a score is never quietly assumed to have come from the full question bank.</li>
+              <li><strong>Answer Stats (Admin):</strong> A new Answer Stats panel logs every answer across solo, party, and challenge play. Each question shows how many times it was answered correctly, how many times wrong, the total, and a percent-correct bar. Search, filter by category/difficulty, and sort by most/least answered or lowest/highest percent correct. Reset a single question's counters or all of them.</li>
+            </ul>
+          </div>
+          <div class="version-section">
+            <h5>Infrastructure</h5>
+            <ul>
+              <li>New <code>data/answer-stats.json</code> store with <code>GET /api/answer-stats</code>, a player-facing <code>POST /api/answer-stats</code> that atomically increments a question's correct/wrong tally (thread-locked so concurrent players never lose a count), and an admin <code>POST /api/admin/answer-stats/reset</code> for one question or all.</li>
+              <li><code>filterQuestions()</code> / <code>selectQuestions()</code> take an <code>excludeBts</code> flag; <code>recordAnswerStat()</code> in <code>js/state.js</code> fires from the shared <code>scoreAnswer()</code> chokepoint plus the party speed-round timeout.</li>
+              <li>Leaderboard submissions now carry an <code>excludeBts</code> flag; the server keeps up to 100 entries per difficulty tier instead of 100 overall.</li>
+              <li>Fixed a latent server bug where the request logger crashed the connection on any error response (it assumed a log argument was the request path, but error logging passes a status code). Every API error path is now safe.</li>
+            </ul>
+          </div>
+        </div>
 
         <div class="version-entry">
           <div class="version-header">
@@ -1315,8 +1388,20 @@
         </div>
 
         <div class="admin-help-section">
+          <h4>Answer Stats</h4>
+          <p>Every time a player answers a question - in solo, party, or challenge mode - the result is tallied here. This is your read on which questions players nail and which ones trip them up.</p>
+          <ul>
+            <li><strong>Per-question counts:</strong> Each card shows how many times the question was answered correctly (&#10003;), how many times wrong (&#10007;), the total, and a percent-correct bar. A low percentage on an "Easy" question is a good hint the question (or its answer) might need a second look.</li>
+            <li><strong>What counts:</strong> Multiple-choice answers, Hardcore Mode self-scores, and party speed-round timeouts (counted as wrong) all tally. The headline row at the top sums everything: how many questions have been answered at least once, total answers logged, and the overall correct rate.</li>
+            <li><strong>Search, Filter &amp; Sort:</strong> Narrow by keyword, category, or difficulty. Sort by most/least answered, or by lowest/highest percent correct - "Lowest % Correct" surfaces the questions players struggle with most. Questions never answered yet sink to the bottom.</li>
+            <li><strong>Reset:</strong> Each answered question has a <strong>Reset</strong> button to zero its counters (handy after you edit a question and want a fresh read). <strong>Reset All</strong> wipes every counter across the whole bank. Both are permanent.</li>
+            <li><strong>Refresh:</strong> The list loads when you open the tab. Hit <strong>Refresh</strong> to pull the latest tallies without leaving the panel.</li>
+          </ul>
+        </div>
+
+        <div class="admin-help-section">
           <h4>Leaderboard</h4>
-          <p>Lists every entry on the global Employee Records leaderboard. Each row shows the player's name, score, accuracy percentage, difficulty, category, and date. Use the <strong>Remove</strong> button to delete entries with inappropriate usernames or fraudulent scores. Removals are permanent.</p>
+          <p>Lists every entry on the global Employee Records leaderboard. Each row shows the player's name, score, accuracy percentage, difficulty, category, and date. The Medium and Hard tiers each hold up to 100 entries (the combined "All" view still shows the top 100). A small "Excluded Behind the Scenes" note appears under a player's name when they posted that score with the Behind the Scenes category turned off. Use the <strong>Remove</strong> button to delete entries with inappropriate usernames or fraudulent scores. Removals are permanent.</p>
         </div>
 
         <div class="admin-help-section">
@@ -1326,7 +1411,7 @@
 
         <div class="admin-help-section">
           <h4>How Data Works</h4>
-          <p>Player-submitted data (ratings, votes, disputes, feedback) is saved to the server automatically when a player submits it. It's also cached in each player's browser for faster loading. The server JSON files in the <code>data/</code> folder are the source of truth.</p>
+          <p>Player-submitted data (ratings, votes, disputes, feedback) is saved to the server automatically when a player submits it. It's also cached in each player's browser for faster loading. Answer Stats are different: they live only on the server (<code>data/answer-stats.json</code>) and are incremented one answer at a time as players play, so the counts are an authoritative global tally rather than anything stored per-browser. The server JSON files in the <code>data/</code> folder are the source of truth.</p>
           <p>Admin changes (question edits, disabling questions, resolving disputes) also save to the server immediately. You don't need to manually sync anything.</p>
         </div>
       </div>

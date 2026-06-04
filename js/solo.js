@@ -41,18 +41,19 @@ async function soloStart() {
   const difficulty = document.querySelector('input[name="solo-diff"]:checked').value;
   const count      = parseInt(document.querySelector('input[name="solo-count"]:checked').value, 10);
   const hardcore   = document.getElementById('solo-hardcore').checked;
+  const excludeBts = !!document.getElementById('solo-exclude-bts')?.checked;
 
   // Re-sync admin-managed lists (deleted/disabled/edits/custom) before
   // building the question pool. This prevents a stale localStorage from
   // serving a question that was deleted via the admin portal hours ago.
   await syncAdminListsBeforeGame();
 
-  const qs = selectQuestions(category, difficulty, count, character);
+  const qs = selectQuestions(category, difficulty, count, character, excludeBts);
   if (!qs.length) { showToast('Not enough questions for that combo. Try different settings.'); return; }
 
   resetGameState();
   GameState.mode = 'solo';
-  GameState.config = { category, difficulty, count, hardcore, speedRound: false, character };
+  GameState.config = { category, difficulty, count, hardcore, speedRound: false, character, excludeBts };
   GameState.questions = qs;
   GameState.players = [{ id: 1, name, score: 0, answers: [] }];
   GameState.currentPlayerIdx = 0;
@@ -69,13 +70,13 @@ async function soloStartOver() {
   if (GameState.mode !== 'solo') return;
   if (!confirm('Start over from question 1?\n\nYour current progress will be lost. Same category, difficulty, and count - questions will be re-shuffled.')) return;
 
-  const { category, difficulty, count, hardcore, speedRound, character } = GameState.config;
+  const { category, difficulty, count, hardcore, speedRound, character, excludeBts } = GameState.config;
   const playerName = (GameState.players[0] && GameState.players[0].name) || 'Player';
 
   // Re-sync admin-managed lists before re-shuffling (see soloStart).
   await syncAdminListsBeforeGame();
 
-  const qs = selectQuestions(category, difficulty, count, character);
+  const qs = selectQuestions(category, difficulty, count, character, excludeBts);
   if (!qs.length) {
     showToast('Could not start over - no matching questions available.');
     return;
@@ -86,7 +87,7 @@ async function soloStartOver() {
 
   resetGameState();
   GameState.mode = 'solo';
-  GameState.config = { category, difficulty, count, hardcore, speedRound, character };
+  GameState.config = { category, difficulty, count, hardcore, speedRound, character, excludeBts };
   GameState.questions = qs;
   GameState.players = [{ id: 1, name: playerName, score: 0, answers: [] }];
   GameState.currentPlayerIdx = 0;
@@ -295,6 +296,9 @@ function scoreAnswer(wasRight) {
   });
 
   logAnswer(player.name, q, wasRight, null);
+  // Bump the global per-question correct/wrong tally (admin Answer Stats).
+  // Shared chokepoint for solo, party, challenge, and hardcore self-scoring.
+  recordAnswerStat(q.id, wasRight);
 
   if (GameState.config.speedRound && GameState.speedInterval) {
     clearInterval(GameState.speedInterval);
@@ -404,7 +408,7 @@ async function soloFinish() {
 
   if (qualifies) {
     GameState.globalSubmitted = await submitGlobalLeaderboardEntry(
-      player.name, correct, total, category, difficulty
+      player.name, correct, total, category, difficulty, GameState.config.excludeBts
     );
   }
 

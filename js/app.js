@@ -276,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     [`${mode}-category`, `${mode}-character`].forEach(id => {
       _bind(id, 'change', () => updateLobbyPoolCount(mode));
     });
+    _bind(`${mode}-exclude-bts`, 'change', () => updateLobbyPoolCount(mode));
     document.querySelectorAll(`input[name="${mode}-diff"]`).forEach(radio => {
       radio.addEventListener('change', () => {
         updateLobbyPoolCount(mode);
@@ -354,6 +355,26 @@ document.addEventListener('DOMContentLoaded', () => {
   _bind('cr-search',        'input',  e => { adminRatingsFilter.search = e.target.value; renderAdminRatings(); });
   _bind('cr-filter-status', 'change', e => { adminRatingsFilter.status = e.target.value; renderAdminRatings(); });
 
+  // Answer stats tab controls (render from cache, no refetch per keystroke)
+  const _asToggleClear = (val) => {
+    const wrap = document.getElementById('as-search')?.closest('.aq-search-wrap');
+    if (wrap) wrap.classList.toggle('aq-has-text', !!val);
+  };
+  _bind('as-search',          'input',  e => { adminAnswerStatsFilter.search = e.target.value; _asToggleClear(e.target.value); renderAnswerStats(); });
+  _bind('as-search-clear',    'click',  () => {
+    const input = document.getElementById('as-search');
+    if (input) input.value = '';
+    adminAnswerStatsFilter.search = '';
+    _asToggleClear('');
+    renderAnswerStats();
+    if (input) input.focus();
+  });
+  _bind('as-filter-category',   'change', e => { adminAnswerStatsFilter.category = e.target.value; renderAnswerStats(); });
+  _bind('as-filter-difficulty', 'change', e => { adminAnswerStatsFilter.difficulty = e.target.value; renderAnswerStats(); });
+  _bind('as-sort',              'change', e => { adminAnswerStatsFilter.sort = e.target.value; renderAnswerStats(); });
+  _bind('btn-as-refresh',       'click',  loadAndRenderAnswerStats);
+  _bind('btn-as-reset-all',     'click',  resetAllAnswerStatsAdmin);
+
   // Privacy / storage notice banner
   (function () {
     const banner = document.getElementById('privacy-banner');
@@ -398,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ['challenge-category', 'challenge-character'].forEach(id => {
     _bind(id, 'change', () => updateLobbyPoolCount('challenge'));
   });
+  _bind('challenge-exclude-bts', 'change', () => updateLobbyPoolCount('challenge'));
   document.querySelectorAll('input[name="challenge-diff"]').forEach(radio => {
     radio.addEventListener('change', () => updateLobbyPoolCount('challenge'));
   });

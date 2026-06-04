@@ -47,7 +47,7 @@ function switchAdminPanel(panel) {
   activeAdminTab = panel;
   document.querySelectorAll('.admin-nav-item').forEach(el =>
     el.classList.toggle('active', el.dataset.panel === panel));
-  ['questions', 'suggestions', 'disputes', 'feedback', 'community-ratings', 'leaderboard', 'export', 'site-settings', 'version-history', 'admin-help'].forEach(name => {
+  ['questions', 'suggestions', 'disputes', 'feedback', 'community-ratings', 'answer-stats', 'leaderboard', 'export', 'site-settings', 'version-history', 'admin-help'].forEach(name => {
     const el = document.getElementById(`admin-panel-${name}`);
     if (el) el.classList.toggle('hidden', panel !== name);
   });
@@ -57,6 +57,7 @@ function switchAdminPanel(panel) {
   if (panel === 'questions') renderAdminQuestions();
   if (panel === 'suggestions') loadAndRenderAdminSuggestions();
   if (panel === 'community-ratings') renderAdminRatings();
+  if (panel === 'answer-stats') loadAndRenderAnswerStats();
   if (panel === 'leaderboard') loadAndRenderAdminLeaderboard();
 }
 
@@ -74,10 +75,16 @@ function renderAdminQuestions() {
     filtered = filtered.filter(q => q.difficulty === adminQFilter.difficulty);
   }
   if (adminQFilter.search) {
-    const s = adminQFilter.search.toLowerCase();
-    filtered = filtered.filter(q =>
-      q.question.toLowerCase().includes(s) ||
-      q.answer.toLowerCase().includes(s));
+    const s = adminQFilter.search.toLowerCase().trim();
+    // If the search is a pure number, match by question ID exactly so admins
+    // can jump straight to "question 225" from a dispute screenshot. Falls
+    // back to substring match on the question/answer text otherwise.
+    const idMatch = /^\d+$/.test(s) ? parseInt(s, 10) : null;
+    filtered = filtered.filter(q => {
+      if (idMatch !== null && q.id === idMatch) return true;
+      return q.question.toLowerCase().includes(s) ||
+             q.answer.toLowerCase().includes(s);
+    });
   }
 
   const countEl = document.getElementById('admin-questions-count');
@@ -150,9 +157,11 @@ function populateCategoryDropdowns() {
   const filterSelect = document.getElementById('aq-filter-category');
   const modalSelect  = document.getElementById('qe-category');
   if (!filterSelect || !modalSelect) return;
+  const statsSelect = document.getElementById('as-filter-category');
   CATEGORIES.forEach(cat => {
     filterSelect.appendChild(new Option(cat, cat));
     modalSelect.appendChild(new Option(cat, cat));
+    if (statsSelect) statsSelect.appendChild(new Option(cat, cat));
   });
 }
 
@@ -175,7 +184,8 @@ function updateLobbyPoolCount(mode) {
   const character = document.getElementById(`${mode}-character`)?.value || 'all';
   const diffInput = document.querySelector(`input[name="${mode}-diff"]:checked`);
   const difficulty = diffInput ? diffInput.value : 'Mixed';
-  const n = filterQuestions(category, difficulty, character).length;
+  const excludeBts = !!document.getElementById(`${mode}-exclude-bts`)?.checked;
+  const n = filterQuestions(category, difficulty, character, excludeBts).length;
 
   const countInput = document.querySelector(`input[name="${mode}-count"]:checked`);
   const requested = countInput ? parseInt(countInput.value, 10) : 10;
@@ -185,7 +195,7 @@ function updateLobbyPoolCount(mode) {
     countEl.textContent = `Only ${n} question${n !== 1 ? 's' : ''} available (need ${requested})`;
     countEl.className = 'lobby-pool-count lobby-pool-count-low';
     if (startBtn) startBtn.disabled = true;
-  } else if (category === 'all' && character === 'all' && difficulty === 'Mixed') {
+  } else if (category === 'all' && character === 'all' && difficulty === 'Mixed' && !excludeBts) {
     countEl.textContent = '';
     if (startBtn) startBtn.disabled = false;
   } else {
@@ -722,6 +732,161 @@ function resetQuestionVotesAdmin(questionId) {
   resetQuestionVotes(questionId);
   renderAdminRatings();
   showToast(`Votes cleared for Question ID: ${questionId}.`);
+}
+
+// ── ANSWER STATS ─────────────────────────────────────────────────
+// Per-question correct/wrong tallies aggregated server-side. The admin
+// panel reads them from /api/answer-stats and renders a sortable list.
+let adminAnswerStatsFilter = { search: '', category: 'all', difficulty: 'all', sort: 'most-answered' };
+let _answerStatsCache = {};   // { "<id>": { correct, wrong } }
+
+function loadAndRenderAnswerStats() {
+  const listEl = document.getElementById('admin-as-list');
+  if (listEl) listEl.innerHTML = '<p class="admin-empty">Loading answer stats...</p>';
+  fetch('/api/answer-stats', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(stats => {
+      _answerStatsCache = (stats && typeof stats === 'object' && !Array.isArray(stats)) ? stats : {};
+      renderAnswerStats();
+    })
+    .catch(() => {
+      _answerStatsCache = {};
+      if (listEl) listEl.innerHTML = '<p class="admin-empty">Could not load answer stats. Is the server running?</p>';
+    });
+}
+
+function _statsForQuestion(qid) {
+  const e = _answerStatsCache[String(qid)];
+  const correct = e && Number.isFinite(e.correct) ? e.correct : 0;
+  const wrong   = e && Number.isFinite(e.wrong)   ? e.wrong   : 0;
+  const total   = correct + wrong;
+  const pct     = total > 0 ? Math.round((correct / total) * 100) : null;
+  return { correct, wrong, total, pct };
+}
+
+function renderAnswerStats() {
+  const container = document.getElementById('admin-as-list');
+  const countEl   = document.getElementById('admin-as-count');
+  if (!container || !countEl) return;
+
+  const allQs = getAllManagedQuestions();
+  const disabled = getDisabledQuestions();
+  const f = adminAnswerStatsFilter;
+
+  let rows = allQs.map(q => ({ q, isDisabled: disabled.includes(q.id), stats: _statsForQuestion(q.id) }));
+
+  if (f.category !== 'all')   rows = rows.filter(r => r.q.category === f.category);
+  if (f.difficulty !== 'all') rows = rows.filter(r => r.q.difficulty === f.difficulty);
+  if (f.search) {
+    const s = f.search.toLowerCase().trim();
+    const idMatch = /^\d+$/.test(s) ? parseInt(s, 10) : null;
+    rows = rows.filter(r =>
+      (idMatch !== null && r.q.id === idMatch) ||
+      r.q.question.toLowerCase().includes(s) ||
+      r.q.answer.toLowerCase().includes(s));
+  }
+
+  // Sorting. For "% correct" sorts, questions with zero answers sink to the
+  // bottom so the meaningful data stays at the top.
+  const NEG = -1;
+  rows.sort((a, b) => {
+    switch (f.sort) {
+      case 'least-answered': return a.stats.total - b.stats.total;
+      case 'lowest-pct':
+        return (a.stats.pct === null ? 101 : a.stats.pct) - (b.stats.pct === null ? 101 : b.stats.pct)
+            || b.stats.total - a.stats.total;
+      case 'highest-pct':
+        return (b.stats.pct === null ? NEG : b.stats.pct) - (a.stats.pct === null ? NEG : a.stats.pct)
+            || b.stats.total - a.stats.total;
+      case 'id': return a.q.id - b.q.id;
+      case 'most-answered':
+      default: return b.stats.total - a.stats.total || a.q.id - b.q.id;
+    }
+  });
+
+  // Headline totals across the whole bank (not just the filtered view).
+  const grandCorrect = allQs.reduce((s, q) => s + _statsForQuestion(q.id).correct, 0);
+  const grandWrong   = allQs.reduce((s, q) => s + _statsForQuestion(q.id).wrong, 0);
+  const grandTotal   = grandCorrect + grandWrong;
+  const grandPct     = grandTotal > 0 ? Math.round((grandCorrect / grandTotal) * 100) : 0;
+  const answeredQs   = allQs.filter(q => _statsForQuestion(q.id).total > 0).length;
+
+  countEl.innerHTML =
+    `${rows.length} of ${allQs.length} questions shown  |  ` +
+    `${answeredQs} answered at least once<br>` +
+    `${grandTotal.toLocaleString()} total answers logged  |  ` +
+    `<span class="as-summary-correct">${grandCorrect.toLocaleString()} correct</span>  |  ` +
+    `<span class="as-summary-wrong">${grandWrong.toLocaleString()} wrong</span>  |  ` +
+    `${grandPct}% overall correct`;
+
+  if (!rows.length) {
+    container.innerHTML = '<p class="admin-empty">No questions match your filters.</p>';
+    return;
+  }
+
+  container.innerHTML = rows.map(({ q, isDisabled, stats }) => {
+    const { correct, wrong, total, pct } = stats;
+    const pctClass = pct === null ? '' : pct >= 70 ? 'as-pct-high' : pct >= 40 ? 'as-pct-mid' : 'as-pct-low';
+    const barHtml = total > 0
+      ? `<div class="as-bar" title="${pct}% correct (${correct} of ${total})">
+           <div class="as-bar-correct" style="width:${pct}%"></div>
+         </div>`
+      : '<div class="as-bar as-bar-empty" title="Not answered yet"></div>';
+    return `
+      <div class="as-card ${isDisabled ? 'aq-disabled' : ''}" data-qid="${q.id}">
+        <div class="as-main">
+          <div class="aq-id">Question ID: ${q.id}</div>
+          <div class="aq-text">${escHtml(q.question)}</div>
+          <div class="aq-answer"><strong>A:</strong> ${escHtml(q.answer)}</div>
+          <div class="aq-badges">
+            <span class="badge badge-category">${escHtml(q.category)}</span>
+            <span class="badge ${difficultyClass(q.difficulty)}">${escHtml(q.difficulty)}</span>
+            ${isDisabled ? '<span class="badge aq-badge-disabled">DISABLED</span>' : ''}
+          </div>
+        </div>
+        <div class="as-stats">
+          <div class="as-stat-numbers">
+            <span class="as-stat as-stat-correct" title="Answered correctly">&#10003; ${correct.toLocaleString()}</span>
+            <span class="as-stat as-stat-wrong" title="Answered incorrectly">&#10007; ${wrong.toLocaleString()}</span>
+            <span class="as-stat as-stat-total" title="Total times answered">${total.toLocaleString()} total</span>
+          </div>
+          <div class="as-pct-row">
+            ${barHtml}
+            <span class="as-pct ${pctClass}">${pct === null ? '--' : pct + '%'}</span>
+          </div>
+          ${total > 0 ? `<button class="btn btn-sm aq-btn-disable as-reset-btn" onclick="resetAnswerStatsAdmin(${q.id})">Reset</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function resetAnswerStatsAdmin(questionId) {
+  const stats = _statsForQuestion(questionId);
+  if (!stats.total) return;
+  const allQs = getAllManagedQuestions();
+  const q = allQs.find(x => x.id === questionId);
+  const label = q ? `"${q.question.slice(0, 40)}${q.question.length > 40 ? '...' : ''}"` : `Question ID: ${questionId}`;
+  if (!confirm(`Reset the answer counters for ${label}?\n\n${stats.correct} correct + ${stats.wrong} wrong will be cleared. This cannot be undone.`)) return;
+  fetch('/api/admin/answer-stats/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': _adminToken || '' },
+    body: JSON.stringify({ questionId }),
+  })
+    .then(r => { if (!r.ok) throw new Error('reset failed'); return r.json(); })
+    .then(() => { delete _answerStatsCache[String(questionId)]; renderAnswerStats(); showToast(`Answer stats cleared for Question ID: ${questionId}.`); })
+    .catch(() => showToast('Could not reset answer stats. Try again.'));
+}
+
+function resetAllAnswerStatsAdmin() {
+  if (!confirm('Reset answer counters for EVERY question to zero?\n\nThis wipes all correct/wrong tallies across the whole bank. This cannot be undone.')) return;
+  fetch('/api/admin/answer-stats/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': _adminToken || '' },
+    body: JSON.stringify({ all: true }),
+  })
+    .then(r => { if (!r.ok) throw new Error('reset failed'); return r.json(); })
+    .then(() => { _answerStatsCache = {}; renderAnswerStats(); showToast('All answer stats reset to zero.'); })
+    .catch(() => showToast('Could not reset answer stats. Try again.'));
 }
 
 // ── SITE SETTINGS ────────────────────────────────────────────────

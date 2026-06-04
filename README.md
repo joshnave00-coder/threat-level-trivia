@@ -20,12 +20,13 @@ A browser-based trivia game for fans of *The Office* (US). Test your knowledge o
   - Wager Round for tied players with a 45-second countdown timer
   - Host pause button that hides the question behind a random Office quote
 - **Challenge Mode ("Send a Fax to Friends")** - Async multiplayer for friends in different places. Pick your settings (including an optional speed round of 30, 15, or 10 seconds - 10 is "Ludicrous"), hit Create, and you get a shareable "memo" link with a unique 6-character code. Everyone who opens the link plays the exact same questions in the exact same order, with the same answer options. After finishing, every score lands on a shared per-memo leaderboard so you can see exactly how you stack up. Great for group chats, office competitions, and settling debates about who really knows the show.
-- **Leaderboard** - The global Employee Records leaderboard tracks top qualifying scores, with an All / Medium / Hard difficulty filter that recomputes ranks for the filtered view.
+- **Leaderboard** - The global Employee Records leaderboard tracks top qualifying scores, with an All / Medium / Hard difficulty filter that recomputes ranks for the filtered view. The Medium and Hard views each hold up to 100 entries (the combined "All" view still caps at 100), so a strong Medium run is never bumped off by Hard runs. Scores posted with "Behind the Scenes" excluded carry a small note under the player's name so they aren't assumed to be from the full bank.
 - **Quote Callouts** - Contextual character quotes appear after every answer (correct or not).
 
 ### Filtering & Customization
 - **Character Filter** - Filter questions by character (24 characters auto-tagged) in both solo and party lobbies.
 - **Category & Difficulty** - Select specific categories and difficulty levels, or play mixed.
+- **Exclude "Behind the Scenes"** - A checkbox in every lobby (solo, party, challenge) leaves out actor/production/cast-trivia questions, so you can play purely on what you'd learn from watching the show. The live pool count reflects the toggle, and it's ignored when you've explicitly picked the Behind the Scenes category.
 - **Live Pool Count** - See how many questions are available for your current filter combo before starting.
 
 ### Community & Feedback
@@ -41,6 +42,7 @@ A browser-based trivia game for fans of *The Office* (US). Test your knowledge o
 - **Flagged Questions Tab** - Review player-submitted disputes with direct "Edit Question" shortcut. Approve or dismiss each flag, then permanently Remove resolved ones.
 - **Submitted Feedback Tab** - Read general messages from the Suggestion Box (feedback, bug reports, feature ideas). Each entry can be permanently removed.
 - **Community Ratings Tab** - View community ratings per question, see which questions are overriding, reset ratings or votes.
+- **Answer Stats Tab** - Every answer across solo, party, and challenge play is tallied per question. Each card shows total correct, total wrong, total answered, and a percent-correct bar. Search, filter by category/difficulty, and sort by most/least answered or lowest/highest percent correct. Reset a single question's counters or all of them.
 - **Leaderboard Tab** - Remove leaderboard entries with inappropriate usernames or fraudulent scores.
 - **Question Export** - Export the full question bank as CSV with selectable columns (ID, question, answer, distractors, category, difficulty, tags, type, status, community data).
 
@@ -65,7 +67,7 @@ python server.py
 
 Then open **http://localhost:3000** in your browser.
 
-The server handles both static file serving and a JSON API that persists game data (disputes, ratings, votes, tags, leaderboard, feedback, question edits, custom questions, disabled questions, deleted questions, question suggestions) to a local `data/` folder. That folder is created automatically on first run and is gitignored. Admin write operations require a session token issued by `/api/admin/login`.
+The server handles both static file serving and a JSON API that persists game data (disputes, ratings, votes, tags, leaderboard, feedback, question edits, custom questions, disabled questions, deleted questions, question suggestions, answer stats) to a local `data/` folder. That folder is created automatically on first run and is gitignored. Admin write operations require a session token issued by `/api/admin/login`. Per-question answer tallies are incremented atomically server-side (thread-locked) so concurrent players never lose a count.
 
 ---
 
@@ -122,7 +124,7 @@ data/               Server-persisted JSON (gitignored, auto-created):
                       leaderboard.json, feedback.json, question-edits.json,
                       custom-questions.json, disabled-questions.json,
                       deleted-questions.json, question-suggestions.json,
-                      challenges.json, challenge-scores.json
+                      challenges.json, challenge-scores.json, answer-stats.json
 ```
 
 ---

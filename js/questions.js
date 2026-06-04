@@ -24,10 +24,15 @@ function getAllManagedQuestions() {
   return [...base, ...getCustomQuestions()];
 }
 
-function filterQuestions(category, difficulty, character) {
+function filterQuestions(category, difficulty, character, excludeBts) {
   const disabled = getDisabledQuestions();
   let pool = getAllManagedQuestions().filter(q => !disabled.includes(q.id));
   if (category && category !== 'all') pool = pool.filter(q => q.category === category);
+  // "Exclude Behind the Scenes" toggle: only meaningful when the user has
+  // NOT explicitly picked the Behind the Scenes category (would be empty).
+  if (excludeBts && category !== 'Behind the Scenes') {
+    pool = pool.filter(q => q.category !== 'Behind the Scenes');
+  }
   if (difficulty && difficulty !== 'Mixed') pool = pool.filter(q => q.difficulty === difficulty);
   if (character && character !== 'all') {
     pool = pool.filter(q => getEffectiveTags(q).includes(character));
@@ -35,8 +40,8 @@ function filterQuestions(category, difficulty, character) {
   return pool;
 }
 
-function selectQuestions(category, difficulty, count, character) {
-  const pool = filterQuestions(category, difficulty, character);
+function selectQuestions(category, difficulty, count, character, excludeBts) {
+  const pool = filterQuestions(category, difficulty, character, excludeBts);
   if (!pool.length) return [];
 
   // Recent-question buffer is 80% of the currently active question bank.

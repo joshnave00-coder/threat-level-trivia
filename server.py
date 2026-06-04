@@ -10,6 +10,7 @@ import os
 import random
 import re
 import secrets
+import threading
 import time
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -30,9 +31,16 @@ DELETED_QUESTIONS_FILE  = os.path.join(DATA_DIR, 'deleted-questions.json')
 SITE_SETTINGS_FILE      = os.path.join(DATA_DIR, 'site-settings.json')
 CHALLENGES_FILE         = os.path.join(DATA_DIR, 'challenges.json')
 CHALLENGE_SCORES_FILE   = os.path.join(DATA_DIR, 'challenge-scores.json')
+ANSWER_STATS_FILE       = os.path.join(DATA_DIR, 'answer-stats.json')
 
 _CHALLENGE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 _CHALLENGE_CODE_LEN   = 6
+
+# Serializes read-modify-write on answer-stats.json. The server is a
+# ThreadingHTTPServer, so concurrent players answering at the same time would
+# otherwise race and lose increments. All access to the stats file is guarded
+# by this lock.
+_stats_lock = threading.Lock()
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -148,6 +156,8 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._serve_challenge(parse_qs(parsed.query))
         elif p == '/api/challenge-scores':
             self._serve_challenge_scores(parse_qs(parsed.query))
+        elif p == '/api/answer-stats':
+            self._serve_file(ANSWER_STATS_FILE)
         elif p in ('/nave', '/nave/'):
             self._serve_index()
         else:
@@ -176,6 +186,13 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._create_challenge()
         elif self.path == '/api/challenge-scores':
             self._submit_challenge_score()
+        elif self.path == '/api/answer-stats':
+            # Player-generated: increment a question's correct/wrong counter.
+            self._record_answer_stat()
+        elif self.path == '/api/admin/answer-stats/reset':
+            if not self._check_admin_token():
+                return
+            self._reset_answer_stats()
         elif self.path in ('/api/votes', '/api/disputes', '/api/ratings'):
             # Player-submitted data - no admin token required
             file_map = {
@@ -280,7 +297,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
                     body = f.read().encode('utf-8')
             else:
                 # Tags and edits are stored as objects {}, everything else as []
-                body = b'{}' if path in (TAGS_FILE, QUESTION_EDITS_FILE, SITE_SETTINGS_FILE) else b'[]'
+                body = b'{}' if path in (TAGS_FILE, QUESTION_EDITS_FILE, SITE_SETTINGS_FILE, ANSWER_STATS_FILE) else b'[]'
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(body)))
@@ -343,6 +360,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
             category   = str(data.get('category') or 'All Categories').strip()[:60]
             difficulty = str(data.get('difficulty') or '').strip()
             date_str   = str(data.get('date')      or '').strip()[:32]
+            exclude_bts = bool(data.get('excludeBts'))
 
             if not name:
                 self.send_error(400, 'Name required')
@@ -375,14 +393,107 @@ class TLTHandler(SimpleHTTPRequestHandler):
                 'accuracy':   accuracy,
                 'category':   category,
                 'difficulty': difficulty,
+                'excludeBts': exclude_bts,
                 'date':       date_str,
             })
 
+            # Sort the combined list (best first). Then keep up to 100 per
+            # difficulty tier (Medium / Hard) instead of 100 overall, so a
+            # great Medium run is never bumped off the board by a Hard run.
+            # The "All" view on the client trims the combined view to 100,
+            # while the per-difficulty views can show up to 100 each.
             entries.sort(key=lambda e: (-e.get('score', 0), -e.get('accuracy', 0)))
-            entries = entries[:100]
+            per_diff = {'Medium': [], 'Hard': []}
+            for e in entries:
+                bucket = per_diff.get(e.get('difficulty'))
+                if bucket is not None and len(bucket) < 100:
+                    bucket.append(e)
+            entries = per_diff['Medium'] + per_diff['Hard']
+            # Re-sort the combined output so the file is in canonical
+            # best-first order (also matches what the client expects).
+            entries.sort(key=lambda e: (-e.get('score', 0), -e.get('accuracy', 0)))
 
             with open(LEADERBOARD_FILE, 'w', encoding='utf-8') as f:
                 json.dump(entries, f, indent=2, ensure_ascii=False)
+
+            self._send_json(200, {'ok': True})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    # ── ANSWER STATS ───────────────────────────────────────────────
+    # Per-question correct/wrong tallies, aggregated across every player.
+    # Stored as { "<questionId>": {"correct": N, "wrong": M} }.
+
+    def _load_answer_stats(self):
+        """Read the stats object. Caller must hold _stats_lock for writes."""
+        if os.path.exists(ANSWER_STATS_FILE):
+            try:
+                with open(ANSWER_STATS_FILE, 'r', encoding='utf-8') as f:
+                    stats = json.load(f)
+                if isinstance(stats, dict):
+                    return stats
+            except (json.JSONDecodeError, ValueError, OSError):
+                pass
+        return {}
+
+    def _record_answer_stat(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            if length > 256:
+                self.send_error(413, 'Payload too large')
+                return
+            raw  = self.rfile.read(min(length, 256))
+            data = json.loads(raw)
+
+            qid     = data.get('questionId')
+            correct = data.get('correct')
+            # questionId must be an int; correct must be a real bool (note that
+            # bool is a subclass of int, so check bool explicitly).
+            if not isinstance(qid, int) or isinstance(qid, bool):
+                self.send_error(400, 'questionId (int) required')
+                return
+            if not isinstance(correct, bool):
+                self.send_error(400, 'correct (bool) required')
+                return
+
+            key = str(qid)
+            with _stats_lock:
+                stats = self._load_answer_stats()
+                entry = stats.get(key)
+                if not isinstance(entry, dict):
+                    entry = {'correct': 0, 'wrong': 0}
+                entry['correct'] = int(entry.get('correct', 0)) + (1 if correct else 0)
+                entry['wrong']   = int(entry.get('wrong', 0))   + (0 if correct else 1)
+                stats[key] = entry
+                # Atomic write: write to a temp file then replace, so a crash
+                # mid-write can't corrupt the stats file.
+                tmp = ANSWER_STATS_FILE + '.tmp'
+                with open(tmp, 'w', encoding='utf-8') as f:
+                    json.dump(stats, f, indent=2, ensure_ascii=False)
+                os.replace(tmp, ANSWER_STATS_FILE)
+
+            self._send_json(200, {'ok': True})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    def _reset_answer_stats(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            raw  = self.rfile.read(min(length, 256)) if length else b''
+            data = json.loads(raw) if raw else {}
+
+            with _stats_lock:
+                stats = self._load_answer_stats()
+                if data.get('all'):
+                    stats = {}
+                else:
+                    qid = data.get('questionId')
+                    if qid is None:
+                        self.send_error(400, 'questionId or all required')
+                        return
+                    stats.pop(str(qid), None)
+                with open(ANSWER_STATS_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(stats, f, indent=2, ensure_ascii=False)
 
             self._send_json(200, {'ok': True})
         except Exception as e:
@@ -685,8 +796,14 @@ class TLTHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def log_message(self, fmt, *args):
-        # Show API calls; suppress chatty static-file logs
+        # Show API calls; suppress chatty static-file logs.
+        # NOTE: for normal request logging args[0] is the request line (a str),
+        # but send_error()/log_error() call this with args[0] = status code (an
+        # int). Guard against that so an error response never crashes the
+        # handler thread on `'/api/' in path`.
         path = args[0] if args else ''
+        if not isinstance(path, str):
+            path = ''
         if '/api/' in path or self.path.startswith('/api/'):
             super().log_message(fmt, *args)
 

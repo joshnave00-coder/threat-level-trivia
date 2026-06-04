@@ -1165,6 +1165,9 @@ body {
   border-top: 5px solid var(--navy);
 }
 .results-player-name { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.25rem; }
+/* Small italic tag shown just under the player name on the solo results
+   card when the player opted out of the Behind the Scenes category. */
+.results-bts-note { font-size: 0.72rem; font-style: italic; color: var(--gray); margin-top: -0.1rem; margin-bottom: 0.4rem; }
 .results-score-big { font-family: var(--font-serif); font-size: 3.5rem; color: var(--navy); font-weight: bold; line-height: 1; }
 .results-accuracy  { font-size: 1.1rem; color: var(--text-sub); margin-top: 0.25rem; }
 .results-grade     { font-size: 1rem; color: var(--navy); font-weight: 600; margin-top: 0.5rem; padding: 0.5rem 1rem; background: var(--cream-dark); border-radius: var(--radius); display: inline-block; }
@@ -1225,7 +1228,18 @@ body {
 .lb-rank   { font-weight: 700; color: var(--navy); cursor: help; border-bottom: 1px dotted transparent; transition: border-color 0.15s; }
 .lb-rank:hover { border-bottom-color: var(--navy); }
 .cl-rank { cursor: help; }
+.lb-name-wrap { display: flex; flex-direction: column; min-width: 0; }
 .lb-name   { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Small italic tag under the player name when they excluded the Behind
+   the Scenes category. Keeps the leaderboard honest. */
+.lb-bts-note {
+  font-size: 0.7rem;
+  color: var(--gray);
+  font-style: italic;
+  line-height: 1.1;
+  margin-top: 0.1rem;
+  cursor: help;
+}
 .lb-score  { font-weight: 700; color: var(--navy); }
 .lb-pct    { color: var(--gray); font-size: 0.8rem; }
 .lb-meta   { grid-column: 1/-1; font-size: 0.72rem; color: var(--gray); border-top: 1px solid var(--cream-dark); padding-top: 0.25rem; margin-top: 0.1rem; }
@@ -2024,6 +2038,67 @@ body.modal-open { overflow: hidden; }
 .cr-summary-up { font-weight: 700; color: var(--correct); }
 .cr-summary-down { font-weight: 700; color: var(--wrong); }
 
+/* ── ANSWER STATS PANEL ──────────────────────────────────────────── */
+.as-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+}
+.as-summary-correct { font-weight: 700; color: var(--correct); }
+.as-summary-wrong   { font-weight: 700; color: var(--wrong); }
+
+.as-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.as-card {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+}
+.as-card.aq-disabled { opacity: 0.55; background: var(--cream-dark); }
+.as-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+
+/* Right-hand stats column */
+.as-stats {
+  flex: 0 0 auto;
+  width: 168px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+.as-stat-numbers { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.82rem; }
+.as-stat { font-weight: 600; line-height: 1.2; }
+.as-stat-correct { color: var(--correct); }
+.as-stat-wrong   { color: var(--wrong); }
+.as-stat-total   { color: var(--gray); font-weight: 500; font-size: 0.78rem; }
+
+.as-pct-row { display: flex; align-items: center; gap: 0.45rem; }
+.as-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--wrong-bg);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.as-bar-correct { height: 100%; background: var(--correct); border-radius: 999px; transition: width 0.2s; }
+.as-bar-empty { background: var(--cream-dark); }
+.as-pct { font-size: 0.82rem; font-weight: 700; min-width: 2.6rem; text-align: right; color: var(--gray); }
+.as-pct-high { color: var(--correct); }
+.as-pct-mid  { color: #9a6b00; }
+.as-pct-low  { color: var(--wrong); }
+.as-reset-btn { align-self: flex-end; margin-top: 0.1rem; }
+
+@media (max-width: 640px) {
+  .as-card { flex-direction: column; }
+  .as-stats { width: 100%; }
+  .as-toolbar { flex-direction: column; align-items: stretch; }
+}
+
 /* Admin Help & Guide */
 .admin-help-title {
   font-family: var(--font-serif);
@@ -2180,6 +2255,25 @@ body.modal-open { overflow: hidden; }
   margin-bottom: 0.25rem;
 }
 .lobby-pool-count-low { color: var(--wrong); font-weight: 600; }
+
+/* "Exclude Behind the Scenes" toggle row, sits under the Category dropdown
+   in each lobby (solo / party / challenge). */
+.exclude-bts-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  user-select: none;
+}
+.exclude-bts-row input[type="checkbox"] {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.exclude-bts-text { line-height: 1.3; color: var(--gray-dark); }
+.exclude-bts-hint { display: block; color: var(--text-sub); font-size: 0.75rem; margin-top: 0.1rem; }
 
 /* Lobby leaderboard qualifier status */
 .solo-lb-status {

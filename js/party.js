@@ -58,6 +58,7 @@ async function partyStart() {
   const character   = document.getElementById('party-character').value;
   const difficulty  = document.querySelector('input[name="party-diff"]:checked').value;
   const rawCount    = parseInt(document.querySelector('input[name="party-count"]:checked').value, 10);
+  const excludeBts  = !!document.getElementById('party-exclude-bts')?.checked;
   // Party speed: radio group with values 0 (Off), 15, 20, 30 (seconds).
   const speedSecs   = parseInt(document.querySelector('input[name="party-speed"]:checked')?.value || '0', 10);
   const speedRound  = speedSecs > 0;
@@ -74,12 +75,12 @@ async function partyStart() {
   // Re-sync admin-managed lists before building the pool (see soloStart).
   await syncAdminListsBeforeGame();
 
-  const qs = selectQuestions(category, difficulty, count, character);
+  const qs = selectQuestions(category, difficulty, count, character, excludeBts);
   if (!qs.length) { showToast('Not enough questions for that combo. Try different settings.'); return; }
 
   resetGameState();
   GameState.mode = 'party';
-  GameState.config = { category, difficulty, count, hardcore: false, speedRound, speedSecs, character };
+  GameState.config = { category, difficulty, count, hardcore: false, speedRound, speedSecs, character, excludeBts };
   // Pin the per-question time so startSpeedTimer() picks it up. Valid
   // values are 15/20/30; anything else falls back to 15s as a guardrail.
   GameState.speedMaxTime = (speedRound && [15, 20, 30].includes(speedSecs)) ? speedSecs : 15;
@@ -192,6 +193,9 @@ function handleTimeExpired() {
 
   player.answers.push({ questionId: q.id, category: q.category, wasCorrect: false, pointsEarned: 0 });
   logAnswer(player.name, q, false, null);
+  // A party speed-round timeout is a served-but-missed question - count it
+  // as a wrong answer in the global tally (admin Answer Stats).
+  recordAnswerStat(q.id, false);
 
   document.getElementById('q-reveal').classList.remove('hidden');
   const resultEl = document.getElementById('q-reveal-result');

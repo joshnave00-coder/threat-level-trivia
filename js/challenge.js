@@ -174,6 +174,7 @@ async function challengeCreate() {
   const difficulty  = document.querySelector('input[name="challenge-diff"]:checked').value;
   const speedSecs   = parseInt(document.querySelector('input[name="challenge-speed"]:checked')?.value || '0', 10);
   const speedRound  = speedSecs > 0;
+  const excludeBts  = !!document.getElementById('challenge-exclude-bts')?.checked;
 
   if (!name) {
     showToast('Sign the memo - enter your name first.');
@@ -186,7 +187,7 @@ async function challengeCreate() {
   let qs;
   try {
     const count = parseInt(document.querySelector('input[name="challenge-count"]:checked').value, 10);
-    qs = selectQuestions(category, difficulty, count, character);
+    qs = selectQuestions(category, difficulty, count, character, excludeBts);
   } catch (err) {
     console.error('[challenge] selectQuestions failed:', err);
     showToast('Could not assemble the question set. Try different settings.');

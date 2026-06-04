@@ -134,6 +134,11 @@ function renderSoloResults(player) {
   const grade   = getGrade(pct);
 
   document.getElementById('results-player-name').textContent = player.name;
+  // Show "Excluded Behind the Scenes" under the player's name when they
+  // opted out of that category for this run, so the score isn't quietly
+  // assumed to have been drawn from the full question bank.
+  const btsNoteEl = document.getElementById('results-bts-note');
+  if (btsNoteEl) btsNoteEl.classList.toggle('hidden', !GameState.config.excludeBts);
   document.getElementById('results-score-big').textContent   = `${correct} / ${total}`;
   document.getElementById('results-accuracy').textContent    = `${pct}% Accuracy`;
   document.getElementById('results-grade').textContent       = `${grade.emoji} ${grade.label}`;
@@ -199,7 +204,14 @@ function renderLeaderboardList() {
 
   let entries = _cachedLeaderboard;
   if (filter !== 'all') {
-    entries = entries.filter(e => e.difficulty === filter);
+    // Per-difficulty view: show up to 100 entries of the selected tier.
+    // (Server already caps each tier at 100 on submit.)
+    entries = entries.filter(e => e.difficulty === filter).slice(0, 100);
+  } else {
+    // Combined "All" view stays capped at 100 so the headline board doesn't
+    // balloon to 200 when both tiers are full. The full per-tier rosters
+    // remain accessible via the Medium / Hard filter options.
+    entries = entries.slice(0, 100);
   }
 
   if (!entries.length) {
@@ -214,10 +226,19 @@ function renderLeaderboardList() {
   el.innerHTML = entries.map((e, i) => {
     const rank = i + 1;
     const title = getRankTitle(rank, total);
+    // Quiet note under the player's name when they opted out of the
+    // Behind the Scenes category - so the score isn't quietly assumed to
+    // have come from the full question bank.
+    const btsNote = e.excludeBts
+      ? '<span class="lb-bts-note" title="This player excluded the Behind the Scenes category, so their score wasn\'t drawn from the full question bank.">Excluded Behind the Scenes</span>'
+      : '';
     return `
     <div class="lb-row ${rank === 1 ? 'lb-top' : ''}">
       <span class="lb-rank" title="${escHtml(title)}">${rank}</span>
-      <span class="lb-name">${escHtml(e.name)}</span>
+      <span class="lb-name-wrap">
+        <span class="lb-name">${escHtml(e.name)}</span>
+        ${btsNote}
+      </span>
       <span class="lb-score">${e.score}/25</span>
       <span class="lb-pct">${e.accuracy}%</span>
       <span class="lb-meta">${escHtml(e.difficulty)} &middot; ${escHtml(e.category)} &middot; ${escHtml(e.date)}</span>

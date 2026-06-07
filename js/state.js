@@ -166,13 +166,15 @@ function getDisputes() {
   catch { return []; }
 }
 
-// Fire-and-forget: write disputes to data/disputes.json via local server.
-// Silently no-ops if the server isn't running.
-function _persistDisputesToFile(disputes) {
+// Per-item POST to the server. The server appends under a lock so two
+// players filing disputes at the same moment can't clobber each other,
+// and an admin status change happening in the same window can't be lost
+// to a wholesale array overwrite (which is what the old code did).
+function _appendDisputeToFile(dispute) {
   fetch('/api/disputes', {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(disputes),
+    body:    JSON.stringify(dispute),
   }).catch(() => {});
 }
 
@@ -193,8 +195,7 @@ function loadDisputesFromFile() {
 }
 
 function addDispute(question, disputeText, playerName, difficultyRating) {
-  const disputes = getDisputes();
-  disputes.push({
+  const dispute = {
     id: Date.now(),
     questionId: question.id,
     question: question.question,
@@ -205,24 +206,65 @@ function addDispute(question, disputeText, playerName, difficultyRating) {
     difficultyRating: difficultyRating || null,
     timestamp: new Date().toLocaleString('en-US'),
     status: 'open',   // 'open' | 'approved' | 'dismissed'
-  });
+  };
+  // Optimistic local update so the in-session UI feels instant; the
+  // server append is the source of truth and is what other devices see.
+  const disputes = getDisputes();
+  disputes.push(dispute);
   localStorage.setItem(STORAGE_KEYS.disputes, JSON.stringify(disputes));
-  _persistDisputesToFile(disputes);
+  _appendDisputeToFile(dispute);
 }
 
+// Admin: change a single dispute's status. Goes through a dedicated
+// per-id endpoint (server reads, mutates, writes under lock) instead of
+// resending the whole array - that's what used to let an admin's
+// approval be silently overwritten the next time a player filed a
+// dispute or another tab synced.
 function updateDisputeStatus(id, status) {
   const disputes = getDisputes();
   const d = disputes.find(x => x.id === id);
   if (d) d.status = status;
   localStorage.setItem(STORAGE_KEYS.disputes, JSON.stringify(disputes));
-  _persistDisputesToFile(disputes);
+
+  const token = sessionStorage.getItem('tlt_admin_token') || '';
+  fetch('/api/admin/disputes/status', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body:    JSON.stringify({ id, status }),
+  }).then(r => {
+    if (!r.ok) console.warn('[disputes] status update failed:', r.status, r.statusText);
+  }).catch(err => console.warn('[disputes] status update network error:', err));
 }
 
-// Permanently removes a dispute from both localStorage and the server file.
+// Admin: permanently delete a single dispute. Same per-id pattern as
+// updateDisputeStatus (server mutates by id under a lock).
 function deleteDispute(id) {
   const disputes = getDisputes().filter(x => x.id !== id);
   localStorage.setItem(STORAGE_KEYS.disputes, JSON.stringify(disputes));
-  _persistDisputesToFile(disputes);
+
+  const token = sessionStorage.getItem('tlt_admin_token') || '';
+  fetch('/api/admin/disputes/delete', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body:    JSON.stringify({ id }),
+  }).then(r => {
+    if (!r.ok) console.warn('[disputes] delete failed:', r.status, r.statusText);
+  }).catch(err => console.warn('[disputes] delete network error:', err));
+}
+
+// Refresh disputes from the server file and overwrite localStorage. The
+// admin dispute panel calls this before render so an admin always sees
+// the current server state, not whatever stale view their localStorage
+// last cached. Returns a promise so callers can await it.
+function reloadDisputesFromFile() {
+  return fetch('/api/disputes', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(fileDisputes => {
+      if (Array.isArray(fileDisputes)) {
+        localStorage.setItem(STORAGE_KEYS.disputes, JSON.stringify(fileDisputes));
+      }
+    })
+    .catch(() => {});
 }
 
 // ── RATINGS ───────────────────────────────────────────────────────
@@ -232,8 +274,7 @@ function getRatings() {
 }
 
 function addRating(question, rating, playerName) {
-  const ratings = getRatings();
-  ratings.push({
+  const entry = {
     id: Date.now(),
     questionId: question.id,
     question: question.question,
@@ -243,13 +284,18 @@ function addRating(question, rating, playerName) {
     rating,
     player: playerName,
     timestamp: new Date().toLocaleString('en-US'),
-  });
+  };
+  // Optimistic local update; server append is the source of truth.
+  const ratings = getRatings();
+  ratings.push(entry);
   localStorage.setItem('tlt_ratings', JSON.stringify(ratings));
-  // Persist to file
+  // Per-item POST so two players rating at the same moment can't
+  // overwrite each other's ratings (the old code POSTed the whole array
+  // and last-writer-wins lost the earlier rating).
   fetch('/api/ratings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ratings),
+    body: JSON.stringify(entry),
   }).catch(() => {});
 }
 
@@ -277,14 +323,33 @@ function getCommunityDifficultyInfo(questionId) {
   return { count: all.length, avg: rounded, label };
 }
 
+// Admin: clear every rating for one question. Server filters its own
+// copy under a lock so this can't clobber a concurrent player rating
+// on a different question that's in flight at the same moment.
 function resetQuestionRatings(questionId) {
   const filtered = getRatings().filter(r => r.questionId !== questionId);
   localStorage.setItem('tlt_ratings', JSON.stringify(filtered));
-  fetch('/api/ratings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(filtered),
-  }).catch(() => {});
+  const token = sessionStorage.getItem('tlt_admin_token') || '';
+  fetch('/api/admin/ratings/reset', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body:    JSON.stringify({ questionId }),
+  }).then(r => {
+    if (!r.ok) console.warn('[ratings] reset failed:', r.status, r.statusText);
+  }).catch(err => console.warn('[ratings] reset network error:', err));
+}
+
+// Refresh ratings from the server. Called by the admin Community
+// Ratings panel before render so the admin sees the live server state.
+function reloadRatingsFromFile() {
+  return fetch('/api/ratings', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(fileRatings => {
+      if (Array.isArray(fileRatings)) {
+        localStorage.setItem('tlt_ratings', JSON.stringify(fileRatings));
+      }
+    })
+    .catch(() => {});
 }
 
 // ── VOTES (question quality up/down) ─────────────────────────────
@@ -294,10 +359,7 @@ function getVotes() {
 }
 
 function addVote(question, vote, playerName) {
-  const votes = getVotes();
-  // Remove any existing vote by this player on this question
-  const filtered = votes.filter(v => !(v.questionId === question.id && v.player === playerName));
-  filtered.push({
+  const entry = {
     id: Date.now(),
     questionId: question.id,
     question: question.question,
@@ -305,13 +367,20 @@ function addVote(question, vote, playerName) {
     vote, // 'up' or 'down'
     player: playerName,
     timestamp: new Date().toLocaleString('en-US'),
-  });
+  };
+  // Optimistic local update with the local dedupe (player can change
+  // their vote on a question). The server applies the same dedupe
+  // under a lock when it ingests the new vote.
+  const votes = getVotes();
+  const filtered = votes.filter(v => !(v.questionId === question.id && v.player === playerName));
+  filtered.push(entry);
   localStorage.setItem(STORAGE_KEYS.votes, JSON.stringify(filtered));
-  // Persist to file
+  // Per-item POST. Server handles the (player, questionId) dedupe so
+  // two players voting on different questions can't clobber each other.
   fetch('/api/votes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(filtered),
+    body: JSON.stringify(entry),
   }).catch(() => {});
 }
 
@@ -328,14 +397,32 @@ function getPlayerVote(questionId, playerName) {
   return v ? v.vote : null;
 }
 
+// Admin: clear every vote for one question. Server filters its own
+// copy under a lock; concurrent votes on other questions are preserved.
 function resetQuestionVotes(questionId) {
   const filtered = getVotes().filter(v => v.questionId !== questionId);
   localStorage.setItem(STORAGE_KEYS.votes, JSON.stringify(filtered));
-  fetch('/api/votes', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(filtered),
-  }).catch(() => {});
+  const token = sessionStorage.getItem('tlt_admin_token') || '';
+  fetch('/api/admin/votes/reset', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body:    JSON.stringify({ questionId }),
+  }).then(r => {
+    if (!r.ok) console.warn('[votes] reset failed:', r.status, r.statusText);
+  }).catch(err => console.warn('[votes] reset network error:', err));
+}
+
+// Refresh votes from the server. Called by the admin Community Ratings
+// panel before render so the admin sees the live server state.
+function reloadVotesFromFile() {
+  return fetch('/api/votes', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(fileVotes => {
+      if (Array.isArray(fileVotes)) {
+        localStorage.setItem(STORAGE_KEYS.votes, JSON.stringify(fileVotes));
+      }
+    })
+    .catch(() => {});
 }
 
 function loadVotesFromFile() {

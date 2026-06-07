@@ -32,6 +32,7 @@ SITE_SETTINGS_FILE      = os.path.join(DATA_DIR, 'site-settings.json')
 CHALLENGES_FILE         = os.path.join(DATA_DIR, 'challenges.json')
 CHALLENGE_SCORES_FILE   = os.path.join(DATA_DIR, 'challenge-scores.json')
 ANSWER_STATS_FILE       = os.path.join(DATA_DIR, 'answer-stats.json')
+DAILY_STATS_FILE        = os.path.join(DATA_DIR, 'daily-stats.json')
 
 _CHALLENGE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 _CHALLENGE_CODE_LEN   = 6
@@ -41,6 +42,21 @@ _CHALLENGE_CODE_LEN   = 6
 # otherwise race and lose increments. All access to the stats file is guarded
 # by this lock.
 _stats_lock = threading.Lock()
+
+# Serializes read-modify-write on daily-stats.json. Same reasoning as
+# _stats_lock above: concurrent visitors answering the daily question on
+# the same day would otherwise race and lose entries.
+_daily_lock = threading.Lock()
+
+# Serializes read-modify-write on the player-mutable data files
+# (disputes, votes, ratings). These used to be overwritten wholesale from
+# every client - both players adding new items and admins changing
+# statuses POSTed the entire array - which meant any concurrent writer
+# would clobber the other side's changes (admin approval lost when a
+# player filed a new dispute, vice versa, etc). The current handlers do
+# per-item mutations server-side under this lock, so two writes on the
+# same file can't race anymore.
+_player_data_lock = threading.Lock()
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -158,6 +174,8 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._serve_challenge_scores(parse_qs(parsed.query))
         elif p == '/api/answer-stats':
             self._serve_file(ANSWER_STATS_FILE)
+        elif p == '/api/daily-stats':
+            self._serve_file(DAILY_STATS_FILE)
         elif p in ('/nave', '/nave/'):
             self._serve_index()
         else:
@@ -189,18 +207,43 @@ class TLTHandler(SimpleHTTPRequestHandler):
         elif self.path == '/api/answer-stats':
             # Player-generated: increment a question's correct/wrong counter.
             self._record_answer_stat()
+        elif self.path == '/api/daily-stats':
+            # Player-generated: record one visitor's daily-question result.
+            self._record_daily_stat()
         elif self.path == '/api/admin/answer-stats/reset':
             if not self._check_admin_token():
                 return
             self._reset_answer_stats()
-        elif self.path in ('/api/votes', '/api/disputes', '/api/ratings'):
-            # Player-submitted data - no admin token required
-            file_map = {
-                '/api/votes':    VOTES_FILE,
-                '/api/disputes': DISPUTES_FILE,
-                '/api/ratings':  RATINGS_FILE,
-            }
-            self._save_file(file_map[self.path])
+        elif self.path == '/api/disputes':
+            # Player path only: append one new dispute.
+            # Admin status changes / deletes go through the per-item
+            # /api/admin/disputes/* endpoints below so they can't clobber
+            # concurrent player adds (and vice versa).
+            self._append_dispute()
+        elif self.path == '/api/votes':
+            # Player path only: cast or change one vote. Server dedupes by
+            # (player, questionId) on insert so a player flipping their
+            # vote replaces their prior one instead of stacking.
+            self._append_vote()
+        elif self.path == '/api/ratings':
+            # Player path only: append one new rating.
+            self._append_rating()
+        elif self.path == '/api/admin/disputes/status':
+            if not self._check_admin_token():
+                return
+            self._admin_update_dispute_status()
+        elif self.path == '/api/admin/disputes/delete':
+            if not self._check_admin_token():
+                return
+            self._admin_delete_dispute()
+        elif self.path == '/api/admin/ratings/reset':
+            if not self._check_admin_token():
+                return
+            self._admin_reset_ratings_for_question()
+        elif self.path == '/api/admin/votes/reset':
+            if not self._check_admin_token():
+                return
+            self._admin_reset_votes_for_question()
         elif self.path == '/api/leaderboard/submit':
             self._save_leaderboard_entry()
         elif self.path == '/api/admin/leaderboard/remove':
@@ -297,7 +340,7 @@ class TLTHandler(SimpleHTTPRequestHandler):
                     body = f.read().encode('utf-8')
             else:
                 # Tags and edits are stored as objects {}, everything else as []
-                body = b'{}' if path in (TAGS_FILE, QUESTION_EDITS_FILE, SITE_SETTINGS_FILE, ANSWER_STATS_FILE) else b'[]'
+                body = b'{}' if path in (TAGS_FILE, QUESTION_EDITS_FILE, SITE_SETTINGS_FILE, ANSWER_STATS_FILE, DAILY_STATS_FILE) else b'[]'
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(body)))
@@ -497,6 +540,332 @@ class TLTHandler(SimpleHTTPRequestHandler):
             self._send_json(200, {'ok': True})
         except Exception as e:
             self.send_error(500, str(e))
+
+    # -- DAILY QUESTION STATS -----------------------------------------
+    # Anonymous per-visitor records of how each visitor did on the daily
+    # question. Each visitor has a localStorage-generated ID. Storage:
+    #   { "<YYYY-MM-DD>": {
+    #       "questionId": <int>,
+    #       "responses": { "<visitorId>": {
+    #           "correct": bool, "streak": int, "longest": int,
+    #           "submittedAt": "<ISO>"
+    #       } }
+    #   } }
+    # A visitor re-posting the same day overwrites their entry (defensive;
+    # the client locks the UI after one submission).
+
+    _DAILY_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+    _DAILY_VID_RE  = re.compile(r'^[A-Za-z0-9_-]{6,64}$')
+
+    def _load_daily_stats(self):
+        """Read the daily-stats object. Caller must hold _daily_lock for writes."""
+        if os.path.exists(DAILY_STATS_FILE):
+            try:
+                with open(DAILY_STATS_FILE, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+            except (json.JSONDecodeError, ValueError, OSError):
+                pass
+        return {}
+
+    def _record_daily_stat(self):
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            if length > 1024:
+                self.send_error(413, 'Payload too large')
+                return
+            raw  = self.rfile.read(min(length, 1024))
+            data = json.loads(raw)
+
+            date_str   = str(data.get('date') or '').strip()
+            qid        = data.get('questionId')
+            correct    = data.get('correct')
+            visitor_id = str(data.get('visitorId') or '').strip()
+            streak     = data.get('streak')
+            longest    = data.get('longest')
+
+            if not self._DAILY_DATE_RE.match(date_str):
+                self.send_error(400, 'date (YYYY-MM-DD) required')
+                return
+            if not isinstance(qid, int) or isinstance(qid, bool):
+                self.send_error(400, 'questionId (int) required')
+                return
+            if not isinstance(correct, bool):
+                self.send_error(400, 'correct (bool) required')
+                return
+            if not self._DAILY_VID_RE.match(visitor_id):
+                self.send_error(400, 'visitorId required')
+                return
+            if not isinstance(streak, int) or isinstance(streak, bool) or streak < 0 or streak > 100000:
+                self.send_error(400, 'streak (int) required')
+                return
+            if not isinstance(longest, int) or isinstance(longest, bool) or longest < 0 or longest > 100000:
+                self.send_error(400, 'longest (int) required')
+                return
+
+            with _daily_lock:
+                stats = self._load_daily_stats()
+                day = stats.get(date_str)
+                if not isinstance(day, dict):
+                    day = {'questionId': qid, 'responses': {}}
+                if 'responses' not in day or not isinstance(day.get('responses'), dict):
+                    day['responses'] = {}
+                day['responses'][visitor_id] = {
+                    'correct':     correct,
+                    'streak':      streak,
+                    'longest':     longest,
+                    'submittedAt': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+                }
+                # Keep the canonical questionId for this date once set; first
+                # writer wins so later mismatches (e.g. clock skew) don't
+                # rewrite history.
+                if 'questionId' not in day:
+                    day['questionId'] = qid
+                stats[date_str] = day
+
+                # Atomic write: temp file then replace, so a crash mid-write
+                # can't corrupt the stats file.
+                tmp = DAILY_STATS_FILE + '.tmp'
+                with open(tmp, 'w', encoding='utf-8') as f:
+                    json.dump(stats, f, indent=2, ensure_ascii=False)
+                os.replace(tmp, DAILY_STATS_FILE)
+
+            self._send_json(200, {'ok': True})
+        except Exception as e:
+            self.send_error(500, str(e))
+
+    # -- DISPUTES / VOTES / RATINGS (concurrent-safe RMW) -------------
+    # All three files used to be overwritten wholesale from every client.
+    # Now players append one item at a time and admins mutate by id, so
+    # two concurrent writers can't lose each other's changes. Every read-
+    # modify-write goes through _player_data_lock + atomic temp+replace.
+
+    @staticmethod
+    def _load_list_file(path):
+        if not os.path.exists(path):
+            return []
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except (json.JSONDecodeError, ValueError, OSError):
+            return []
+
+    @staticmethod
+    def _atomic_write_json(path, data):
+        tmp = path + '.tmp'
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        os.replace(tmp, path)
+
+    def _read_json_body(self, max_len=8192):
+        length = int(self.headers.get('Content-Length', 0))
+        if length > max_len:
+            self.send_error(413, 'Payload too large')
+            return None
+        raw = self.rfile.read(min(length, max_len))
+        try:
+            return json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            self.send_error(400, 'Invalid JSON')
+            return None
+
+    def _append_dispute(self):
+        data = self._read_json_body()
+        if data is None:
+            return
+        # Tolerate the legacy {single: <obj>} envelope just in case a
+        # stale client is still in someone's tab; otherwise treat the
+        # body itself as the dispute object.
+        item = data.get('single') if isinstance(data, dict) and 'single' in data else data
+        if not isinstance(item, dict):
+            self.send_error(400, 'Dispute object required')
+            return
+
+        question_id = item.get('questionId')
+        dispute_text = str(item.get('disputeText') or '').strip()[:500]
+        player       = str(item.get('player') or '').strip()[:60]
+        if not isinstance(question_id, int) or isinstance(question_id, bool):
+            self.send_error(400, 'questionId (int) required')
+            return
+        if not dispute_text:
+            self.send_error(400, 'disputeText required')
+            return
+
+        entry = {
+            'id':               int(item.get('id') or time.time() * 1000),
+            'questionId':       question_id,
+            'question':         str(item.get('question') or '')[:500],
+            'answer':           str(item.get('answer') or '')[:500],
+            'category':         str(item.get('category') or '')[:60],
+            'disputeText':      dispute_text,
+            'player':           player or 'Anonymous',
+            'difficultyRating': item.get('difficultyRating') if isinstance(item.get('difficultyRating'), int) else None,
+            'timestamp':        str(item.get('timestamp') or time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))[:64],
+            'status':           'open',
+        }
+
+        with _player_data_lock:
+            disputes = self._load_list_file(DISPUTES_FILE)
+            # If a client retries the same submission (network blip), the
+            # id collision keeps us idempotent rather than double-filing.
+            if any(d.get('id') == entry['id'] for d in disputes):
+                self._send_json(200, {'ok': True, 'duplicate': True})
+                return
+            disputes.append(entry)
+            self._atomic_write_json(DISPUTES_FILE, disputes)
+        self._send_json(200, {'ok': True})
+
+    def _admin_update_dispute_status(self):
+        data = self._read_json_body(max_len=512)
+        if data is None:
+            return
+        entry_id = data.get('id')
+        status   = data.get('status')
+        if not isinstance(entry_id, int):
+            self.send_error(400, 'id (int) required')
+            return
+        if status not in ('open', 'approved', 'dismissed'):
+            self.send_error(400, 'status must be open|approved|dismissed')
+            return
+        with _player_data_lock:
+            disputes = self._load_list_file(DISPUTES_FILE)
+            found = False
+            for d in disputes:
+                if d.get('id') == entry_id:
+                    d['status'] = status
+                    found = True
+                    break
+            if not found:
+                self._send_json(404, {'ok': False, 'error': 'Dispute not found'})
+                return
+            self._atomic_write_json(DISPUTES_FILE, disputes)
+        self._send_json(200, {'ok': True})
+
+    def _admin_delete_dispute(self):
+        data = self._read_json_body(max_len=256)
+        if data is None:
+            return
+        entry_id = data.get('id')
+        if not isinstance(entry_id, int):
+            self.send_error(400, 'id (int) required')
+            return
+        with _player_data_lock:
+            disputes = self._load_list_file(DISPUTES_FILE)
+            filtered = [d for d in disputes if d.get('id') != entry_id]
+            self._atomic_write_json(DISPUTES_FILE, filtered)
+        self._send_json(200, {'ok': True})
+
+    def _append_vote(self):
+        data = self._read_json_body(max_len=2048)
+        if data is None:
+            return
+        item = data.get('single') if isinstance(data, dict) and 'single' in data else data
+        if not isinstance(item, dict):
+            self.send_error(400, 'Vote object required')
+            return
+
+        question_id = item.get('questionId')
+        vote        = item.get('vote')
+        player      = str(item.get('player') or '').strip()[:60]
+        if not isinstance(question_id, int) or isinstance(question_id, bool):
+            self.send_error(400, 'questionId (int) required')
+            return
+        if vote not in ('up', 'down'):
+            self.send_error(400, "vote must be 'up' or 'down'")
+            return
+        if not player:
+            self.send_error(400, 'player required')
+            return
+
+        entry = {
+            'id':         int(item.get('id') or time.time() * 1000),
+            'questionId': question_id,
+            'question':   str(item.get('question') or '')[:500],
+            'category':   str(item.get('category') or '')[:60],
+            'vote':       vote,
+            'player':     player,
+            'timestamp':  str(item.get('timestamp') or time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))[:64],
+        }
+
+        with _player_data_lock:
+            votes = self._load_list_file(VOTES_FILE)
+            # One vote per (player, question): if this player already
+            # voted on this question, drop the old one so the new vote
+            # replaces it rather than stacking.
+            votes = [v for v in votes if not (v.get('questionId') == question_id and v.get('player') == player)]
+            votes.append(entry)
+            self._atomic_write_json(VOTES_FILE, votes)
+        self._send_json(200, {'ok': True})
+
+    def _admin_reset_votes_for_question(self):
+        data = self._read_json_body(max_len=256)
+        if data is None:
+            return
+        question_id = data.get('questionId')
+        if not isinstance(question_id, int):
+            self.send_error(400, 'questionId (int) required')
+            return
+        with _player_data_lock:
+            votes = self._load_list_file(VOTES_FILE)
+            filtered = [v for v in votes if v.get('questionId') != question_id]
+            self._atomic_write_json(VOTES_FILE, filtered)
+        self._send_json(200, {'ok': True})
+
+    def _append_rating(self):
+        data = self._read_json_body(max_len=2048)
+        if data is None:
+            return
+        item = data.get('single') if isinstance(data, dict) and 'single' in data else data
+        if not isinstance(item, dict):
+            self.send_error(400, 'Rating object required')
+            return
+
+        question_id = item.get('questionId')
+        rating      = item.get('rating')
+        player      = str(item.get('player') or '').strip()[:60]
+        if not isinstance(question_id, int) or isinstance(question_id, bool):
+            self.send_error(400, 'questionId (int) required')
+            return
+        if not isinstance(rating, int) or isinstance(rating, bool) or rating < 1 or rating > 10:
+            self.send_error(400, 'rating must be int 1-10')
+            return
+        if not player:
+            self.send_error(400, 'player required')
+            return
+
+        entry = {
+            'id':         int(item.get('id') or time.time() * 1000),
+            'questionId': question_id,
+            'question':   str(item.get('question') or '')[:500],
+            'answer':     str(item.get('answer') or '')[:500],
+            'category':   str(item.get('category') or '')[:60],
+            'difficulty': str(item.get('difficulty') or '')[:32],
+            'rating':     rating,
+            'player':     player,
+            'timestamp':  str(item.get('timestamp') or time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()))[:64],
+        }
+
+        with _player_data_lock:
+            ratings = self._load_list_file(RATINGS_FILE)
+            ratings.append(entry)
+            self._atomic_write_json(RATINGS_FILE, ratings)
+        self._send_json(200, {'ok': True})
+
+    def _admin_reset_ratings_for_question(self):
+        data = self._read_json_body(max_len=256)
+        if data is None:
+            return
+        question_id = data.get('questionId')
+        if not isinstance(question_id, int):
+            self.send_error(400, 'questionId (int) required')
+            return
+        with _player_data_lock:
+            ratings = self._load_list_file(RATINGS_FILE)
+            filtered = [r for r in ratings if r.get('questionId') != question_id]
+            self._atomic_write_json(RATINGS_FILE, filtered)
+        self._send_json(200, {'ok': True})
 
     def _reset_answer_stats(self):
         try:

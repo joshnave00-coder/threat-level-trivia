@@ -4,6 +4,26 @@ All notable changes to Threat Level Trivia are documented here.
 
 ---
 
+## v1.8.0 - 2026-06-06
+
+### Fixes
+- **Admin Approve/Dismiss Now Sticks (Disputes, Votes, Ratings)** - Fixed a long-standing bug where flagged-question approvals or dismissals appeared to take effect during the session but reverted on the next visit, on another device, or after a session restart. The root cause: both the player flow (filing a new dispute) and the admin flow (status change/delete) were POSTing the *entire* disputes array to the server, which blindly overwrote the file. So if a player filed a new dispute in the window between an admin's load and their click, or vice-versa, whichever wrote last clobbered the other side's changes. The same broken pattern affected votes and ratings (less visibly): two players acting at the same time could overwrite each other's submission. Now players add one item at a time and admins mutate by ID server-side under a thread lock, so concurrent writes preserve each other.
+
+### Features
+- **Question of the Day (Wordle-style retention)** - The home screen now leads with a single daily trivia question, picked deterministically from the same bank as the rest of the game. Every visitor on the same calendar day sees the same question; it resets at the user's *local* midnight (not UTC) so the day boundary lines up with their actual day. Once a visitor answers, the prompt is replaced with a result card showing whether they were right, the correct answer, a themed Office quote, and their current streak, then locks for the rest of the day.
+- **Streak Tracking (localStorage)** - The daily module tracks current streak, longest streak, last-answered date, last-correct date, and a per-user history log (date / question ID / right or wrong). A correct answer when the previous correct answer was yesterday increments the streak; a wrong answer or a gap of more than one day resets it to zero. History is capped at 365 entries.
+- **Anonymous Retention Analytics** - Each daily result is reported to the server with an anonymous persistent visitor ID (localStorage-generated, no name/email tied to it), the date, the question ID, the right/wrong outcome, and the visitor's current streak. Streaks are per-user otherwise (localStorage only), so this is what lets retention be aggregated across all visitors.
+- **Admin "Daily Question" Panel** - A new admin tab shows how many people answered each day, the daily correct/incorrect split with a percent-correct bar, headline totals (days tracked, total submissions, unique visitors, longest streak observed), and a current-streak distribution histogram (binned 0 / 1 / 2 / 3-6 / 7-13 / 14-29 / 30+). This is the read on whether the daily question is bringing people back day after day.
+
+### Infrastructure
+- New `data/daily-stats.json` store. `GET /api/daily-stats` serves the aggregate. The player-facing `POST /api/daily-stats` records one anonymous result `{date, questionId, correct, visitorId, streak, longest}` under a thread lock (`_daily_lock`), validating against a strict date regex, visitor-ID regex, and bounded ints. Writes go to a temp file then `os.replace` for atomicity, so a crash mid-write can't corrupt the stats file.
+- New `js/daily.js` module. Entirely separate from `GameState`, so the daily flow can never interfere with solo/party/challenge play. Eligible pool is the active managed bank sorted by ID; today's question is `pool[daysSinceLaunch % poolLen]`. All date math runs in local time. The visitor ID is a 16-char base36 string generated once per browser. The module reuses the existing `recordAnswerStat()` chokepoint so daily answers also flow into the Answer Stats tally.
+- Home-screen intro copy now mentions the daily question alongside solo/party/challenge.
+- **Disputes/Votes/Ratings: per-item endpoints under a new `_player_data_lock`.** The old `POST /api/disputes`, `POST /api/votes`, and `POST /api/ratings` (whole-array overwrite) are replaced with server-side appends. Players now send one item; the server reads the file, appends (votes also dedupe by `(player, questionId)`), and writes back atomically (temp file + `os.replace`) under a thread lock. Admin actions go through dedicated per-id endpoints: `POST /api/admin/disputes/status` (update one dispute's status by id), `POST /api/admin/disputes/delete` (delete by id), `POST /api/admin/ratings/reset` (clear ratings for one question), `POST /api/admin/votes/reset` (clear votes for one question). Each is server-side mutate-by-key under the same lock, so an admin's change can no longer be clobbered by a concurrent player add and vice-versa.
+- Client-side: `addDispute`, `addRating`, `addVote` send one item per POST. `updateDisputeStatus`, `deleteDispute`, `resetQuestionRatings`, `resetQuestionVotes` use the new per-id admin endpoints with the admin token. New `reloadDisputesFromFile()`, `reloadRatingsFromFile()`, `reloadVotesFromFile()` helpers in `js/state.js` overwrite localStorage with the live server state. The admin panel switcher and admin login both call these before rendering, and the resolve/remove dispute handlers re-pull from the server after their mutation, so an admin's view never starts from (or persists) a stale cached snapshot.
+
+---
+
 ## v1.7.0 - 2026-06-03
 
 ### Features

@@ -39,6 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── "ON THIS DAY" HOME BANNER ─────────────────────────────────────
   initOnThisDay();
 
+  // ── QUESTION OF THE DAY (Wordle-style retention module) ──────────
+  // Rendered after admin lists are loaded above so deleted/disabled
+  // questions can't sneak into today's eligible pool. The fetches kicked
+  // off above are fire-and-forget; daily.js re-reads the lists from
+  // localStorage at render time, and a second loadDeletedQuestions /
+  // loadDisabled hop the next time the home screen is shown would
+  // refresh anything that landed late.
+  initDailyQuestion();
+
   // ── HAMBURGER MENU ───────────────────────────────────────────────
   const hamburgerBtn = document.getElementById('btn-hamburger');
   const hamburgerMenu = document.getElementById('hamburger-menu');
@@ -392,6 +401,9 @@ document.addEventListener('DOMContentLoaded', () => {
   _bind('as-include-disabled',   'change', () => renderAnswerStats());
   _bind('btn-as-refresh',       'click',  loadAndRenderAnswerStats);
   _bind('btn-as-reset-all',     'click',  resetAllAnswerStatsAdmin);
+
+  // Daily Question stats tab refresh
+  _bind('btn-ds-refresh',       'click',  loadAndRenderDailyStats);
 
   // Privacy / storage notice banner
   (function () {

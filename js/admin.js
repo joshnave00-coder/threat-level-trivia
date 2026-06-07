@@ -27,7 +27,11 @@ async function adminLogin() {
       sessionStorage.setItem('tlt_admin_token', data.token);
       errorEl.classList.add('hidden');
       try { renderAdminQuestions(); } catch (err) { console.error('renderAdminQuestions failed:', err); }
-      try { renderAdminDisputes();  } catch (err) { console.error('renderAdminDisputes failed:', err);  }
+      // Pull the live server state for disputes/ratings/votes before
+      // first render so the panels never start from a stale cached view.
+      reloadDisputesFromFile()
+        .then(() => { try { renderAdminDisputes(); } catch (err) { console.error('renderAdminDisputes failed:', err); } });
+      Promise.all([reloadRatingsFromFile(), reloadVotesFromFile()]).catch(() => {});
       loadAndRenderAdminFeedback();
       loadAndRenderAdminLeaderboard();
       loadAndRenderAdminSuggestions();
@@ -47,17 +51,25 @@ function switchAdminPanel(panel) {
   activeAdminTab = panel;
   document.querySelectorAll('.admin-nav-item').forEach(el =>
     el.classList.toggle('active', el.dataset.panel === panel));
-  ['questions', 'suggestions', 'disputes', 'feedback', 'community-ratings', 'answer-stats', 'leaderboard', 'export', 'site-settings', 'version-history', 'admin-help'].forEach(name => {
+  ['questions', 'suggestions', 'disputes', 'feedback', 'community-ratings', 'answer-stats', 'daily-stats', 'leaderboard', 'export', 'site-settings', 'version-history', 'admin-help'].forEach(name => {
     const el = document.getElementById(`admin-panel-${name}`);
     if (el) el.classList.toggle('hidden', panel !== name);
   });
   if (panel === 'site-settings') applySiteSettings();
-  if (panel === 'disputes') renderAdminDisputes();
+  // Always pull the latest disputes/ratings/votes from the server before
+  // rendering admin views. Otherwise an admin on a freshly-opened tab
+  // would see whatever was cached in localStorage from a prior session
+  // and could re-resolve disputes that have already been handled
+  // elsewhere - which is exactly the symptom that prompted this fix.
+  if (panel === 'disputes') reloadDisputesFromFile().then(renderAdminDisputes);
   if (panel === 'feedback') loadAndRenderAdminFeedback();
   if (panel === 'questions') renderAdminQuestions();
   if (panel === 'suggestions') loadAndRenderAdminSuggestions();
-  if (panel === 'community-ratings') renderAdminRatings();
+  if (panel === 'community-ratings') {
+    Promise.all([reloadRatingsFromFile(), reloadVotesFromFile()]).then(renderAdminRatings);
+  }
   if (panel === 'answer-stats') loadAndRenderAnswerStats();
+  if (panel === 'daily-stats') loadAndRenderDailyStats();
   if (panel === 'leaderboard') loadAndRenderAdminLeaderboard();
 }
 
@@ -454,7 +466,11 @@ function renderAdminDisputes() {
 
 function resolveDispute(id, status) {
   updateDisputeStatus(id, status);
+  // Render optimistically, then re-sync from the server so any other
+  // disputes that landed between this admin's last render and this click
+  // also appear without needing a tab switch.
   renderAdminDisputes();
+  reloadDisputesFromFile().then(renderAdminDisputes);
   showToast(status === 'approved' ? 'Question approved for review.' : 'Dispute dismissed. Moving on.');
 }
 
@@ -463,6 +479,7 @@ function removeDispute(id) {
   if (!confirm('Permanently remove this dispute from the list? This cannot be undone.')) return;
   deleteDispute(id);
   renderAdminDisputes();
+  reloadDisputesFromFile().then(renderAdminDisputes);
   showToast('Dispute removed from the list.');
 }
 
@@ -930,6 +947,171 @@ function resetAllAnswerStatsAdmin() {
         .catch(() => showToast('Could not reset answer stats. Try again.'));
     })
     .catch(() => showToast('Could not verify password. Try again.'));
+}
+
+// ── DAILY QUESTION STATS ─────────────────────────────────────────
+// Reads /api/daily-stats and renders three things:
+//   1. Headline totals (days tracked, total submissions, overall correct rate)
+//   2. Streak distribution histogram (how many visitors at streak 1, 2, 3+)
+//   3. Per-day breakdown (date, question, # answered, correct vs. wrong)
+// All counts come from the server file (the source of truth), not from
+// the admin's own localStorage state. The streak histogram uses each
+// visitor's most-recent response so longest-ever is implicit in the bin.
+
+function loadAndRenderDailyStats() {
+  const listEl  = document.getElementById('admin-ds-day-list');
+  const streakEl = document.getElementById('admin-ds-streak-section');
+  const summary = document.getElementById('admin-ds-summary');
+  const empty   = document.getElementById('admin-ds-empty');
+  if (!listEl) return;
+
+  listEl.innerHTML  = '<p class="admin-empty">' + escHtml(pickLoadingQuip()) + '</p>';
+  if (streakEl) streakEl.innerHTML = '';
+  if (summary)  summary.textContent = '';
+  if (empty)    empty.classList.add('hidden');
+
+  fetch('/api/daily-stats', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(stats => {
+      if (!stats || typeof stats !== 'object' || Array.isArray(stats) || !Object.keys(stats).length) {
+        listEl.innerHTML = '';
+        if (summary) summary.textContent = '';
+        if (streakEl) streakEl.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      _renderDailyStats(stats);
+    })
+    .catch(() => {
+      listEl.innerHTML = '<p class="admin-empty">Could not load daily stats. Is the server running?</p>';
+    });
+}
+
+function _renderDailyStats(stats) {
+  const listEl   = document.getElementById('admin-ds-day-list');
+  const streakEl = document.getElementById('admin-ds-streak-section');
+  const summary  = document.getElementById('admin-ds-summary');
+
+  // Per-day rows (newest first), plus running totals.
+  const days = Object.keys(stats).sort().reverse();
+  let totalAnswers   = 0;
+  let totalCorrect   = 0;
+
+  // Walk chronologically (oldest -> newest) so each visitor's "latest"
+  // streak ends up being the one tied to their most recent submission.
+  const visitorLatest = {};   // visitorId -> { date, streak, longest, correct }
+  Object.keys(stats).sort().forEach(date => {
+    const day = stats[date];
+    const responses = (day && day.responses) || {};
+    Object.entries(responses).forEach(([vid, r]) => {
+      visitorLatest[vid] = {
+        date,
+        streak:  Number.isFinite(r.streak)  ? r.streak  : 0,
+        longest: Number.isFinite(r.longest) ? r.longest : 0,
+        correct: !!r.correct,
+      };
+    });
+  });
+
+  // Streak distribution bins: 0 (broken), 1, 2, 3-6, 7-13, 14-29, 30+.
+  const bins = [
+    { label: 'Streak 0 (broken or never correct)', test: s => s === 0 },
+    { label: 'Streak 1 day',  test: s => s === 1 },
+    { label: 'Streak 2 days', test: s => s === 2 },
+    { label: 'Streak 3-6 days',  test: s => s >= 3  && s <= 6  },
+    { label: 'Streak 7-13 days', test: s => s >= 7  && s <= 13 },
+    { label: 'Streak 14-29 days', test: s => s >= 14 && s <= 29 },
+    { label: 'Streak 30+ days',  test: s => s >= 30 },
+  ];
+  const binCounts = bins.map(b => 0);
+  let longestEver = 0;
+  const visitorIds = Object.keys(visitorLatest);
+  visitorIds.forEach(vid => {
+    const s = visitorLatest[vid].streak;
+    bins.forEach((b, i) => { if (b.test(s)) binCounts[i]++; });
+    if (visitorLatest[vid].longest > longestEver) longestEver = visitorLatest[vid].longest;
+  });
+
+  // Build day rows + totals.
+  const rowsHtml = days.map(date => {
+    const day = stats[date] || {};
+    const responses = day.responses || {};
+    const vids = Object.keys(responses);
+    const correct = vids.reduce((n, v) => n + (responses[v].correct ? 1 : 0), 0);
+    const wrong   = vids.length - correct;
+    totalAnswers += vids.length;
+    totalCorrect += correct;
+
+    const pct = vids.length ? Math.round((correct / vids.length) * 100) : 0;
+    const qInfo = _adminLookupQuestion(day.questionId);
+    const qBlurb = qInfo
+      ? `<span class="ds-qid">Question ID: ${day.questionId}</span> <span class="ds-qtext">${escHtml(qInfo.question)}</span>`
+      : `<span class="ds-qid">Question ID: ${day.questionId != null ? day.questionId : '?'}</span> <span class="ds-qtext ds-qtext-missing">(question not found in current bank)</span>`;
+
+    return `
+      <div class="ds-day-row">
+        <div class="ds-day-head">
+          <span class="ds-day-date">${escHtml(date)}</span>
+          <span class="ds-day-count">${vids.length} answered</span>
+          <span class="ds-day-split">
+            <span class="ds-correct" title="Answered correctly">&#10003; ${correct}</span>
+            <span class="ds-wrong" title="Answered incorrectly">&#10007; ${wrong}</span>
+            <span class="ds-pct">${pct}% correct</span>
+          </span>
+        </div>
+        <div class="ds-bar" title="${pct}% correct (${correct} of ${vids.length})">
+          <div class="ds-bar-correct" style="width:${pct}%"></div>
+        </div>
+        <div class="ds-day-question">${qBlurb}</div>
+      </div>`;
+  }).join('');
+
+  // Summary headline. Distinct-visitor count is the size of visitorLatest.
+  const overallPct = totalAnswers ? Math.round((totalCorrect / totalAnswers) * 100) : 0;
+  summary.innerHTML =
+    `${days.length} day${days.length !== 1 ? 's' : ''} tracked  |  ` +
+    `${totalAnswers.toLocaleString()} total submissions  |  ` +
+    `${visitorIds.length.toLocaleString()} unique visitor${visitorIds.length !== 1 ? 's' : ''}<br>` +
+    `<span class="as-summary-correct">${totalCorrect.toLocaleString()} correct</span>  |  ` +
+    `<span class="as-summary-wrong">${(totalAnswers - totalCorrect).toLocaleString()} wrong</span>  |  ` +
+    `${overallPct}% overall correct  |  ` +
+    `longest streak observed: <strong>${longestEver}</strong>`;
+
+  // Streak histogram. Each bar is scaled to the biggest bin so a single
+  // dominant bin doesn't make the smaller ones invisible.
+  const maxBin = Math.max(1, ...binCounts);
+  streakEl.innerHTML = `
+    <h4 class="ds-streak-title">Current Streak Distribution</h4>
+    <p class="ds-streak-sub">Counts each unique visitor by their most recent streak. Shows whether visitors are coming back day after day or dropping off.</p>
+    <div class="ds-streak-bars">
+      ${bins.map((b, i) => {
+        const n = binCounts[i];
+        const w = Math.round((n / maxBin) * 100);
+        const pctOfVisitors = visitorIds.length ? Math.round((n / visitorIds.length) * 100) : 0;
+        return `
+          <div class="ds-streak-row">
+            <span class="ds-streak-label">${escHtml(b.label)}</span>
+            <div class="ds-streak-bar"><div class="ds-streak-fill" style="width:${w}%"></div></div>
+            <span class="ds-streak-count">${n}${visitorIds.length ? ` (${pctOfVisitors}%)` : ''}</span>
+          </div>`;
+      }).join('')}
+    </div>`;
+
+  listEl.innerHTML =
+    `<h4 class="ds-list-title">Day-by-Day</h4>` +
+    (rowsHtml || '<p class="admin-empty">No day records yet.</p>');
+}
+
+// Find a question by ID in the current managed bank (base + custom + edits),
+// without filtering out disabled/deleted. Used for the per-day display so a
+// question that was disabled after appearing on a daily slot still shows
+// its text instead of an opaque ID. Returns null if truly missing.
+function _adminLookupQuestion(qid) {
+  if (qid == null) return null;
+  const base = QUESTIONS.find(q => q.id === qid);
+  if (base) return getEffectiveQuestion(base);
+  const custom = getCustomQuestions().find(q => q.id === qid);
+  return custom || null;
 }
 
 // ── SITE SETTINGS ────────────────────────────────────────────────

@@ -89,9 +89,15 @@
     <h1 class="home-title">Trivia<span class="visually-hidden"> - The Office Trivia Game</span></h1>
     <p class="home-tagline">Scranton's Finest Test of Office Knowledge</p>
 
-    <p class="home-intro">The ultimate trivia game for fans of <strong>The Office</strong>. Hundreds of community-validated questions about Michael Scott, Dwight Schrute, Jim Halpert, Pam Beesly, and the rest of the Dunder Mifflin Scranton branch. Play solo, host a party round, or fax a challenge to your friends. Free to play, no signup required.</p>
+    <p class="home-intro">The ultimate trivia game for fans of <strong>The Office</strong>. Hundreds of community-validated questions about Michael Scott, Dwight Schrute, Jim Halpert, Pam Beesly, and the rest of the Dunder Mifflin Scranton branch. Answer the daily question to build a streak, play solo, host a party round, or fax a challenge to your friends. Free to play, no signup required.</p>
 
     <div id="on-this-day" class="on-this-day hidden" role="status" aria-live="polite"></div>
+
+    <!-- Question of the Day: Wordle-style daily question. Deterministic
+         pick from the same bank as the rest of the game, locked to one
+         answer per local day, with a localStorage streak. Hidden by JS
+         if the eligible pool is somehow empty. -->
+    <div id="daily-question" class="daily-question" aria-live="polite"></div>
 
     <div class="home-buttons">
       <button class="btn btn-primary btn-lg" id="btn-solo">Begin the Deposition</button>
@@ -189,6 +195,13 @@
   </div>
   <div class="screen-body">
     <div class="rules-content">
+
+      <section class="rules-section">
+        <h3>Question of the Day</h3>
+        <p>The home screen leads with a single trivia question that's the same for every visitor that day. It resets at <strong>your local midnight</strong>, so the day boundary matches the day you're actually in, not UTC.</p>
+        <p>Pick an answer and the card flips to a result panel showing whether you nailed it, the correct answer, an Office quote for your reaction, and your current streak. After that, the daily is locked until tomorrow.</p>
+        <p><strong>Streaks:</strong> Get the daily right two days in a row and your streak goes up. Get it wrong, or miss a day, and your streak resets to zero. The flame icon in the daily card is your current streak; your longest streak shows next to it once you've topped your previous best. Streaks are stored in your browser, so they live and die with this device.</p>
+      </section>
 
       <section class="rules-section">
         <h3>Solo Mode - "Begin the Deposition"</h3>
@@ -901,6 +914,7 @@
       <button class="admin-nav-item" data-panel="feedback">Submitted Feedback</button>
       <button class="admin-nav-item" data-panel="community-ratings">Community Ratings</button>
       <button class="admin-nav-item" data-panel="answer-stats">Answer Stats</button>
+      <button class="admin-nav-item" data-panel="daily-stats">Daily Question</button>
       <button class="admin-nav-item" data-panel="leaderboard">Leaderboard</button>
       <button class="admin-nav-item" data-panel="export">Export</button>
       <button class="admin-nav-item" data-panel="site-settings">Site Settings</button>
@@ -1016,6 +1030,19 @@
         <div id="admin-as-list" class="as-list"></div>
       </div>
 
+      <!-- DAILY QUESTION PANEL -->
+      <div id="admin-panel-daily-stats" class="admin-panel hidden">
+        <h3 style="margin-bottom:0.25rem;color:var(--navy)">Question of the Day</h3>
+        <p class="settings-desc">Anonymous tally of how visitors engage with the home-screen daily question. One record per visitor per day; streaks tracked across days. Gauge whether the feature is bringing people back.</p>
+        <div class="ds-toolbar">
+          <button class="btn btn-secondary btn-sm" id="btn-ds-refresh" title="Pull the latest daily-question records from the server">&#x21bb; Refresh</button>
+        </div>
+        <p id="admin-ds-summary" class="aq-count"></p>
+        <div id="admin-ds-streak-section" class="ds-streak-section"></div>
+        <div id="admin-ds-day-list" class="ds-day-list"></div>
+        <p id="admin-ds-empty" class="admin-empty hidden">No daily-question activity yet. Once visitors start answering, totals show up here.</p>
+      </div>
+
       <!-- LEADERBOARD PANEL -->
       <div id="admin-panel-leaderboard" class="admin-panel hidden">
         <h3 style="margin-bottom:0.5rem;color:var(--navy)">Global Leaderboard</h3>
@@ -1058,6 +1085,38 @@
       <div id="admin-panel-version-history" class="admin-panel hidden">
         <h3 class="admin-help-title">Version History</h3>
         <p class="admin-help-intro">A running log of every release, what landed in it, and when it shipped. Most recent at the top.</p>
+
+        <div class="version-entry">
+          <div class="version-header">
+            <span class="version-tag">v1.8.0</span>
+            <span class="version-date">2026-06-06</span>
+          </div>
+          <div class="version-section">
+            <h5>Fixes</h5>
+            <ul>
+              <li><strong>Admin Approve/Dismiss Now Sticks:</strong> Fixed a long-standing bug where flagged-question approvals or dismissals appeared to take effect during the session but reverted on the next visit, on another device, or after a session restart. Both the player flow (filing a new dispute) and the admin flow (approve/dismiss/delete) were POSTing the <em>entire</em> disputes array to the server, which blindly overwrote the file - so whichever side wrote last clobbered the other side's change. The same broken pattern affected votes and ratings (less visibly). Now players append one item at a time and admins mutate by id server-side under a thread lock, so concurrent writes can't overwrite each other. Admin panels also re-pull live state from the server on open and after every action, so an admin never starts from a stale localStorage snapshot.</li>
+            </ul>
+          </div>
+          <div class="version-section">
+            <h5>Features</h5>
+            <ul>
+              <li><strong>Question of the Day (Wordle-style):</strong> The home screen now leads with a single daily trivia question pulled from the same bank as the rest of the game. Every visitor on the same calendar day sees the same question, picked deterministically by the days-since-launch index. Resets at the user's <em>local</em> midnight (not UTC) so the day boundary matches their actual day. After answering, the prompt flips to a result card with whether they were right, the correct answer, a themed Office quote, and their updated streak, then locks for the rest of the day.</li>
+              <li><strong>Streak Tracking:</strong> A flame-icon streak chip in the daily card shows the visitor's current streak (and longest, when it's higher). Correct + previous correct was yesterday increments the streak. Wrong, or a gap of more than a day, resets it to zero. Stored in localStorage along with a per-user history log (date / question ID / right or wrong), capped at 365 entries.</li>
+              <li><strong>Anonymous Retention Logging:</strong> Each daily result is reported to the server with an anonymous persistent visitor ID (generated once per browser, not tied to any name or email), so retention can be measured across all visitors instead of being trapped per-browser.</li>
+              <li><strong>Admin "Daily Question" Panel:</strong> New admin tab showing how many people answered each day, the daily correct/incorrect split with a percent-correct bar, headline totals (days tracked, total submissions, unique visitors, longest streak observed), and a current-streak distribution histogram (binned 0 / 1 / 2 / 3-6 / 7-13 / 14-29 / 30+). Includes a Refresh button to pull the latest counts without leaving the panel.</li>
+            </ul>
+          </div>
+          <div class="version-section">
+            <h5>Infrastructure</h5>
+            <ul>
+              <li>New <code>data/daily-stats.json</code> store. <code>GET /api/daily-stats</code> serves the aggregate; player-facing <code>POST /api/daily-stats</code> records one anonymous result <code>{date, questionId, correct, visitorId, streak, longest}</code> under a new <code>_daily_lock</code>, validating with a strict date regex, visitor-ID regex, and bounded ints. Writes go to a temp file then <code>os.replace</code> for atomicity.</li>
+              <li>New <code>js/daily.js</code> module, fully separate from <code>GameState</code> so the daily flow can never interfere with solo/party/challenge play. Eligible pool is the active managed bank (base + custom, minus deleted/disabled) sorted by ID; today's question is <code>pool[daysSinceLaunch % poolLen]</code>. All date math runs in local time. Daily answers also flow into the existing per-question Answer Stats tally via the shared <code>recordAnswerStat()</code> chokepoint.</li>
+              <li>Home-screen intro copy refreshed to mention the daily question alongside solo, party, and challenge.</li>
+              <li><strong>Disputes/Votes/Ratings: per-item endpoints under a new <code>_player_data_lock</code>.</strong> The old whole-array overwrite on <code>POST /api/disputes</code> / <code>/api/votes</code> / <code>/api/ratings</code> is replaced with server-side appends (votes also dedupe by <code>(player, questionId)</code>). Admin actions go through dedicated per-id endpoints: <code>POST /api/admin/disputes/status</code>, <code>/api/admin/disputes/delete</code>, <code>/api/admin/ratings/reset</code>, <code>/api/admin/votes/reset</code>. All writes are atomic (temp file + <code>os.replace</code>) and serialized through the lock.</li>
+              <li>Client-side: <code>addDispute</code>, <code>addRating</code>, <code>addVote</code> POST one item; <code>updateDisputeStatus</code>, <code>deleteDispute</code>, <code>resetQuestionRatings</code>, <code>resetQuestionVotes</code> use the new admin per-id endpoints with the admin token. New <code>reloadDisputesFromFile()</code> / <code>reloadRatingsFromFile()</code> / <code>reloadVotesFromFile()</code> helpers in <code>js/state.js</code> overwrite localStorage with the live server state; the admin panel switcher, admin login, and the resolve/remove handlers all call these so the admin view is always sourced from the server file.</li>
+            </ul>
+          </div>
+        </div>
 
         <div class="version-entry">
           <div class="version-header">
@@ -1379,6 +1438,7 @@
         <div class="admin-help-section">
           <h4>Flagged Questions</h4>
           <p>When a player submits "Question Feedback / Dispute" during gameplay, the entry shows up here. Each card shows the question, the question ID, the player's comment, and when it was filed. You can mark them as <em>Approved</em> (the dispute is valid and you'll fix it) or <em>Dismissed</em> (the question is fine as-is). These status changes are just labels for your tracking - they don't automatically modify the question. Use the "Edit Question" shortcut on the card to jump straight into the question editor. Once a dispute is resolved (approved or dismissed) it grays out, and a <strong>Remove</strong> button appears to permanently delete it from the list.</p>
+          <p><strong>Behind the scenes:</strong> Approve / Dismiss / Remove each go through a per-id endpoint to the server (no more "send the whole list back" - a previous version of this could let a freshly-filed player dispute silently overwrite your status change). The panel also re-pulls the live state from the server every time you open it and after every action, so you're always working off the canonical list, not whatever was cached in this browser. If you ever notice an action not sticking, hop into a different tab or device and reload the panel - what you see there is the source of truth.</p>
         </div>
 
         <div class="admin-help-section">
@@ -1406,6 +1466,18 @@
             <li><strong>Search, Filter &amp; Sort:</strong> Narrow by keyword, category, or difficulty. Sort by most/least answered, or by lowest/highest percent correct - "Lowest % Correct" surfaces the questions players struggle with most. Questions never answered yet sink to the bottom.</li>
             <li><strong>Reset:</strong> Each answered question has a <strong>Reset</strong> button to zero its counters (handy after you edit a question and want a fresh read). <strong>Reset All</strong> wipes every counter across the whole bank. Both are permanent.</li>
             <li><strong>Refresh:</strong> The list loads when you open the tab. Hit <strong>Refresh</strong> to pull the latest tallies without leaving the panel.</li>
+          </ul>
+        </div>
+
+        <div class="admin-help-section">
+          <h4>Daily Question</h4>
+          <p>Anonymous tally of how visitors engage with the home-screen <strong>Question of the Day</strong>. This is the read on whether the daily mechanic is bringing people back.</p>
+          <ul>
+            <li><strong>Headline totals:</strong> Days tracked, total submissions, unique visitors, and the longest current streak observed across all visitors. Plus the overall correct percentage for context.</li>
+            <li><strong>Current Streak Distribution:</strong> A histogram binning each unique visitor by their <em>most recent</em> streak: 0 (broken or never correct), 1, 2, 3-6, 7-13, 14-29, 30+ days. Bars are scaled to the largest bin so smaller bins stay visible. Each row shows the count and the percent of all visitors. Watch the right-side bins grow over time as a sign of repeat engagement.</li>
+            <li><strong>Day-by-Day:</strong> Per-day rows (newest first) with the date, total answered, correct / wrong split, percent-correct bar, and the question text for that day. If a question was disabled or deleted after appearing on the daily slot, the row still shows its text and ID for context.</li>
+            <li><strong>Refresh:</strong> Pulls the latest counts from the server without leaving the panel.</li>
+            <li><strong>What's stored:</strong> One record per visitor per date, keyed by a random localStorage-generated visitor ID (no name, no email). A re-submission for the same date overwrites the prior record. Daily answers also bump the per-question correct/wrong tally on the <strong>Answer Stats</strong> panel (same as any other play).</li>
           </ul>
         </div>
 
@@ -1652,6 +1724,7 @@
 <script src="js/solo.js"></script>
 <script src="js/party.js"></script>
 <script src="js/challenge.js"></script>
+<script src="js/daily.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/feedback.js"></script>
 <script src="js/suggestions.js"></script>

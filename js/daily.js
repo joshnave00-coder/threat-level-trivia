@@ -187,6 +187,34 @@ function _reportDailyResultToServer(dateStr, question, correct, state) {
   }).catch(() => {});
 }
 
+// ── SHARE ────────────────────────────────────────────────────────
+// Wordle-style spoiler-free share text. Emoji squares show the last
+// 7 days (oldest first) so a streak reads visually without giving
+// away today's question or answer.
+
+function _buildDailyShareText(correct, state) {
+  const dayNum = _todayIndex() + 1;
+  const byDate = {};
+  state.history.forEach(h => { byDate[h.date] = h.correct; });
+  let week = '';
+  for (let i = 6; i >= 0; i--) {
+    const d = _localDateStr(new Date(Date.now() - i * 86400000));
+    if (!(d in byDate))  week += '⬜';      // no play that day
+    else if (byDate[d])  week += '\u{1F7E9}';   // correct
+    else                 week += '\u{1F7E5}';   // wrong
+  }
+  const lines = [
+    `Threat Level Trivia #${dayNum}`,
+    `Question of the Day: ${correct ? '✅' : '❌'}`,
+  ];
+  const cur = state.current || 0;
+  if (cur > 1) lines.push(`\u{1F525} ${cur}-day streak`);
+  lines.push(week);
+  lines.push('');
+  lines.push('https://threatleveltrivia.com');
+  return lines.join('\n');
+}
+
 // ── RENDERING ────────────────────────────────────────────────────
 
 let _dailyOptionsCache = [];   // shuffled options for today (cached so re-render keeps same order)
@@ -315,9 +343,16 @@ function _renderDailyResultCard(root, question, correct, state) {
         ${headline}
         <span class="daily-result-answer"><span class="daily-result-answer-label">Answer:</span> ${escHtml(question.answer)}</span>
       </div>
+      <div class="daily-share-row">
+        <button class="btn btn-primary daily-share-btn" id="btn-daily-share">Share result</button>
+      </div>
       <p class="daily-comeback">Come back tomorrow to keep the streak alive.</p>
     </div>
   `;
+  const shareBtn = root.querySelector('#btn-daily-share');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => shareOrCopyText(shareBtn, _buildDailyShareText(correct, state)));
+  }
 }
 
 function initDailyQuestion() {

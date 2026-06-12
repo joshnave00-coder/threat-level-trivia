@@ -396,6 +396,37 @@ function handleVote(direction) {
   btnDown.disabled = true;
 }
 
+// Wordle-style share text for a finished solo run: score line, themed
+// grade, and an emoji grid of the answer sequence in rows of five.
+// Spoiler-free - shows how the run went, not which questions came up.
+function buildSoloShareText(player) {
+  const answers = player.answers;
+  const total   = answers.length;
+  const correct = answers.filter(a => a.wasCorrect).length;
+  const pct     = total > 0 ? Math.round((correct / total) * 100) : 0;
+  const grade   = getGrade(pct);
+  const { difficulty, category, hardcore } = GameState.config;
+
+  let scoreLine = `Deposition complete: ${correct}/${total} (${pct}%) • ${difficulty}`;
+  if (hardcore) scoreLine += ' • Hardcore';
+  if (category && category !== 'all') scoreLine += ` • ${category}`;
+
+  const rows = [];
+  for (let i = 0; i < answers.length; i += 5) {
+    rows.push(answers.slice(i, i + 5)
+      .map(a => a.wasCorrect ? '\u{1F7E9}' : '\u{1F7E5}').join(''));
+  }
+
+  return [
+    'Threat Level Trivia',
+    scoreLine,
+    `${grade.emoji} ${grade.label}`,
+    ...rows,
+    '',
+    'https://threatleveltrivia.com',
+  ].join('\n');
+}
+
 async function soloFinish() {
   const player   = GameState.players[0];
   const total    = player.answers.length;

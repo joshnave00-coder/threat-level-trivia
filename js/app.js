@@ -242,6 +242,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('quote-callout').addEventListener('click', dismissQuote);
 
   // ── SOLO RESULTS ─────────────────────────────────────────────────
+  document.getElementById('btn-share-result').addEventListener('click', (e) => {
+    const player = GameState.players[0];
+    if (!player || !player.answers.length) return;
+    shareOrCopyText(e.currentTarget, buildSoloShareText(player));
+  });
   document.getElementById('btn-view-leaderboard').addEventListener('click', () => {
     renderLeaderboard();
     showScreen('screen-leaderboard');

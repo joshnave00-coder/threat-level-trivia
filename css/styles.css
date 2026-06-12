@@ -446,6 +446,14 @@ body {
   text-transform: uppercase;
   margin-right: 0.3rem;
 }
+.daily-share-row {
+  padding: 0.1rem 1rem 0.4rem;
+  text-align: center;
+}
+.daily-share-btn {
+  font-size: 0.78rem;
+  padding: 0.45rem 1.2rem;
+}
 .daily-comeback {
   padding: 0 1rem 0.9rem;
   font-size: 0.75rem;

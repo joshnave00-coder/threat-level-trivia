@@ -341,6 +341,58 @@ function showToast(msg, duration = 2500) {
   setTimeout(() => t.classList.remove('toast-show'), duration);
 }
 
+// ── SHARE / CLIPBOARD ────────────────────────────────────────────
+
+// Copy arbitrary text to the clipboard. Returns true on success.
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch { /* fall through to legacy path */ }
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch { return false; }
+}
+
+// Share result text: native share sheet on mobile, otherwise copy to the
+// clipboard with a toast and a temporary "Copied!" state on the button.
+async function shareOrCopyText(btn, text) {
+  const isMobile = 'ontouchstart' in window && window.innerWidth < 768;
+  if (isMobile && navigator.share) {
+    try {
+      await navigator.share({ text });
+      return;
+    } catch { /* user cancelled - fall through to clipboard */ }
+  }
+
+  const copied = await copyTextToClipboard(text);
+  if (copied) {
+    showToast('Result copied! Paste it anywhere.');
+    if (btn) {
+      const orig = btn.dataset.origText || btn.textContent;
+      btn.dataset.origText = orig;
+      btn.textContent = 'Copied!';
+      btn.classList.add('btn-copied');
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove('btn-copied');
+      }, 1800);
+    }
+  } else {
+    showToast('Could not copy automatically. A screenshot works too.');
+  }
+}
+
 // ── IDENTITY THEFT DETECTOR ──────────────────────────────────────
 // Watches a name input. When the typed value matches an Office cast name,
 // fires Dwight's classic line. Fires once per matched name per input

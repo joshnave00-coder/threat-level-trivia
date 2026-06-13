@@ -329,6 +329,15 @@ function sanitizeName(raw, maxLen = 24) {
     .slice(0, maxLen);
 }
 
+// Fire a Google Analytics (GA4) custom event. Safe no-op if gtag is
+// unavailable (ad blocker, offline, script blocked) so analytics can
+// never break gameplay. Event names show up in GA's Events report.
+function trackEvent(name, params = {}) {
+  try {
+    if (typeof gtag === 'function') gtag('event', name, params);
+  } catch {}
+}
+
 function showToast(msg, duration = 2500) {
   let t = document.getElementById('toast');
   if (!t) {

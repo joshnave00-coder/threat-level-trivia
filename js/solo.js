@@ -58,6 +58,13 @@ async function soloStart() {
   GameState.players = [{ id: 1, name, score: 0, answers: [] }];
   GameState.currentPlayerIdx = 0;
 
+  trackEvent('solo_start', {
+    difficulty: GameState.config.difficulty,
+    category: GameState.config.category,
+    question_count: GameState.config.count,
+    hardcore: GameState.config.hardcore,
+  });
+
   soloNextQuestion();
 }
 

@@ -88,6 +88,14 @@ async function partyStart() {
   GameState.players = names.map((name, i) => ({ id: i + 1, name, score: 0, answers: [] }));
   GameState.currentPlayerIdx = 0;
 
+  trackEvent('party_start', {
+    difficulty: GameState.config.difficulty,
+    category: GameState.config.category,
+    question_count: GameState.config.count,
+    player_count: GameState.players.length,
+    speed_round: speedRound,
+  });
+
   partyNextQuestion();
 }
 

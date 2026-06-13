@@ -232,6 +232,13 @@ async function challengeCreate() {
   ChallengeState.questionIds = qs.map(q => q.id);
   ChallengeState.isCreator = true;
 
+  trackEvent('challenge_create', {
+    difficulty,
+    category,
+    question_count: qs.length,
+    speed_round: speedRound,
+  });
+
   try { localStorage.setItem('tlt_last_name', name); } catch {}
 
   // Render the share UI
@@ -366,6 +373,11 @@ async function challengeStartPlay(playerNameOverride) {
   GameState.questions = qs;
   GameState.players = [{ id: 1, name, score: 0, answers: [], isCreator }];
   GameState.currentPlayerIdx = 0;
+
+  trackEvent('challenge_play', {
+    role: isCreator ? 'creator' : 'joiner',
+    question_count: qs.length,
+  });
 
   challengeNextQuestion();
 }

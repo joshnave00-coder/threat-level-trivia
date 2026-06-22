@@ -71,6 +71,7 @@ function _defaultDailyState() {
   return {
     current:          0,
     longest:          0,
+    totalCorrect:     0,    // lifetime count of correct Questions of the Day
     lastAnsweredDate: null,
     lastCorrectDate:  null,
     history:          [],   // [{ date, questionId, correct }]
@@ -81,9 +82,16 @@ function getDailyState() {
   try {
     const raw = JSON.parse(localStorage.getItem(DAILY_KEYS.state));
     if (raw && typeof raw === 'object') {
-      return Object.assign(_defaultDailyState(), raw, {
+      const state = Object.assign(_defaultDailyState(), raw, {
         history: Array.isArray(raw.history) ? raw.history : [],
       });
+      // Backfill totalCorrect for states saved before this field existed,
+      // so existing players keep their lifetime tally. Derived from history
+      // (capped at 365 entries, so this is a floor for very old accounts).
+      if (typeof raw.totalCorrect !== 'number') {
+        state.totalCorrect = state.history.filter(h => h.correct).length;
+      }
+      return state;
     }
   } catch {}
   return _defaultDailyState();
@@ -125,6 +133,7 @@ function _applyDailyResult(state, dateStr, questionId, correct) {
     }
     state.lastCorrectDate = dateStr;
     if (state.current > (state.longest || 0)) state.longest = state.current;
+    state.totalCorrect = (state.totalCorrect || 0) + 1;
   } else {
     state.current = 0;
   }
@@ -231,16 +240,32 @@ function _dailyOptionsFor(question) {
   return _dailyOptionsCache;
 }
 
-function _streakLine(state) {
+// Three-up stats strip: current streak, longest streak, and lifetime
+// total correct. Sits just under the navy header on both the prompt and
+// result cards so players always see their running totals.
+function _statsRow(state) {
   const cur = state.current || 0;
   const lon = state.longest || 0;
-  if (cur === 0 && lon === 0) {
-    return '<span class="daily-streak-empty">No streak yet. Today is a good day to start.</span>';
-  }
-  const flame = cur > 0 ? '<span class="daily-streak-flame" aria-hidden="true">&#128293;</span>' : '';
-  const curTxt = `<span class="daily-streak-num">${cur}</span> day${cur === 1 ? '' : 's'}`;
-  const lonTxt = lon > cur ? ` <span class="daily-streak-longest">(longest: ${lon})</span>` : '';
-  return `${flame}<span class="daily-streak-label">Current streak:</span> ${curTxt}${lonTxt}`;
+  const tot = state.totalCorrect || 0;
+  const flame = cur > 0
+    ? ' <span class="daily-stat-flame" aria-hidden="true">&#128293;</span>'
+    : '';
+  return `
+    <div class="daily-stats">
+      <div class="daily-stat">
+        <span class="daily-stat-num">${cur}${flame}</span>
+        <span class="daily-stat-label">Current streak</span>
+      </div>
+      <div class="daily-stat">
+        <span class="daily-stat-num">${lon}</span>
+        <span class="daily-stat-label">Longest streak</span>
+      </div>
+      <div class="daily-stat">
+        <span class="daily-stat-num">${tot}</span>
+        <span class="daily-stat-label">Total correct</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderDailyQuestion() {
@@ -279,8 +304,8 @@ function _renderDailyPromptCard(root, question, state) {
     <div class="daily-card">
       <div class="daily-header">
         <span class="daily-eyebrow">Question of the Day</span>
-        <span class="daily-streak">${_streakLine(state)}</span>
       </div>
+      ${_statsRow(state)}
       <p class="daily-q-text">${escHtml(question.question)}</p>
       <div class="daily-options" id="daily-options">
         ${options.map((opt, i) => `
@@ -336,8 +361,8 @@ function _renderDailyResultCard(root, question, correct, state) {
     <div class="daily-card daily-card-result">
       <div class="daily-header">
         <span class="daily-eyebrow">Question of the Day</span>
-        <span class="daily-streak">${_streakLine(state)}</span>
       </div>
+      ${_statsRow(state)}
       <p class="daily-q-text daily-q-text-answered">${escHtml(question.question)}</p>
       <div class="daily-result-row">
         ${headline}

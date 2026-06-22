@@ -195,19 +195,49 @@ def draw_question(draw, q, y_start):
 
 
 def draw_options(draw, options, y, bottom_limit, answer=None):
-    """Four A-D pills sized to fit between y and bottom_limit.
-    If answer is given, highlight it and dim the rest."""
-    gap = 18
-    pill_h = min(86, (bottom_limit - y - 3 * gap) // 4)
-    pill_h = max(pill_h, 56)
-    opt_size = 36 if pill_h >= 76 else 32
-    of = font(GEORGIA, opt_size)
-    lf = font(GEORGIA_BOLD, opt_size)
+    """Four A-D pills sized to fit between y and bottom_limit. Long options
+    wrap to multiple lines and each pill grows to fit its own text, so a
+    single very long answer never gets clipped. If answer is given,
+    highlight it and dim the rest."""
+    gap = 16
     pill_w = W - 240
     x0 = (W - pill_w) // 2
+    text_x = 100
+    # Reserve room on the right for the checkmark on the answer card.
+    right_pad = 78 if answer is not None else 44
+    avail = pill_w - text_x - right_pad
+    band = bottom_limit - y
+
+    # Pick the largest uniform font at which all four pills (with wrapping)
+    # stack inside the available vertical band. Wrapping is capped at 3 lines.
+    chosen_size, line_h, layout = 22, 27, None
+    for size in range(36, 21, -2):
+        f = font(GEORGIA, size)
+        lh = int(size * 1.22)
+        lay = []
+        for opt in options:
+            lines = wrap_to_width(draw, opt, f, avail)[:3]
+            pill_h = max(56, lh * len(lines) + 26)
+            lay.append((lines, pill_h))
+        total = sum(p[1] for p in lay) + gap * (len(options) - 1)
+        if total <= band:
+            chosen_size, line_h, layout = size, lh, lay
+            break
+    if layout is None:
+        # Smallest attempt still overflowed (extremely rare); use it anyway.
+        f = font(GEORGIA, 22)
+        line_h = int(22 * 1.22)
+        layout = [(wrap_to_width(draw, opt, f, avail)[:3],
+                   max(56, line_h * len(wrap_to_width(draw, opt, f, avail)[:3]) + 26))
+                  for opt in options]
+        chosen_size = 22
+
+    opt_f = font(GEORGIA, chosen_size)
+    lf = font(GEORGIA_BOLD, chosen_size)
     letters = "ABCD"
+    py = y
     for i, opt in enumerate(options):
-        py = y + i * (pill_h + gap)
+        lines, pill_h = layout[i]
         is_answer = answer is not None and opt == answer
         if is_answer:
             fill, ring, tcol, lcol = CORRECT_BG, CORRECT, CORRECT, CORRECT
@@ -220,15 +250,19 @@ def draw_options(draw, options, y, bottom_limit, answer=None):
             ring_w = 2
         draw.rounded_rectangle([x0, py, x0 + pill_w, py + pill_h], radius=14,
                                fill=fill, outline=ring, width=ring_w)
-        label = f"{letters[i]}."
-        draw.text((x0 + 34, py + (pill_h - opt_size) // 2 - 4), label, font=lf, fill=lcol)
-        opt_f = of if text_w(draw, opt, of) <= pill_w - 140 else font(GEORGIA, opt_size - 6)
-        draw.text((x0 + 100, py + (pill_h - opt_f.size) // 2 - 4), opt, font=opt_f, fill=tcol)
+        draw.text((x0 + 34, py + (pill_h - chosen_size) // 2 - 4),
+                  f"{letters[i]}.", font=lf, fill=lcol)
+        block_h = line_h * len(lines)
+        ty = py + (pill_h - block_h) // 2 - 2
+        for line in lines:
+            draw.text((x0 + text_x, ty), line, font=opt_f, fill=tcol)
+            ty += line_h
         if is_answer:
-            cx, cy = x0 + pill_w - 70, py + pill_h // 2
+            cx, cy = x0 + pill_w - 50, py + pill_h // 2
             draw.line([(cx - 12, cy + 2), (cx - 2, cy + 14)], fill=CORRECT, width=6)
             draw.line([(cx - 2, cy + 14), (cx + 18, cy - 14)], fill=CORRECT, width=6)
-    return y + 4 * pill_h + 3 * gap
+        py += pill_h + gap
+    return py - gap
 
 
 def shuffled_options(q, seed):

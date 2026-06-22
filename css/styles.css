@@ -348,22 +348,33 @@ body {
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
-.daily-streak {
-  font-size: 0.78rem;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  white-space: nowrap;
+/* Three-up running-stats strip under the daily header */
+.daily-stats {
+  display: flex;
+  background: var(--navy-light);
 }
-.daily-streak-flame { font-size: 0.95rem; line-height: 1; }
-.daily-streak-label { color: rgba(255,255,255,0.75); font-weight: 600; }
-.daily-streak-num   { font-weight: 700; color: #fff; }
-.daily-streak-longest { color: rgba(255,255,255,0.65); font-size: 0.72rem; }
-.daily-streak-empty {
-  color: rgba(255,255,255,0.75);
-  font-style: italic;
-  font-size: 0.72rem;
+.daily-stat {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+.daily-stat + .daily-stat { border-left: 1px solid rgba(255, 255, 255, 0.14); }
+.daily-stat-num {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+}
+.daily-stat-flame { font-size: 0.95rem; }
+.daily-stat-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .daily-q-text {
@@ -466,7 +477,8 @@ body {
   .daily-options { grid-template-columns: 1fr; }
   .daily-q-text { font-size: 0.92rem; }
   .daily-header { padding: 0.5rem 0.75rem; }
-  .daily-streak { font-size: 0.72rem; }
+  .daily-stat-num { font-size: 1.05rem; }
+  .daily-stat-label { font-size: 0.56rem; }
 }
 
 /* Visually-hidden text: present for crawlers and screen readers, clipped
